@@ -21,10 +21,10 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.sikuli.script.Debug;
 import org.sikuli.script.FileManager;
-import org.sikuli.script.INativeLoader;
+import org.sikuli.script.IResourceLoader;
 import org.sikuli.script.Settings;
 
-public class NativeLoader implements INativeLoader {
+public class ResourceLoader implements IResourceLoader {
 
   private static String me = "NativeLoader"; //NativeLoader.class.getName();
   public static String SIKULI_LIB = "sikuli_lib";
@@ -234,7 +234,7 @@ public class NativeLoader implements INativeLoader {
    * @throws IOException
    */
   private static File extractJniResource(String resourcename, String outputname) throws IOException {
-    return NativeLoader.extractJniResource(resourcename, new File(outputname));
+    return ResourceLoader.extractJniResource(resourcename, new File(outputname));
   }
 
   private static void extractLibs() {
@@ -278,7 +278,7 @@ public class NativeLoader implements INativeLoader {
    * @return the local path to the extracted resources
    */
   private static String extract(String path) throws IOException {
-    InputStream in = NativeLoader.cl.getResourceAsStream(path + "/filelist.txt");
+    InputStream in = ResourceLoader.cl.getResourceAsStream(path + "/filelist.txt");
     String localPath = Settings.BaseTempPath + File.separator + "sikuli" + File.separator + path;
     new File(localPath).mkdirs();
     Debug.log(4, "extract resources " + path + " to " + localPath);
@@ -290,7 +290,7 @@ public class NativeLoader implements INativeLoader {
     Debug.log(7, "FileManager: JarResource: copy " + from + " to " + to);
     File toF = new File(to);
     toF.getParentFile().mkdirs();
-    InputStream in = NativeLoader.cl.getResourceAsStream(from);
+    InputStream in = ResourceLoader.cl.getResourceAsStream(from);
     if (in != null) {
       OutputStream out = null;
       try {
@@ -319,7 +319,7 @@ public class NativeLoader implements INativeLoader {
       String fullpath = outPath + line;
       File outf = new File(fullpath);
       outf.getParentFile().mkdirs();
-      InputStream in = NativeLoader.cl.getResourceAsStream(fromPath + line);
+      InputStream in = ResourceLoader.cl.getResourceAsStream(fromPath + line);
       if (in != null) {
         OutputStream out = null;
         try {
