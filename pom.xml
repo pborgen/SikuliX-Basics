@@ -1,0 +1,144 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.sikuli</groupId>
+  <artifactId>SikuliX-Setup</artifactId>
+  <version>1.0.1</version>
+
+  <name>SikuliX-Setup</name>
+  <url>http://www.sikuli.org</url>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://www.sikuli.org/LICENSE.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>RaiMan</id>
+      <name>RaiMan</name>
+      <email>rmhdevelop@me.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git://github.com/RaiMan/SikuliX-Setup.git</connection>
+    <developerConnection>scm:git:git://github.com/RaiMan/SikuliX-Setup.git</developerConnection>
+    <url>git://github.com/RaiMan/SikuliX-Setup.git</url>
+  </scm>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <native.libs.dir.windows>src/main/resources-libs/windows/</native.libs.dir.windows>
+    <native.libs.dir.linux>src/main/resources-libs/linux/</native.libs.dir.linux>
+    <native.libs.dir.mac>src/main/resources-libs/mac/</native.libs.dir.mac>
+  </properties>
+
+  <!-- Profiles are needed to include the right native resources -->
+  <profiles>
+    <profile>
+      <id>Windows</id>
+      <activation>
+        <os>
+          <family>windows</family>
+        </os>
+      </activation>
+      <properties>
+        <native.libs.dir>${native.libs.dir.windows}</native.libs.dir>
+      </properties>
+    </profile>
+    <profile>
+      <id>Linux</id>
+      <activation>
+        <os>
+          <name>linux</name>
+        </os>
+      </activation>
+      <properties>
+        <native.libs.dir>${native.libs.dir.linux}</native.libs.dir>
+      </properties>
+    </profile>
+    <profile>
+      <id>Mac</id>
+      <activation>
+        <os>
+          <family>mac</family>
+        </os>
+      </activation>
+      <properties>
+        <native.libs.dir>${native.libs.dir.mac}</native.libs.dir>
+      </properties>
+    </profile>
+  </profiles>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.sikuli</groupId>
+      <artifactId>SikuliX-API</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.4</version>
+      <scope>test</scope>
+    </dependency>    
+  </dependencies>
+
+  <build>
+    <finalName>sikulix-natives</finalName>
+
+    <!-- copy native resources -->
+    <resources>
+      <resource> <!-- Native Resources, OS dependent -->
+        <directory>${native.libs.dir}</directory>
+        <targetPath>META-INF</targetPath>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+
+			<!-- Plugin to create an executable jar -->
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>org.sikuli.natives.RunNativeLoader</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+
+      <!-- Plugin to create an additional jar containing the source 
+      <plugin>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      -->
+    </plugins>
+  </build>
+</project>
