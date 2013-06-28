@@ -118,7 +118,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>org.sikuli.natives.RunNativeLoader</mainClass>
+							<mainClass>org.sikuli.setup.RunSetup</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
