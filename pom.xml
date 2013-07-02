@@ -91,7 +91,7 @@
   </dependencies>
 
   <build>
-    <finalName>sikulix-natives</finalName>
+    <finalName>sikulix-setup</finalName>
 
     <!-- copy native resources -->
     <resources>

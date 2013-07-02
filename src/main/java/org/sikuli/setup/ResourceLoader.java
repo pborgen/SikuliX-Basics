@@ -8,15 +8,22 @@ package org.sikuli.setup;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.sikuli.script.Debug;
@@ -37,8 +44,14 @@ public class ResourceLoader implements IResourceLoader {
   }
   //</editor-fold>
   private String loaderName = "basic";
+  private static final String cmdRegAdd = "reg ADD /v %s /t %s /f /d %s ";
+  //"HKCU\Environment /v PATH /t REG_EXPAND_SZ /f /d  ";
+  // "^%USERPROFILE^%\AppData\Roaming\SikuliX\libs;^%PATH^
+  private Map<String, String[]> regEntries = new Hashtable<String, String[]>();
   private StringBuffer alreadyLoaded = new StringBuffer("");
   private ClassLoader cl;
+  private String jarParentPath = null;
+  private String jarPath = null;
   private List<String[]> libsList = new ArrayList<String[]>();
   private String fileList = "/filelist.txt";
   private static final String sikhomeEnv = System.getenv("SIKULIX_HOME");
@@ -48,10 +61,18 @@ public class ResourceLoader implements IResourceLoader {
   private String libPath = null;
   private String libPathFallBack = null;
   private File libsDir = null;
-  private String jarPath = null;
+  private static final String checkFileNameAll = "MadeForSikuliX";
+  private String checkFileNameMac = checkFileNameAll + "64M.txt";
+  private String checkFileNameW32 = checkFileNameAll + "32W.txt";
+  private String checkFileNameW64 = checkFileNameAll + "64W.txt";
+  private String checkFileNameL32 = checkFileNameAll + "32L.txt";
+  private String checkFileNameL64 = checkFileNameAll + "64L.txt";
   private String checkFileName = null;
   private String checkLib = null;
-  private static final String libSub = FileManager.slashify("SikuliX/libs", false);
+  private static final String prefixSikuli = "SikuliX";
+  private static final String suffixLibs = "/libs";
+  private static final String libSub = prefixSikuli + suffixLibs;
+  private String userSikuli = null;
   /**
    * Mac: standard place for native libs
    */
@@ -71,9 +92,40 @@ public class ResourceLoader implements IResourceLoader {
   private static String libSource32 = "META-INF/libs/libs32/";
   private static String libSource64 = "META-INF/libs/libs64/";
   private String libSource;
+  private String osarch;
+  private String javahome;
 
   public ResourceLoader() {
     cl = this.getClass().getClassLoader();
+    CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
+    if (src.getLocation() != null) {
+      jarPath = src.getLocation().getPath();
+      jarParentPath = FileManager.slashify((new File(jarPath)).getParent(), true);
+    }
+  }
+
+  public String runcmd(String args[]) {
+    String memx = mem;
+    mem = "runcmd";
+    String result = "";
+    String error = null;
+    try {
+      log(lvl, args[0]);
+      Process process = Runtime.getRuntime().exec(args[0]);
+      BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+      String s;
+      while ((s = stdInput.readLine()) != null) {
+        result += s;
+      }
+      if ((error = stdError.readLine()) != null) {
+        result = "*** error ***\n" + result;
+      }
+    } catch (Exception e) {
+      e.printStackTrace(System.err);
+    }
+    mem = memx;
+    return result;
   }
 
   /**
@@ -101,8 +153,21 @@ public class ResourceLoader implements IResourceLoader {
       String libspath;
 
       // check the bit-arch
-      String osarch = System.getProperty("os.arch");
+      osarch = System.getProperty("os.arch");
       log(lvl, "we are running on arch: " + osarch);
+      javahome = FileManager.slashify(System.getProperty("java.home"), true);
+      log(lvl, "using Java at: " + javahome);
+
+      if (userhome != null) {
+        if (Settings.isWindows()) {
+          userSikuli = System.getenv("APPDATA");
+          if (userSikuli != null) {
+            userSikuli = FileManager.slashify(userSikuli, true) + prefixSikuli;
+          }
+        } else {
+          userSikuli = FileManager.slashify(userhome, true) + prefixSikuli;
+        }
+      }
 
       //  Mac specific 
       if (Settings.isMac()) {
@@ -111,7 +176,7 @@ public class ResourceLoader implements IResourceLoader {
           System.exit(1);
         }
         libSource = libSource64;
-        checkFileName = "MadeForSikuliX64M.txt";
+        checkFileName = checkFileNameMac;
         checkLib = "MacUtil";
         if ((new File(libPathMac)).exists()) {
           libPathFallBack = libPathMac;
@@ -120,30 +185,32 @@ public class ResourceLoader implements IResourceLoader {
 
       // Windows specific 
       if (Settings.isWindows()) {
-        if (!osarch.contains("64")) {
+        if (osarch.contains("64")) {
           libSource = libSource64;
-          checkFileName = "MadeForSikuliX64W.txt";
-          checkLib = "WinUtil";
+          checkFileName = checkFileNameW64;
           if ((new File(libPathWin)).exists()) {
             libPathFallBack = libPathWin;
           }
         } else {
           libSource = libSource32;
-          checkFileName = "MadeForSikuliX32W.txt";
+          checkFileName = checkFileNameW32;
           if ((new File(libPathWin)).exists()) {
             libPathFallBack = libPathWin;
           } else if ((new File(libPathWin32)).exists()) {
             libPathFallBack = libPathWin32;
           }
         }
+        checkLib = "WinUtil";
       }
 
       // Linux specific
       if (Settings.isLinux()) {
         if (!osarch.contains("64")) {
           libSource = libSource64;
+          checkFileName = checkFileNameL64;
         } else {
           libSource = libSource32;
+          checkFileName = checkFileNameL32;
         }
         checkLib = "JXGrabKey";
       }
@@ -154,7 +221,7 @@ public class ResourceLoader implements IResourceLoader {
         if ((new File(libspath)).exists()) {
           libPath = libspath;
         }
-        log(lvl, "Libs in Property.sikuli.Home? %s: %s", libPath == null ? "NO" : "YES", libspath);
+        log(lvl, "Exists Property.sikuli.Home? %s: %s", libPath == null ? "NO" : "YES", libspath);
         libsDir = checkLibsDir(libPath);
       }
 
@@ -164,36 +231,34 @@ public class ResourceLoader implements IResourceLoader {
         if ((new File(libspath)).exists()) {
           libPath = libspath;
         }
-        log(lvl, "Libs in Environment.SIKULIX_HOME? %s: %s", libPath == null ? "NO" : "YES", libspath);
+        log(lvl, "Exists Environment.SIKULIX_HOME? %s: %s", libPath == null ? "NO" : "YES", libspath);
+        libsDir = checkLibsDir(libPath);
+      }
+
+      // check the users home folder
+      if (libPath == null && userSikuli != null) {
+        File ud = new File(userSikuli + suffixLibs);
+        if (ud.exists()) {
+          libPath = ud.getAbsolutePath();
+        }
+        log(lvl, "Exists libs folder in user home folder? %s: %s", libPath == null ? "NO" : "YES",
+                ud.getAbsolutePath());
         libsDir = checkLibsDir(libPath);
       }
 
       // check parent folder of jar file
-      if (libPath == null) {
-        CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
-        String lfp = null;
-        if (src.getLocation() != null) {
-          String srcParent = (new File(src.getLocation().getPath())).getParent();
-          jarPath = srcParent;
-          lfp = FileManager.slashify(srcParent, true) + "libs";
+      if (libPath == null && jarPath != null) {
+        if (jarPath.endsWith(".jar")) {
+          String lfp = jarParentPath + "libs";
           libsfolder = (new File(lfp));
           if (libsfolder.exists()) {
             libPath = lfp;
           }
-          log(lvl, "Libs at location of jar? %s: %s", libPath == null ? "NO" : "YES", jarPath);
+          log(lvl, "Exists libs folder at location of jar? %s: %s", libPath == null ? "NO" : "YES", jarParentPath);
           libsDir = checkLibsDir(libPath);
+        } else {
+          log(lvl, "not running from jar: " + jarParentPath);
         }
-      }
-
-      // check the users home folder
-      if (libPath == null && userhome != null) {
-        File wd = new File(FileManager.slashify(userhome, true) + libSub);
-        if (wd.exists()) {
-          libPath = wd.getAbsolutePath();
-        }
-        log(lvl, "Libs in user home folder? %s: %s", libPath == null ? "NO" : "YES", 
-                wd.getAbsolutePath());
-        libsDir = checkLibsDir(libPath);
       }
 
       // check the working directory and its parent
@@ -207,39 +272,67 @@ public class ResourceLoader implements IResourceLoader {
         } else if (wdpl.exists()) {
           libPath = wdpl.getAbsolutePath();
         }
-        log(lvl, "Libs in working folder or its parent? %s: %s", libPath == null ? "NO" : "YES", 
+        log(lvl, "Exists libs folder in working folder or its parent? %s: %s", libPath == null ? "NO" : "YES",
                 wd.getAbsolutePath());
         libsDir = checkLibsDir(libPath);
       }
+
+      if (libPath == null && libPathFallBack != null) {
+        libPath = libPathFallBack;
+        log(lvl, "Checking available fallback for libs folder: " + libPath);
+        libsDir = checkLibsDir(libPath);
+        if (libsDir == null) {
+          libPath = null; // non-valid fallback makes no sense
+        }
+      }
     }
 
-    if (libPath == null) {
-      log(lvl, "No valid libs path available - trying to extract libs from jar");
-      if (libPathFallBack != null) {
-        libPath = libPathFallBack;
-        log(lvl, "Checking available fallback" + libPath);
-        libsDir = checkLibsDir(libPath);
+    if (libsDir == null && libPath != null) {
+      log(-1, "libs dir is empty, has wrong content or is outdated - extracting libs to: " + libPath);
+      File dir = new File(libPath);
+      File[] dirList = dir.listFiles();
+      boolean success = true;
+      if (dirList.length > 0) {
+        for (File f : dirList) {
+          if (f.isFile() && !f.delete()) {
+            success = false;
+          }
+        }
+        if (!success) {
+          log(-1, "not possible to empty libs dir");
+          System.exit(1);
+        }
       }
-      if (libPath == null && jarPath != null) {
-        log(lvl, "Trying to extract libs to jar parent folder: " + jarPath);
-        File jarPathLibs = extractLibs((new File(jarPath)).getAbsolutePath(), libSource);
+      if (extractLibs(dir.getParent(), libSource) == null) {
+        log(-1, "not possible!");
+        libPath = null;
+      }
+      libsDir = checkLibsDir(libPath);
+    }
+
+    //<editor-fold defaultstate="collapsed" desc="libs dir finally invalid">
+    if (libPath == null) {
+      log(lvl, "No valid libs path available until now!");
+      if (libPath == null && jarParentPath != null && jarParentPath.endsWith(".jar")) {
+        log(lvl, "Trying to extract libs to jar parent folder: " + jarParentPath);
+        File jarPathLibs = extractLibs((new File(jarParentPath)).getAbsolutePath(), libSource);
         if (jarPathLibs == null) {
           log(-1, "not possible!");
         } else {
           libPath = jarPathLibs.getAbsolutePath();
         }
       }
-      if (libPath == null && userhome != null) {
-        String userhomeLibsDir = FileManager.slashify(userhome, true) + "SikuliX";
-        log(lvl, "Trying to extract libs to user home: " + userhomeLibsDir);
-        File userhomeLibs = extractLibs((new File(userhomeLibsDir)).getAbsolutePath(), libSource);
+      if (libPath == null && userSikuli != null) {
+        log(lvl, "Trying to extract libs to user home: " + userSikuli);
+        File userhomeLibs = extractLibs((new File(userSikuli)).getAbsolutePath(), libSource);
         if (userhomeLibs == null) {
           log(-1, "not possible!");
         } else {
           libPath = userhomeLibs.getAbsolutePath();
         }
       }
-      if (libPath == null) {
+      libsDir = checkLibsDir(libPath);
+      if (libPath == null || libsDir == null) {
         log(-1, "No valid native libraries folder available - giving up!");
         System.exit(1);
       }
@@ -253,32 +346,54 @@ public class ResourceLoader implements IResourceLoader {
         Settings.OcrDataPath = "/usr/local/share";
       }
     }
+    //</editor-fold>
   }
 
   private File checkLibsDir(String path) {
-    File dir = null;
     String memx = mem;
     mem = "checkLibsDir";
+    File dir = null;
     if (path != null) {
       log(lvl, path);
-      dir = new File(path);
       if ((new File(FileManager.slashify(path, true) + checkFileName)).exists()) {
-        //TODO check outdated against jar date last modified 
+        //TODO check outdated against jar date last modified
+        if (Settings.isWindows()) {
+          // is on system path?
+          log(lvl, runcmd(new String[] {"reg QUERY HKCU\\Environment /v PATH"}));
+          String syspath = System.getenv("PATH");
+          if (!syspath.contains((new File(path).getAbsolutePath()))) {
+            log(-1, "Fatal error: libs dir is not on system path (envionment: PATH)");
+            System.exit(1);
+          }
+          //convenience: jawt.dll in libsdir avoids need for java/bin in system path
+          String lib = "jawt.dll";
+          try {
+            extractResource(javahome + "bin/" + lib, new File(path, lib), false);
+          } catch (IOException ex) {
+            log(-1, "Fatal error: problem copying " + lib + "\n" + ex.getMessage());
+            System.exit(1);
+          }
+        }
         loadLib(checkLib);
         log(lvl, "Using libs at: " + path);
+        dir = new File(path);
       } else {
-        log(-1, "Not a valid libs dir for SikuliX:" + path);
-        dir = null;
-        libPath = null; // reset libPath
-      }
-      if (Settings.isWindows()) {
-        //TODO check Windows system path
+        if (Settings.isWindows()) {
+          // might be wrong arch
+          if ((new File(FileManager.slashify(path, true) + checkFileNameW32)).exists()
+                  || (new File(FileManager.slashify(path, true) + checkFileNameW64)).exists()) {
+            log(-1, "libs dir contains wrong arch for " + osarch);
+          }
+        } else {
+          log(-1, "Not a valid libs dir for SikuliX (" + osarch + "): " + path);
+        }
       }
     }
     mem = memx;
     return dir;
   }
 
+  //<editor-fold defaultstate="collapsed" desc="overwritten">
   /**
    * {@inheritDoc}
    */
@@ -355,7 +470,6 @@ public class ResourceLoader implements IResourceLoader {
       log(-1, "Fatal error: No libs directory available");
       System.exit(1);
     }
-    boolean libFound = false;
     String mappedlib = System.mapLibraryName(libname);
     File lib = new File(libPath, mappedlib);
     if (!lib.exists()) {
@@ -363,69 +477,47 @@ public class ResourceLoader implements IResourceLoader {
       System.exit(1);
     }
     log(lvl, "Found: " + libname);
-    libFound = true;
     try {
       System.load(lib.getAbsolutePath());
     } catch (Error e) {
-      log(-1, "Fatal error loading: " + libname);
-      if (libFound) {
-        log(-1, "Since native library was found, it might be a problem with needed dependent libraries");
-        e.getMessage();
-      }
+      log(-1, "Fatal error loading: " + mappedlib);
+      log(-1, "Since native library was found, it might be a problem with needed dependent libraries\n%s",
+              e.getMessage());
       System.exit(1);
     }
     log(lvl, "Now loaded: " + libname);
     mem = memx;
   }
-
-  /**
-   * extract a resource to a writable file
-   *
-   * @param resourcename the name of the resource on the classpath
-   * @param outputfile the file to copy to
-   * @return the extracted file
-   * @throws IOException
-   */
-  private File extractResource(String resourcename, File outputfile) throws IOException {
-    InputStream in = cl.getResourceAsStream(resourcename);
-    if (in == null) {
-      throw new IOException("Resource " + resourcename + " not on classpath");
-    }
-    if (!outputfile.getParentFile().exists()) {
-      outputfile.getParentFile().mkdirs();
-    }
-    log(lvl, "Extracting to %s", outputfile.getAbsolutePath());
-    copyResource(in, outputfile);
-    return outputfile;
-  }
-
-  private void copyResource(InputStream in, File outputfile) throws IOException {
-    OutputStream out = null;
-    try {
-      out = new FileOutputStream(outputfile);
-      copy(in, out);
-    } catch (IOException e) {
-      log(-1, "Not possible: " + e.getMessage());
-    } finally {
-      if (out != null) {
-        out.close();
-      }
-    }
-  }
+  //</editor-fold>
 
   private File extractLibs(String targetDir, String libSource) {
     String memx = mem;
     mem = "extractLibs";
-    log(lvl, "Trying to acces jar");
+    log(lvl, "Trying to access package");
     CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
     int iDir = 0;
     int iFile = 0;
+    URL jar;
+    boolean isJar = false;
     if (src != null) {
-      URL jar = src.getLocation();
+      jar = src.getLocation();
       if (jar == null) {
         log(-1, "Not running from jar");
         mem = memx;
         return null;
+      } else if (!jar.getPath().endsWith(".jar")) {
+        File folder = new File(jar.getPath(), libSource);
+        log(lvl, "accessing folder: " + folder.getAbsolutePath());
+        File[] flist = folder.listFiles();
+        for (File f : flist) {
+          log(lvl + 2, "file: " + f.getAbsolutePath());
+          if (f.isFile()) {
+            libsList.add(new String[]{FileManager.slashify(f.getAbsolutePath(), false),
+                      String.format("%d", f.lastModified())});
+            iFile++;
+          }
+        }
+        log(lvl, "Found in %s: %d files", libSource, iFile);
       } else {
         try {
           ZipInputStream zip = new ZipInputStream(jar.openStream());
@@ -433,17 +525,16 @@ public class ResourceLoader implements IResourceLoader {
           log(lvl, "Accessing jar: " + jar.toString());
           while ((ze = zip.getNextEntry()) != null) {
             String entryName = ze.getName();
-            if (entryName.startsWith(libSource)) {
-              if (entryName.endsWith(File.separator)) {
-                iDir++;
-              } else {
-                libsList.add(new String[]{FileManager.slashify(entryName, false),
-                  String.format("%d", ze.getTime())});
-                iFile++;
-              }
+            if (entryName.startsWith(libSource)
+                    && !entryName.endsWith("/")) {
+              log(lvl, "%d: %s", iFile, entryName);
+              libsList.add(new String[]{FileManager.slashify(entryName, false),
+                        String.format("%d", ze.getTime())});
+              iFile++;
             }
           }
-          log(lvl, "Found in %s: Dirs: %d Files: %d", libSource, iDir, iFile);
+          log(lvl, "Found %d Files in ", iFile, libSource);
+          isJar = true;
         } catch (IOException e) {
           log(-1, "Did not work!\n%s", e.getMessage());
           mem = memx;
@@ -470,7 +561,7 @@ public class ResourceLoader implements IResourceLoader {
           targetDate = 0;
         }
         if (targetDate == 0 || targetDate < Long.valueOf(e[1])) {
-          extractResource(e[0], targetFile);
+          extractResource(e[0], targetFile, isJar);
           log(lvl, "is from: %s (%d)", e[1], targetDate);
         } else {
           log(lvl, "already in place: " + targetName);
@@ -486,7 +577,49 @@ public class ResourceLoader implements IResourceLoader {
   }
 
   /**
-   * Extract files from a jar using a list of files in a file (def. filelist.txt)
+   * extract a resource to a writable file
+   *
+   * @param resourcename the name of the resource on the classpath
+   * @param outputfile the file to copy to
+   * @return the extracted file
+   * @throws IOException
+   */
+  private File extractResource(String resourcename, File outputfile, boolean isJar) throws IOException {
+    InputStream in;
+    if (isJar) {
+      in = cl.getResourceAsStream(resourcename);
+    } else {
+      in = new FileInputStream(resourcename);
+    }
+    if (in == null) {
+      throw new IOException("Resource " + resourcename + " not on classpath");
+    }
+    if (!outputfile.getParentFile().exists()) {
+      outputfile.getParentFile().mkdirs();
+    }
+    log(lvl, "Extracting from: " + resourcename);
+    log(lvl, "Extracting to: " + outputfile.getAbsolutePath());
+    copyResource(in, outputfile);
+    return outputfile;
+  }
+
+  private void copyResource(InputStream in, File outputfile) throws IOException {
+    OutputStream out = null;
+    try {
+      out = new FileOutputStream(outputfile);
+      copy(in, out);
+    } catch (IOException e) {
+      log(-1, "Not possible: " + e.getMessage());
+    } finally {
+      if (out != null) {
+        out.close();
+      }
+    }
+  }
+
+  /**
+   * Extract files from a jar using a list of files in a file (def.
+   * filelist.txt)
    *
    * @param srcPath from here
    * @param localPath to there (if null, create a default in temp folder)
