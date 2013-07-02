@@ -44,10 +44,14 @@ public class ResourceLoader implements IResourceLoader {
   }
   //</editor-fold>
   private String loaderName = "basic";
-  private static final String cmdRegAdd = "reg ADD /v %s /t %s /f /d %s ";
   //"HKCU\Environment /v PATH /t REG_EXPAND_SZ /f /d  ";
   // "^%USERPROFILE^%\AppData\Roaming\SikuliX\libs;^%PATH^
-  private Map<String, String[]> regEntries = new Hashtable<String, String[]>();
+  private static final String cmdRegQuery = "reg QUERY %s /v %s";
+  private static final String cmdRegAdd = "reg ADD %s /v %s /t %s /f /d %s ";
+  private static String cmdRegQueryPath = String.format(cmdRegQuery, "HKCU\\Environment", "PATH");
+  private String cmdRegKey;
+  private String cmdRegTyp;
+  private String cmdRegValue;
   private StringBuffer alreadyLoaded = new StringBuffer("");
   private ClassLoader cl;
   private String jarParentPath = null;
@@ -101,31 +105,10 @@ public class ResourceLoader implements IResourceLoader {
     if (src.getLocation() != null) {
       jarPath = src.getLocation().getPath();
       jarParentPath = FileManager.slashify((new File(jarPath)).getParent(), true);
+    } else {
+      log(-1, "No access to the jar files!");
+      System.exit(1);
     }
-  }
-
-  public String runcmd(String args[]) {
-    String memx = mem;
-    mem = "runcmd";
-    String result = "";
-    String error = null;
-    try {
-      log(lvl, args[0]);
-      Process process = Runtime.getRuntime().exec(args[0]);
-      BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
-      BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-      String s;
-      while ((s = stdInput.readLine()) != null) {
-        result += s;
-      }
-      if ((error = stdError.readLine()) != null) {
-        result = "*** error ***\n" + result;
-      }
-    } catch (Exception e) {
-      e.printStackTrace(System.err);
-    }
-    mem = memx;
-    return result;
   }
 
   /**
@@ -283,6 +266,7 @@ public class ResourceLoader implements IResourceLoader {
         libsDir = checkLibsDir(libPath);
         if (libsDir == null) {
           libPath = null; // non-valid fallback makes no sense
+          log(lvl, "We do not update the fallback libs folder");
         }
       }
     }
@@ -355,28 +339,40 @@ public class ResourceLoader implements IResourceLoader {
     File dir = null;
     if (path != null) {
       log(lvl, path);
-      if ((new File(FileManager.slashify(path, true) + checkFileName)).exists()) {
-        //TODO check outdated against jar date last modified
-        if (Settings.isWindows()) {
-          // is on system path?
-          log(lvl, runcmd(new String[] {"reg QUERY HKCU\\Environment /v PATH"}));
-          String syspath = System.getenv("PATH");
-          if (!syspath.contains((new File(path).getAbsolutePath()))) {
-            log(-1, "Fatal error: libs dir is not on system path (envionment: PATH)");
-            System.exit(1);
+      File checkFile = (new File(FileManager.slashify(path, true) + checkFileName));
+      if (checkFile.exists()) {
+        if ((new File(jarPath)).lastModified() > checkFile.lastModified()) {
+          log(-1, "libs folder outdated - trying to reload from jar");
+        } else {
+          //TODO check outdated against jar date last modified
+          if (Settings.isWindows()) {
+            // is on system path?
+            String syspath = System.getenv("PATH");
+            if (!syspath.contains((new File(path).getAbsolutePath()))) {
+              log(-1, "Fatal error: libs dir is not on system path (envionment: PATH)");
+              log(lvl, "Trying to set systempath");
+              String winpath = runcmd(new String[]{cmdRegQueryPath});
+              if (winpath.startsWith("*** error ***")) {
+                log(-1, "Not possible to access registry!");
+              } else {
+                log(lvl, winpath);
+                System.exit(1);
+              }
+            }
+
+            //convenience: jawt.dll in libsdir avoids need for java/bin in system path
+            String lib = "jawt.dll";
+            try {
+              extractResource(javahome + "bin/" + lib, new File(path, lib), false);
+            } catch (IOException ex) {
+              log(-1, "Fatal error: problem copying " + lib + "\n" + ex.getMessage());
+              System.exit(1);
+            }
           }
-          //convenience: jawt.dll in libsdir avoids need for java/bin in system path
-          String lib = "jawt.dll";
-          try {
-            extractResource(javahome + "bin/" + lib, new File(path, lib), false);
-          } catch (IOException ex) {
-            log(-1, "Fatal error: problem copying " + lib + "\n" + ex.getMessage());
-            System.exit(1);
-          }
+          loadLib(checkLib);
+          log(lvl, "Using libs at: " + path);
+          dir = new File(path);
         }
-        loadLib(checkLib);
-        log(lvl, "Using libs at: " + path);
-        dir = new File(path);
       } else {
         if (Settings.isWindows()) {
           // might be wrong arch
@@ -420,11 +416,37 @@ public class ResourceLoader implements IResourceLoader {
     if ("loadLib".equals(action)) {
       loadLib((String) args[0]);
       return true;
-    } else if ("convertSrcToHtml".equals(action)) {
+    } else if ("runcmd".equals(action)) {
+      String retval = runcmd((String[]) args);
+      args[0] = retval;
       return true;
     } else {
       return false;
     }
+  }
+
+  private String runcmd(String args[]) {
+    String memx = mem;
+    mem = "runcmd";
+    String result = "";
+    String error = "*** error ***" + System.lineSeparator();
+    try {
+      log(lvl, args[0]);
+      Process process = Runtime.getRuntime().exec(args[0]);
+      BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+      String s;
+      while ((s = stdInput.readLine()) != null) {
+        result += s + System.lineSeparator();
+      }
+      if ((s = stdError.readLine()) != null) {
+        result = error + result;
+      }
+    } catch (Exception e) {
+      e.printStackTrace(System.err);
+    }
+    mem = memx;
+    return System.lineSeparator() + result;
   }
 
   /**
@@ -513,7 +535,7 @@ public class ResourceLoader implements IResourceLoader {
           log(lvl + 2, "file: " + f.getAbsolutePath());
           if (f.isFile()) {
             libsList.add(new String[]{FileManager.slashify(f.getAbsolutePath(), false),
-                      String.format("%d", f.lastModified())});
+              String.format("%d", f.lastModified())});
             iFile++;
           }
         }
@@ -527,13 +549,13 @@ public class ResourceLoader implements IResourceLoader {
             String entryName = ze.getName();
             if (entryName.startsWith(libSource)
                     && !entryName.endsWith("/")) {
-              log(lvl, "%d: %s", iFile, entryName);
+              log(lvl + 2, "%d: %s", iFile, entryName);
               libsList.add(new String[]{FileManager.slashify(entryName, false),
-                        String.format("%d", ze.getTime())});
+                String.format("%d", ze.getTime())});
               iFile++;
             }
           }
-          log(lvl, "Found %d Files in ", iFile, libSource);
+          log(lvl, "Found %d Files in %s", iFile, libSource);
           isJar = true;
         } catch (IOException e) {
           log(-1, "Did not work!\n%s", e.getMessage());
@@ -562,9 +584,9 @@ public class ResourceLoader implements IResourceLoader {
         }
         if (targetDate == 0 || targetDate < Long.valueOf(e[1])) {
           extractResource(e[0], targetFile, isJar);
-          log(lvl, "is from: %s (%d)", e[1], targetDate);
+          log(lvl + 2, "is from: %s (%d)", e[1], targetDate);
         } else {
-          log(lvl, "already in place: " + targetName);
+          log(lvl + 2, "already in place: " + targetName);
         }
       } catch (IOException ex) {
         log(lvl, "IO-problem extracting: %s\n%s", targetName, ex.getMessage());
@@ -597,8 +619,8 @@ public class ResourceLoader implements IResourceLoader {
     if (!outputfile.getParentFile().exists()) {
       outputfile.getParentFile().mkdirs();
     }
-    log(lvl, "Extracting from: " + resourcename);
-    log(lvl, "Extracting to: " + outputfile.getAbsolutePath());
+    log(lvl + 2, "Extracting from: " + resourcename);
+    log(lvl + 2, "Extracting to: " + outputfile.getAbsolutePath());
     copyResource(in, outputfile);
     return outputfile;
   }
@@ -618,8 +640,7 @@ public class ResourceLoader implements IResourceLoader {
   }
 
   /**
-   * Extract files from a jar using a list of files in a file (def.
-   * filelist.txt)
+   * Extract files from a jar using a list of files in a file (def. filelist.txt)
    *
    * @param srcPath from here
    * @param localPath to there (if null, create a default in temp folder)
