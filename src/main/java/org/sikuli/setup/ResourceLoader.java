@@ -14,16 +14,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.sikuli.script.Debug;
@@ -37,21 +33,16 @@ public class ResourceLoader implements IResourceLoader {
   private String me = "ResourceLoaderBasic";
   private String mem = "...";
   private int lvl = 3;
-
   private void log(int level, String message, Object... args) {
-    Debug.logx(level, level < 0 ? "error" : "debug",
-            me + ": " + mem + ": " + message, args);
+    Debug.logx(level, "", me + ": " + mem + ": " + message, args);
   }
   //</editor-fold>
   private String loaderName = "basic";
-  //"HKCU\Environment /v PATH /t REG_EXPAND_SZ /f /d  ";
-  // "^%USERPROFILE^%\AppData\Roaming\SikuliX\libs;^%PATH^
+  private static final String NL = System.lineSeparator();
+  private static final String cmdRegCheck = "reg QUERY HKCU";
   private static final String cmdRegQuery = "reg QUERY %s /v %s";
   private static final String cmdRegAdd = "reg ADD %s /v %s /t %s /f /d %s ";
-  private static String cmdRegQueryPath = String.format(cmdRegQuery, "HKCU\\Environment", "PATH");
-  private String cmdRegKey;
-  private String cmdRegTyp;
-  private String cmdRegValue;
+  private Map<String, String[]> regMap = new HashMap<String, String[]>();
   private StringBuffer alreadyLoaded = new StringBuffer("");
   private ClassLoader cl;
   private String jarParentPath = null;
@@ -106,9 +97,11 @@ public class ResourceLoader implements IResourceLoader {
       jarPath = src.getLocation().getPath();
       jarParentPath = FileManager.slashify((new File(jarPath)).getParent(), true);
     } else {
-      log(-1, "No access to the jar files!");
+      log(-1, "Fatal Error 101: Not possible to access to the jar files!");
       System.exit(1);
     }
+    regMap.put("EnvPath", new String[]
+                {"HKEY_CURRENT_USER\\Environment", "PATH", "REG_EXPAND_SZ"});
   }
 
   /**
@@ -272,7 +265,8 @@ public class ResourceLoader implements IResourceLoader {
     }
 
     if (libsDir == null && libPath != null) {
-      log(-1, "libs dir is empty, has wrong content or is outdated - extracting libs to: " + libPath);
+      log(-1, "libs dir is empty, has wrong content or is outdated");
+      log(-2, "Please wait! Trying to extract libs to: " + libPath);
       File dir = new File(libPath);
       File[] dirList = dir.listFiles();
       boolean success = true;
@@ -283,7 +277,7 @@ public class ResourceLoader implements IResourceLoader {
           }
         }
         if (!success) {
-          log(-1, "not possible to empty libs dir");
+          log(-1, "Fatal Error 102: not possible to empty libs dir");
           System.exit(1);
         }
       }
@@ -296,9 +290,9 @@ public class ResourceLoader implements IResourceLoader {
 
     //<editor-fold defaultstate="collapsed" desc="libs dir finally invalid">
     if (libPath == null) {
-      log(lvl, "No valid libs path available until now!");
-      if (libPath == null && jarParentPath != null && jarParentPath.endsWith(".jar")) {
-        log(lvl, "Trying to extract libs to jar parent folder: " + jarParentPath);
+      log(-1, "No valid libs path available until now!");
+      if (libPath == null && jarParentPath != null && jarPath.endsWith(".jar")) {
+        log(-2, "Please wait! Trying to extract libs to jar parent folder: " + jarParentPath);
         File jarPathLibs = extractLibs((new File(jarParentPath)).getAbsolutePath(), libSource);
         if (jarPathLibs == null) {
           log(-1, "not possible!");
@@ -307,7 +301,7 @@ public class ResourceLoader implements IResourceLoader {
         }
       }
       if (libPath == null && userSikuli != null) {
-        log(lvl, "Trying to extract libs to user home: " + userSikuli);
+        log(-2, "Please wait! Trying to extract libs to user home: " + userSikuli);
         File userhomeLibs = extractLibs((new File(userSikuli)).getAbsolutePath(), libSource);
         if (userhomeLibs == null) {
           log(-1, "not possible!");
@@ -317,7 +311,7 @@ public class ResourceLoader implements IResourceLoader {
       }
       libsDir = checkLibsDir(libPath);
       if (libPath == null || libsDir == null) {
-        log(-1, "No valid native libraries folder available - giving up!");
+        log(-1, "Fatal Error 103: No valid native libraries folder available - giving up!");
         System.exit(1);
       }
     }
@@ -342,30 +336,94 @@ public class ResourceLoader implements IResourceLoader {
       File checkFile = (new File(FileManager.slashify(path, true) + checkFileName));
       if (checkFile.exists()) {
         if ((new File(jarPath)).lastModified() > checkFile.lastModified()) {
-          log(-1, "libs folder outdated - trying to reload from jar");
+          log(-1, "libs folder outdated!");
         } else {
-          //TODO check outdated against jar date last modified
           if (Settings.isWindows()) {
             // is on system path?
             String syspath = System.getenv("PATH");
             if (!syspath.contains((new File(path).getAbsolutePath()))) {
-              log(-1, "Fatal error: libs dir is not on system path (envionment: PATH)");
-              log(lvl, "Trying to set systempath");
-              String winpath = runcmd(new String[]{cmdRegQueryPath});
-              if (winpath.startsWith("*** error ***")) {
-                log(-1, "Not possible to access registry!");
-              } else {
-                log(lvl, winpath);
+              String error = "*** error ***";
+              log(-1, "libs dir is not on system path: " + path);
+              if (Debug.getDebugLevel() >= lvl) {
+                for (String e : syspath.split(";")) {
+                  System.out.println(e);
+                }
+              }
+              log(-2, "Please wait! Trying to add it to user's path");
+              if (runcmd(cmdRegCheck).startsWith(error)) {
+                log(-1, "Fatal Error 104: Not possible to access registry!");
                 System.exit(1);
               }
+              String[] val = regMap.get("EnvPath");
+              String envPath = "";
+              String newPath;
+              int step = 0;
+              String cmdQ = String.format(cmdRegQuery, val[0], val[1]);
+              String regResult = runcmd(cmdQ);
+              if (regResult.startsWith(error)) {
+                log(lvl, "users PATH seems to be empty: " + regResult);
+                step = 1;
+              } else {
+                String[] regResultLines = regResult.split(NL);
+                for (String line : regResultLines) {
+                  line = line.trim();
+                  if (step == 0 && line.startsWith(val[0])) {
+                    step = 1;
+                    continue;
+                  }
+                  if (step == 1 && line.startsWith(val[1]) && line.contains(val[2])) {
+                    step = 1;
+                    envPath = line;
+                    continue;
+                  }
+                  if (!line.isEmpty()) {
+                    log(lvl, line);
+                  }
+                }
+              }
+              if (step == 0) {
+                log(-1, "Fatal Error 105: Not possible to get user's PATH from registry");
+                System.exit(1);
+              } else {
+                if (!envPath.isEmpty()) {
+                  envPath = envPath.substring(envPath.indexOf(val[2]) + val[2].length()).trim();
+                  log(lvl, "current:(%s %s): %s", val[0], val[1], envPath);
+                  if (envPath.contains(path)) {
+                    log(-1, "Logout and Login again! (Since libs folder is in user's path, but not activated)");
+                    System.exit(1);
+                  }
+                }
+                newPath = path + (envPath.isEmpty() ? "" : ";" + envPath);
+                String finalPath = "";
+                char c;
+                for (int i = 0; i < newPath.length(); i++) {
+                  c = newPath.charAt(i);
+                  if (c == ' ') {
+                    finalPath += "\" \"";
+                  } else {
+                    finalPath += c;
+                  }
+                }
+                String cmdA = String.format(cmdRegAdd, val[0], val[1], val[2], finalPath);
+                log(lvl, runcmd(cmdA));
+                regResult = runcmd(cmdQ);
+                log(lvl, "Changed to: " + regResult);
+                if (!regResult.contains(path)) {
+                  log(-1, "Fatal error 106: libs folder could not be added to PATH - giving up!");
+                  System.exit(1);
+                }
+              }
+              log(-1, "Successfully added the libs folder to users PATH!\n" + ""
+                      + "RESTART all processes/IDE's using Sikuli for new PATH to be used!/n"
+                      + "For usages from command line logout/login might be necessary!");
+              System.exit(1);
             }
-
             //convenience: jawt.dll in libsdir avoids need for java/bin in system path
             String lib = "jawt.dll";
             try {
               extractResource(javahome + "bin/" + lib, new File(path, lib), false);
             } catch (IOException ex) {
-              log(-1, "Fatal error: problem copying " + lib + "\n" + ex.getMessage());
+              log(-1, "Fatal error 107: problem copying " + lib + "\n" + ex.getMessage());
               System.exit(1);
             }
           }
@@ -425,11 +483,15 @@ public class ResourceLoader implements IResourceLoader {
     }
   }
 
+  private String runcmd(String cmd) {
+    return runcmd(new String[]{cmd});
+  }
+
   private String runcmd(String args[]) {
     String memx = mem;
     mem = "runcmd";
     String result = "";
-    String error = "*** error ***" + System.lineSeparator();
+    String error = "*** error ***" + NL;
     try {
       log(lvl, args[0]);
       Process process = Runtime.getRuntime().exec(args[0]);
@@ -437,16 +499,19 @@ public class ResourceLoader implements IResourceLoader {
       BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
       String s;
       while ((s = stdInput.readLine()) != null) {
-        result += s + System.lineSeparator();
+        if (!s.isEmpty()) {
+          result += s + NL;
+        }
       }
       if ((s = stdError.readLine()) != null) {
         result = error + result;
+        result += s;
       }
     } catch (Exception e) {
       e.printStackTrace(System.err);
     }
     mem = memx;
-    return System.lineSeparator() + result;
+    return result;
   }
 
   /**
@@ -489,20 +554,20 @@ public class ResourceLoader implements IResourceLoader {
     }
     log(lvl, libname);
     if (libPath == null) {
-      log(-1, "Fatal error: No libs directory available");
+      log(-1, "Fatal Error 108: No libs directory available");
       System.exit(1);
     }
     String mappedlib = System.mapLibraryName(libname);
     File lib = new File(libPath, mappedlib);
     if (!lib.exists()) {
-      log(-1, "Fatal error: not found: " + lib.getAbsolutePath());
+      log(-1, "Fatal Error 109: not found: " + lib.getAbsolutePath());
       System.exit(1);
     }
     log(lvl, "Found: " + libname);
     try {
       System.load(lib.getAbsolutePath());
     } catch (Error e) {
-      log(-1, "Fatal error loading: " + mappedlib);
+      log(-1, "Fatal Error 110: loading: " + mappedlib);
       log(-1, "Since native library was found, it might be a problem with needed dependent libraries\n%s",
               e.getMessage());
       System.exit(1);
@@ -535,7 +600,7 @@ public class ResourceLoader implements IResourceLoader {
           log(lvl + 2, "file: " + f.getAbsolutePath());
           if (f.isFile()) {
             libsList.add(new String[]{FileManager.slashify(f.getAbsolutePath(), false),
-              String.format("%d", f.lastModified())});
+                      String.format("%d", f.lastModified())});
             iFile++;
           }
         }
@@ -551,7 +616,7 @@ public class ResourceLoader implements IResourceLoader {
                     && !entryName.endsWith("/")) {
               log(lvl + 2, "%d: %s", iFile, entryName);
               libsList.add(new String[]{FileManager.slashify(entryName, false),
-                String.format("%d", ze.getTime())});
+                        String.format("%d", ze.getTime())});
               iFile++;
             }
           }
@@ -640,7 +705,8 @@ public class ResourceLoader implements IResourceLoader {
   }
 
   /**
-   * Extract files from a jar using a list of files in a file (def. filelist.txt)
+   * Extract files from a jar using a list of files in a file (def.
+   * filelist.txt)
    *
    * @param srcPath from here
    * @param localPath to there (if null, create a default in temp folder)
