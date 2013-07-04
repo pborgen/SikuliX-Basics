@@ -22,10 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import org.sikuli.script.Debug;
-import org.sikuli.script.FileManager;
-import org.sikuli.script.IResourceLoader;
-import org.sikuli.script.Settings;
 
 public class ResourceLoader implements IResourceLoader {
 
