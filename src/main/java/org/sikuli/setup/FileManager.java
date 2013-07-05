@@ -21,25 +21,40 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.ServiceLoader;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
 
 public class FileManager {
 
+  //<editor-fold defaultstate="collapsed" desc="new logging concept">
+  private static String me = "FileManager";
+  private static String mem = "...";
+  private static int lvl = 3;
+
+  private static void log(int level, String message, Object... args) {
+    Debug.logx(level, "", me + ": " + mem + ": " + message, args);
+  }
+  //</editor-fold>  
   static final int DOWNLOAD_BUFFER_SIZE = 153600;
   static IResourceLoader nativeLoader = null;
 
   /**
-   * System.load() the given library module <br /> from standard places (SikuliX/libs) in the
-   * following order<br /> 1. -Dsikuli.Home=<br /> 2. Environement SIKULI_HOME<br /> 3. current
-   * working dir<br /> 4. parent of current working dir<br /> 5. folder user's home (user.home)<br
-   * /> 6. standard installation places of Sikuli<br />
+   * System.load() the given library module <br /> 
+   * from standard places (folder libs or SikuliX/libs) in the following order<br />
+   * 1. -Dsikuli.Home=<br /> 2. Environement SIKULIX_HOME<br /> 
+   * 3. parent folder of sikuli-script.jar (or main jar)<br />
+   * 4. folder user's home (user.home)<br/>
+   * 5. current working dir or parent of current working dir<br />  
+   * 6. standard installation places of Sikuli
    *
    * @param libname
    * @param doLoad = true: load it here
@@ -53,22 +68,86 @@ public class FileManager {
     nativeLoader.doSomethingSpecial("loadLib", new String[]{libname});
   }
 
-  public static String downloadURL(URL url, String localPath) throws IOException {
-    InputStream reader = url.openStream();
+  /**
+   * download a file at the given url to a local folder
+   * @param url a valid url
+   * @param localPath the folder where the file should go (will be created if necessary)
+   * @return the absolute path to the downloaded file or null on any error
+   */
+  public static String downloadURL(URL url, String localPath) {
+    mem = "downloadURL";
     String[] path = url.getPath().split("/");
     String filename = path[path.length - 1];
-    File fullpath = new File(localPath, filename);
-    FileOutputStream writer = new FileOutputStream(fullpath);
-    byte[] buffer = new byte[DOWNLOAD_BUFFER_SIZE];
-    int totalBytesRead = 0;
-    int bytesRead = 0;
-    while ((bytesRead = reader.read(buffer)) > 0) {
-      writer.write(buffer, 0, bytesRead);
-      totalBytesRead += bytesRead;
+    String targetPath = null;
+    File fullpath = new File(localPath);
+    if (fullpath.exists()) {
+      if (fullpath.isFile()) {
+        log(-1, "target path must be a folder:" + localPath);
+        fullpath = null;
+      }
+    } else {
+      if (!fullpath.mkdirs()) {
+        log(-1, "could not create target folder: " + localPath);
+        fullpath = null;
+      }
     }
-    reader.close();
-    writer.close();
-    return fullpath.getAbsolutePath();
+    if (fullpath != null) {
+      fullpath = new File(localPath, filename);
+      targetPath = fullpath.getAbsolutePath();
+      try {
+        FileOutputStream writer = new FileOutputStream(fullpath);
+        InputStream reader = url.openStream();
+        byte[] buffer = new byte[DOWNLOAD_BUFFER_SIZE];
+        int totalBytesRead = 0;
+        int bytesRead = 0;
+        while ((bytesRead = reader.read(buffer)) > 0) {
+          writer.write(buffer, 0, bytesRead);
+          totalBytesRead += bytesRead;
+        }
+        reader.close();
+        writer.close();
+        log(lvl, "%d KB to %s",(int) (totalBytesRead/1024), targetPath);
+      } catch (IOException ex) {
+        log(-1, "problems while downloading\n" + ex.getMessage());
+        targetPath = null;
+      }
+    }
+    return targetPath;
+  }
+
+  /**
+   * download a file at the given url to a local folder
+   * @param url a string representing a valid url
+   * @param localPath the folder where the file should go (will be created if necessary)
+   * @return the absolute path to the downloaded file or null on any error
+   */
+  public static String downloadURL(String url, String localPath) {
+    mem = "downloadURL";
+    URL src = null;
+    try {
+      src = new URL(url);
+    } catch (MalformedURLException ex) {
+      log(-1, "bad URL: " + url);
+      return null;
+    }
+    return downloadURL(src, localPath);
+  }
+
+  /**
+   * open the given url in the standard browser
+   * @param url string representing a valid url 
+   * @return false on error, true otherwise
+   */
+  public static boolean openURL(String url) {
+    mem = "openURL";
+    try {
+      URL u = new URL(url);
+      Desktop.getDesktop().browse(u.toURI());
+    } catch (Exception ex) {
+      log(-1, "bad URL: " + url);
+      return false;
+    }
+    return true;
   }
 
   public static String unzipSKL(String fileName) {
@@ -183,15 +262,6 @@ public class FileManager {
     zis.close();
   }
 
-  public static void openURL(String url) {
-    try {
-      URL u = new URL(url);
-      Desktop.getDesktop().browse(u.toURI());
-    } catch (Exception ex) {
-      ex.printStackTrace();
-    }
-  }
-
   public static void xcopy(String src, String dest, String current) throws IOException {
     File fSrc = new File(src);
     File fDest = new File(dest);
@@ -294,7 +364,7 @@ public class FileManager {
   public static void mkdir(String path) {
     File f = new File(path);
     if (!f.exists()) {
-      f.mkdir();
+      f.mkdirs();
     }
   }
 
