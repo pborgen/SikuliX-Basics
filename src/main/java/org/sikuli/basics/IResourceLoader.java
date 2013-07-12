@@ -4,7 +4,7 @@
  *
  * modified RaiMan 2012
  */
-package org.sikuli.setup;
+package org.sikuli.basics;
 
 public interface IResourceLoader {
 

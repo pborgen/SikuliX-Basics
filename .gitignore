@@ -2,3 +2,5 @@ target/
 
 ._*
 .DS_Store
+
+nb-*.xml

@@ -4,7 +4,7 @@
  *
  * modified RaiMan 2012
  */
-package org.sikuli.setup;
+package org.sikuli.basics;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,9 +32,12 @@ public class ResourceLoader implements IResourceLoader {
   private void log(int level, String message, Object... args) {
     Debug.logx(level, "", me + ": " + mem + ": " + message, args);
   }
+  private void log0(int level, String message, Object... args) {
+    Debug.logx(level, "", me + ": " + message, args);
+  }
   //</editor-fold>
   private String loaderName = "basic";
-  private static final String NL = System.lineSeparator();
+  private static final String NL = String.format("%n");
   private static final String cmdRegCheck = "reg QUERY HKCU";
   private static final String cmdRegQuery = "reg QUERY %s /v %s";
   private static final String cmdRegAdd = "reg ADD %s /v %s /t %s /f /d %s ";
@@ -93,8 +96,8 @@ public class ResourceLoader implements IResourceLoader {
       jarPath = src.getLocation().getPath();
       jarParentPath = FileManager.slashify((new File(jarPath)).getParent(), true);
     } else {
-      log(-1, "Fatal Error 101: Not possible to access to the jar files!");
-      System.exit(1);
+      log(-1, "Fatal Error 101: Not possible to access the jar files!");
+      SikuliX.terminate(101);
     }
     regMap.put("EnvPath", new String[]
                 {"HKEY_CURRENT_USER\\Environment", "PATH", "REG_EXPAND_SZ"});
@@ -126,9 +129,9 @@ public class ResourceLoader implements IResourceLoader {
 
       // check the bit-arch
       osarch = System.getProperty("os.arch");
-      log(lvl, "we are running on arch: " + osarch);
+      log(lvl-1, "we are running on arch: " + osarch);
       javahome = FileManager.slashify(System.getProperty("java.home"), true);
-      log(lvl, "using Java at: " + javahome);
+      log(lvl-1, "using Java at: " + javahome);
 
       if (userhome != null) {
         if (Settings.isWindows()) {
@@ -145,7 +148,7 @@ public class ResourceLoader implements IResourceLoader {
       if (Settings.isMac()) {
         if (!osarch.contains("64")) {
           log(-1, "Mac: only 64-Bit supported");
-          System.exit(1);
+          SikuliX.terminate(0);
         }
         libSource = libSource64;
         checkFileName = checkFileNameMac;
@@ -274,7 +277,7 @@ public class ResourceLoader implements IResourceLoader {
         }
         if (!success) {
           log(-1, "Fatal Error 102: not possible to empty libs dir");
-          System.exit(1);
+          SikuliX.terminate(102);
         }
       }
       if (extractLibs(dir.getParent(), libSource) == null) {
@@ -308,7 +311,7 @@ public class ResourceLoader implements IResourceLoader {
       libsDir = checkLibsDir(libPath);
       if (libPath == null || libsDir == null) {
         log(-1, "Fatal Error 103: No valid native libraries folder available - giving up!");
-        System.exit(1);
+        SikuliX.terminate(103);
       }
     }
 
@@ -348,7 +351,7 @@ public class ResourceLoader implements IResourceLoader {
               log(-2, "Please wait! Trying to add it to user's path");
               if (runcmd(cmdRegCheck).startsWith(error)) {
                 log(-1, "Fatal Error 104: Not possible to access registry!");
-                System.exit(1);
+                SikuliX.terminate(104);
               }
               String[] val = regMap.get("EnvPath");
               String envPath = "";
@@ -379,14 +382,14 @@ public class ResourceLoader implements IResourceLoader {
               }
               if (step == 0) {
                 log(-1, "Fatal Error 105: Not possible to get user's PATH from registry");
-                System.exit(1);
+                SikuliX.terminate(105);
               } else {
                 if (!envPath.isEmpty()) {
                   envPath = envPath.substring(envPath.indexOf(val[2]) + val[2].length()).trim();
                   log(lvl, "current:(%s %s): %s", val[0], val[1], envPath);
                   if (envPath.contains(path)) {
                     log(-1, "Logout and Login again! (Since libs folder is in user's path, but not activated)");
-                    System.exit(1);
+                    SikuliX.terminate(0);
                   }
                 }
                 newPath = path + (envPath.isEmpty() ? "" : ";" + envPath);
@@ -406,13 +409,13 @@ public class ResourceLoader implements IResourceLoader {
                 log(lvl, "Changed to: " + regResult);
                 if (!regResult.contains(path)) {
                   log(-1, "Fatal error 106: libs folder could not be added to PATH - giving up!");
-                  System.exit(1);
+                  SikuliX.terminate(106);
                 }
               }
               log(-1, "Successfully added the libs folder to users PATH!\n" + ""
                       + "RESTART all processes/IDE's using Sikuli for new PATH to be used!/n"
                       + "For usages from command line logout/login might be necessary!");
-              System.exit(1);
+              SikuliX.terminate(0);
             }
             //convenience: jawt.dll in libsdir avoids need for java/bin in system path
             String lib = "jawt.dll";
@@ -420,7 +423,7 @@ public class ResourceLoader implements IResourceLoader {
               extractResource(javahome + "bin/" + lib, new File(path, lib), false);
             } catch (IOException ex) {
               log(-1, "Fatal error 107: problem copying " + lib + "\n" + ex.getMessage());
-              System.exit(1);
+              SikuliX.terminate(107);
             }
           }
           loadLib(checkLib);
@@ -551,13 +554,18 @@ public class ResourceLoader implements IResourceLoader {
     log(lvl, libname);
     if (libPath == null) {
       log(-1, "Fatal Error 108: No libs directory available");
-      System.exit(1);
+      SikuliX.terminate(108);
     }
     String mappedlib = System.mapLibraryName(libname);
+    if (Settings.isMac()) {
+      if (mappedlib.endsWith(".jnilib")) {
+        mappedlib = mappedlib.replace(".jnilib", ".dylib");
+      }
+    }
     File lib = new File(libPath, mappedlib);
     if (!lib.exists()) {
       log(-1, "Fatal Error 109: not found: " + lib.getAbsolutePath());
-      System.exit(1);
+      SikuliX.terminate(109);
     }
     log(lvl, "Found: " + libname);
     try {
@@ -566,7 +574,7 @@ public class ResourceLoader implements IResourceLoader {
       log(-1, "Fatal Error 110: loading: " + mappedlib);
       log(-1, "Since native library was found, it might be a problem with needed dependent libraries\n%s",
               e.getMessage());
-      System.exit(1);
+      SikuliX.terminate(110);
     }
     log(lvl, "Now loaded: " + libname);
     mem = memx;
@@ -680,8 +688,8 @@ public class ResourceLoader implements IResourceLoader {
     if (!outputfile.getParentFile().exists()) {
       outputfile.getParentFile().mkdirs();
     }
-    log(lvl + 2, "Extracting from: " + resourcename);
-    log(lvl + 2, "Extracting to: " + outputfile.getAbsolutePath());
+    log0(lvl + 2, "Extracting resource from: " + resourcename);
+    log0(lvl + 2, "Extracting to: " + outputfile.getAbsolutePath());
     copyResource(in, outputfile);
     return outputfile;
   }
@@ -692,7 +700,7 @@ public class ResourceLoader implements IResourceLoader {
       out = new FileOutputStream(outputfile);
       copy(in, out);
     } catch (IOException e) {
-      log(-1, "Not possible: " + e.getMessage());
+      log0(-1, "copyResource Not possible: " + e.getMessage());
     } finally {
       if (out != null) {
         out.close();

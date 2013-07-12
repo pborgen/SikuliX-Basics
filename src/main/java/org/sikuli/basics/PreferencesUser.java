@@ -4,7 +4,7 @@
  *
  * modified RaiMan 2013
  */
-package org.sikuli.setup;
+package org.sikuli.basics;
 
 import java.awt.Dimension;
 import java.awt.Event;

@@ -4,13 +4,11 @@
  *
  * modified RaiMan 2013
  */
-package org.sikuli.setup;
+package org.sikuli.basics;
 
 import java.io.File;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.prefs.Preferences;
 
 public class Settings {
@@ -19,7 +17,7 @@ public class Settings {
   private static String mem = "...";
   private static int lvl = 2;
   public static int breakPoint = 0;
-  private static IScriptRunner runner;
+  public static boolean hasMacBundles = false;
   
   /**
    * location of folder Tessdata
@@ -108,6 +106,7 @@ public class Settings {
   public static float WaitScanRate = 3f; // frames per second
   public static float ObserveScanRate = 3f; // frames per second
   public static int ObserveMinChangedPixels = 50; // in pixels
+  public static int WaitForVanish = 1; // wait 1 second for visual to vanish after action
   public static double MinSimilarity = 0.7;
   public static float MoveMouseDelay = 0.5f; // in seconds
   public static double DelayBeforeDrop = 0.3;
@@ -237,40 +236,5 @@ public class Settings {
   private static void log(int level, String message, Object... args) {
     Debug.logx(level, level < 0 ? "error" : "debug",
             me + ": " + mem + ": " + message, args);
-  }
-
-  public static IScriptRunner setRunner(IScriptRunner _runner) {
-    runner = _runner;
-    return runner;
-  }
-
-  /**
-   * Finds a ScriptRunner implementation to execute the script.
-   *
-   * @param name Name of the ScriptRunner, might be null (then type is used)
-   * @param ending fileending of script to run
-   * @return first ScriptRunner with matching name or file ending, null if none found
-   */
-  public static IScriptRunner getScriptRunner(String name, String ending, String[] args) {
-    runner = null;
-    ServiceLoader<IScriptRunner> loader = ServiceLoader.load(IScriptRunner.class);
-    Iterator<IScriptRunner> scriptRunnerIterator = loader.iterator();
-    while (scriptRunnerIterator.hasNext()) {
-      IScriptRunner currentRunner = scriptRunnerIterator.next();
-      if ((name != null && currentRunner.getName().toLowerCase().equals(name.toLowerCase())) || (ending != null && currentRunner.hasFileEnding(ending) != null)) {
-        runner = currentRunner;
-        runner.init(args);
-        break;
-      }
-    }
-    if (runner == null) {
-      Debug.error("SikuliScript: main: Could not load script runner with name: %s", name);
-      System.exit(1);
-    }
-    return runner;
-  }
-  
-  public static IScriptRunner getRunner() {
-    return runner;
   }
 }

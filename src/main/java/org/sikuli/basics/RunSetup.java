@@ -1,4 +1,4 @@
-package org.sikuli.setup;
+package org.sikuli.basics;
 
 import java.io.File;
 import java.io.IOException;

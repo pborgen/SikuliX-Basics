@@ -3,10 +3,10 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.sikuli</groupId>
-  <artifactId>SikuliX-Setup</artifactId>
+  <artifactId>SikuliX-Basics</artifactId>
   <version>1.0.1</version>
 
-  <name>SikuliX-Setup</name>
+  <name>SikuliX-Basics</name>
   <url>http://www.sikuli.org</url>
 
   <licenses>
@@ -85,13 +85,16 @@
   </dependencies>
 
   <build>
-    <finalName>sikulix-setup</finalName>
+    <finalName>sikulix-basics</finalName>
 
     <!-- copy native resources -->
     <resources>
       <resource> <!-- Native Resources, OS dependent -->
         <directory>${native.libs.dir}</directory>
         <targetPath>META-INF</targetPath>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
       </resource>
     </resources>
 
@@ -104,19 +107,6 @@
           <target>1.6</target>
         </configuration>
       </plugin>
-
-			<!-- Plugin to create an executable jar -->
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>org.sikuli.setup.RunSetup</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
 
       <!-- Plugin to create an additional jar containing the source 
       <plugin>

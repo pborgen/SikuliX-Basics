@@ -4,7 +4,7 @@
  *
  * modified RaiMan 2013
  */
-package org.sikuli.setup;
+package org.sikuli.basics;
 
 import java.awt.Desktop;
 import java.awt.image.BufferedImage;
@@ -43,10 +43,14 @@ public class FileManager {
   private static void log(int level, String message, Object... args) {
     Debug.logx(level, "", me + ": " + mem + ": " + message, args);
   }
+  private static void log0(int level, String message, Object... args) {
+    Debug.logx(level, "", me + ": " + message, args);
+  }
   //</editor-fold>  
   static final int DOWNLOAD_BUFFER_SIZE = 153600;
   static IResourceLoader nativeLoader = null;
-
+  private static IScriptRunner runner;
+  
   /**
    * System.load() the given library module <br /> 
    * from standard places (folder libs or SikuliX/libs) in the following order<br />
@@ -75,19 +79,18 @@ public class FileManager {
    * @return the absolute path to the downloaded file or null on any error
    */
   public static String downloadURL(URL url, String localPath) {
-    mem = "downloadURL";
     String[] path = url.getPath().split("/");
     String filename = path[path.length - 1];
     String targetPath = null;
     File fullpath = new File(localPath);
     if (fullpath.exists()) {
       if (fullpath.isFile()) {
-        log(-1, "target path must be a folder:" + localPath);
+        log0(-1, "download: target path must be a folder:" + localPath);
         fullpath = null;
       }
     } else {
       if (!fullpath.mkdirs()) {
-        log(-1, "could not create target folder: " + localPath);
+        log0(-1, "download: could not create target folder: " + localPath);
         fullpath = null;
       }
     }
@@ -106,9 +109,9 @@ public class FileManager {
         }
         reader.close();
         writer.close();
-        log(lvl, "%d KB to %s",(int) (totalBytesRead/1024), targetPath);
+        log0(lvl, "download %d KB to %s",(int) (totalBytesRead/1024), targetPath);
       } catch (IOException ex) {
-        log(-1, "problems while downloading\n" + ex.getMessage());
+        log0(-1, "problems while downloading\n" + ex.getMessage());
         targetPath = null;
       }
     }
@@ -122,12 +125,11 @@ public class FileManager {
    * @return the absolute path to the downloaded file or null on any error
    */
   public static String downloadURL(String url, String localPath) {
-    mem = "downloadURL";
     URL src = null;
     try {
       src = new URL(url);
     } catch (MalformedURLException ex) {
-      log(-1, "bad URL: " + url);
+      log0(-1, "download: bad URL: " + url);
       return null;
     }
     return downloadURL(src, localPath);
@@ -139,12 +141,11 @@ public class FileManager {
    * @return false on error, true otherwise
    */
   public static boolean openURL(String url) {
-    mem = "openURL";
     try {
       URL u = new URL(url);
       Desktop.getDesktop().browse(u.toURI());
     } catch (Exception ex) {
-      log(-1, "bad URL: " + url);
+      log0(-1, "show in browser: bad URL: " + url);
       return false;
     }
     return true;
@@ -181,7 +182,7 @@ public class FileManager {
 
     tempDir.deleteOnExit();
 
-    Debug.log(2, "FileManager: tempdir create: %s", tempDir);
+    log0(lvl, "tempdir create: %s", tempDir);
 
     return tempDir;
   }
@@ -196,9 +197,9 @@ public class FileManager {
     }
     fpath.delete();
     if (fpath.exists()) {
-      Debug.log(2, "FileManager: tempdir delete not possible: %s", fpath);
+      log0(-1, "tempdir delete not possible: %s", fpath);
     } else {
-      Debug.log(2, "FileManager: tempdir delete: %s", fpath);
+      log0(lvl, "tempdir delete: %s", fpath);
     }
   }
 
@@ -216,10 +217,10 @@ public class FileManager {
     try {
       File temp = File.createTempFile(temp1, temp2, fpath);
       temp.deleteOnExit();
-      Debug.log(2, "FileManager: tempfile create: %s", temp.getAbsolutePath());
+      log0(lvl, "tempfile create: %s", temp.getAbsolutePath());
       return temp;
     } catch (IOException ex) {
-      Debug.error("FileManager.createTempFile: IOException: %s", fpath + File.pathSeparator + temp1 + "12....56" + temp2);
+      log0(-1, "createTempFile: IOException: %s", fpath + File.pathSeparator + temp1 + "12....56" + temp2);
       return null;
     }
   }
@@ -276,7 +277,7 @@ public class FileManager {
       for (String child : children) {
         if (current != null && (child.endsWith(".py") || child.endsWith(".html"))
                 && child.startsWith(current + ".")) {
-          Debug.log(2, "SaveAs: deleting %s", child);
+          log0(lvl, "xcopy: SaveAs: deleting %s", child);
           continue;
         }
         xcopy(src + File.separator + child, dest + File.separator + child, null);
@@ -417,8 +418,8 @@ public class FileManager {
     File scriptFile = null;
     if (scriptName.getPath().contains("..")) {
       //TODO accept double-dot pathnames
-      Debug.error("Sorry, scriptnames with dot or double-dot path elements are not supported: %s", scriptName.getPath());
-      System.exit(1);
+      log0(-1,"Sorry, scriptnames with dot or double-dot path elements are not supported: %s", scriptName.getPath());
+      SikuliX.terminate(0);
     }
     int pos = scriptName.getName().lastIndexOf(".");
     if (pos == -1) {
@@ -430,8 +431,8 @@ public class FileManager {
       scriptType = scriptName.getName().substring(pos + 1);
     }
     if (!scriptName.exists()) {
-      Debug.error("Not a valid Sikuli script: " + scriptName.getAbsolutePath());
-      System.exit(1);
+      log0(-1, "Not a valid Sikuli script: " + scriptName.getAbsolutePath());
+      SikuliX.terminate(0);
     }
     if ("skl".equals(scriptType) || "zip".equals(scriptType)) {
       //TODO unzip to temp and run from there
@@ -442,12 +443,12 @@ public class FileManager {
         // check for script.xxx inside folder
         File[] content = scriptName.listFiles(new FileFilterScript(script + "."));
         if (content == null || content.length == 0) {
-          Debug.error("Unable to get ScriptRunner from a contained file's file-ending named %s.xxx", script);
-          System.exit(1);
+          log0(-1, "Script folder %s does not contain a script file named %s.xxx", scriptName, script);
+          SikuliX.terminate(0);
         }
         scriptFile = content[0];
         scriptType = scriptFile.getName().substring(scriptFile.getName().lastIndexOf(".") + 1);
-        runner = Settings.getScriptRunner(null, scriptType, args);
+        runner = getScriptRunner(null, scriptType, args);
       }
       if (scriptFile == null) {
         // try with fileending
@@ -456,7 +457,7 @@ public class FileManager {
           // try without fileending
           scriptFile = new File(scriptName, script);
           if (!scriptFile.exists() || scriptFile.isDirectory()) {
-            Debug.error("No runnable script found in %s", scriptFile.getAbsolutePath());
+            log0(-1, "No runnable script found in %s", scriptFile.getAbsolutePath());
             return null;
           }
         }
@@ -480,6 +481,49 @@ public class FileManager {
       return scriptFile.getParentFile();
     }
     return scriptFile;
+  }
+
+  /**
+   * Finds a ScriptRunner implementation to execute the script.
+   *
+   * @param name Name of the ScriptRunner, might be null (then type is used)
+   * @param ending fileending of script to run
+   * @return first ScriptRunner with matching name or file ending, null if none found
+   */
+  public static IScriptRunner getScriptRunner(String name, String ending, String[] args) {
+    runner = null;
+    ServiceLoader<IScriptRunner> loader = ServiceLoader.load(IScriptRunner.class);
+    Iterator<IScriptRunner> scriptRunnerIterator = loader.iterator();
+    while (scriptRunnerIterator.hasNext()) {
+      IScriptRunner currentRunner = scriptRunnerIterator.next();
+      if ((name != null && currentRunner.getName().toLowerCase().equals(name.toLowerCase())) || (ending != null && currentRunner.hasFileEnding(ending) != null)) {
+        runner = currentRunner;
+        runner.init(args);
+        break;
+      }
+    }
+    if (runner == null) {
+      if (name != null) {
+        log0(-1, "Fatal error 121: Could not load script runner with name: %s", name);
+        SikuliX.terminate(121);
+      } else if (ending != null) {
+        log0(-1, "Fatal error 120: Could not load script runner for ending: %s", ending);
+        SikuliX.terminate(120);
+      } else {
+        log0(-1, "getScriptRunner: Fatal error 122: Unknown error with name=%s and ending= %s", name, ending);
+        SikuliX.terminate(122);
+      }
+    }
+    return runner;
+  }
+
+  public static IScriptRunner setRunner(IScriptRunner _runner) {
+    runner = _runner;
+    return runner;
+  }
+
+  public static IScriptRunner getRunner() {
+    return runner;
   }
 
   private static class FileFilterScript implements FilenameFilter {
@@ -509,8 +553,8 @@ public class FileManager {
       }
     }
     if (nativeLoader == null) {
-      Debug.error("Could not load any NativeLoader!");
-      System.exit(1);
+      log0(-1, "Fatal error 121: Could not load any NativeLoader!");
+      SikuliX.terminate(121);
     }
     return nativeLoader;
   }
