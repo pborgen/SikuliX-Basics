@@ -16,7 +16,7 @@ Debug.log(3, "Jython: sikuli: Sikuli: constants")
 from org.sikuli.script.FindFailedResponse import *
 from org.sikuli.script.Constants import *
 from org.sikuli.script.Button import *
-from org.sikuli.script import OS
+from org.sikuli.basics import OS
 
 Debug.log(3, "Jython: sikuli: Sikuli: import Region")
 from org.sikuli.script import Region as JRegion
@@ -61,16 +61,7 @@ Debug.log(3, "Jython: sikuli: Sikuli: init SikuliImporter")
 import SikuliImporter
 
 Debug.log(3, "Jython: sikuli: Sikuli: import SikuliScript")
-from org.sikuli.script import SikuliScript
-
-# TODO implement a global cleanup
-from org.sikuli.script import ScreenHighlighter
-# from java.awt import Rectangle
-# from VDict import *
-#from org.sikuli.script import FindFailed
-#from org.sikuli.script import SikuliEvent # ???
-
-#_si = SikuliScript()
+from org.sikuli.basics import SikuliScript
 
 ##
 # some support for handling unicode and strings
@@ -151,7 +142,7 @@ def getBundlePath():
 # The default setting is <i>False</i>.
 #
 def setShowActions(flag):
-    SikuliScript.setShowActions(flag)
+    Settings.setShowActions(flag)
 
 ##
 # Shows a question-message dialog requesting input from the user.
@@ -205,21 +196,21 @@ def selectRegion(msg=None):
 # @param app The name of the application. (case-insensitive)
 #
 def switchApp(app):
-    return SikuliScript.switchApp(app)
+    return App.focus(app)
 
 ##
 # Opens the given application. <br/>
 # @param app The name of an application if it is in the environment variable PATH, or the full path to an application.
 #
 def openApp(app):
-    return SikuliScript.openApp(app)
+    return App.open(app)
 
 ##
 # Closes the given application. <br/>
 # @param app The name of the application. (case-insensitive)
 #
 def closeApp(app):
-    return SikuliScript.closeApp(app)
+    return App.close(app)
 
 ##
 # Sleeps until the given amount of time in seconds has elapsed.
@@ -233,9 +224,8 @@ def sleep(sec):
 def popup(msg, title="Sikuli"):
     SikuliScript.popup(msg, title)
 
-# TODO implement a global cleanup
 def exit(code=0):
-    ScreenHighlighter.closeAll()
+    SikuliScript.cleanUp()
     sys.exit(code)
 
 ##
