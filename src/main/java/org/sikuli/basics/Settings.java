@@ -108,18 +108,37 @@ public class Settings {
   public static int ObserveMinChangedPixels = 50; // in pixels
   public static int WaitForVanish = 1; // wait 1 second for visual to vanish after action
   public static double MinSimilarity = 0.7;
-  public static float MoveMouseDelay = 0.5f; // in seconds
   public static double DelayBeforeDrop = 0.3;
   public static double DelayAfterDrag = 0.3;
   public static String BundlePath = null;
   public static boolean OcrTextSearch = false;
   public static boolean OcrTextRead = false;
+
   /**
    * true = start slow motion mode, false: stop it (default: false) show a visual for
    * SlowMotionDelay seconds (default: 2)
    */
-  public static boolean ShowActions = false;
+  private static boolean ShowActions = false;
+
+  public static boolean isShowActions() {
+    return ShowActions;
+  }
+
+  public static void setShowActions(boolean ShowActions) {
+    if (ShowActions) {
+      MoveMouseDelaySaved = MoveMouseDelay;
+    }
+    else {
+      MoveMouseDelay = MoveMouseDelaySaved;
+    }
+    Settings.ShowActions = ShowActions;
+  }
+
   public static float SlowMotionDelay = 2.0f; // in seconds
+  public static float MoveMouseDelay = 0.5f; // in seconds
+  private static float MoveMouseDelaySaved = MoveMouseDelay;
+
+  
   /**
    * true = highlight every match (default: false) (show red rectangle around) for
    * DefaultHighlightTime seconds (default: 2)
