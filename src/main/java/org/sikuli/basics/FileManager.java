@@ -27,8 +27,6 @@ import java.net.URLDecoder;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.ServiceLoader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
@@ -49,7 +47,6 @@ public class FileManager {
   //</editor-fold>  
   static final int DOWNLOAD_BUFFER_SIZE = 153600;
   static IResourceLoader nativeLoader = null;
-  private static IScriptRunner runner;
   
   /**
    * System.load() the given library module <br /> 
@@ -448,7 +445,7 @@ public class FileManager {
         }
         scriptFile = content[0];
         scriptType = scriptFile.getName().substring(scriptFile.getName().lastIndexOf(".") + 1);
-        runner = getScriptRunner(null, scriptType, args);
+        runner = SikuliX.getScriptRunner(null, scriptType, args);
       }
       if (scriptFile == null) {
         // try with fileending
@@ -481,49 +478,6 @@ public class FileManager {
       return scriptFile.getParentFile();
     }
     return scriptFile;
-  }
-
-  /**
-   * Finds a ScriptRunner implementation to execute the script.
-   *
-   * @param name Name of the ScriptRunner, might be null (then type is used)
-   * @param ending fileending of script to run
-   * @return first ScriptRunner with matching name or file ending, null if none found
-   */
-  public static IScriptRunner getScriptRunner(String name, String ending, String[] args) {
-    runner = null;
-    ServiceLoader<IScriptRunner> loader = ServiceLoader.load(IScriptRunner.class);
-    Iterator<IScriptRunner> scriptRunnerIterator = loader.iterator();
-    while (scriptRunnerIterator.hasNext()) {
-      IScriptRunner currentRunner = scriptRunnerIterator.next();
-      if ((name != null && currentRunner.getName().toLowerCase().equals(name.toLowerCase())) || (ending != null && currentRunner.hasFileEnding(ending) != null)) {
-        runner = currentRunner;
-        runner.init(args);
-        break;
-      }
-    }
-    if (runner == null) {
-      if (name != null) {
-        log0(-1, "Fatal error 121: Could not load script runner with name: %s", name);
-        SikuliX.terminate(121);
-      } else if (ending != null) {
-        log0(-1, "Fatal error 120: Could not load script runner for ending: %s", ending);
-        SikuliX.terminate(120);
-      } else {
-        log0(-1, "getScriptRunner: Fatal error 122: Unknown error with name=%s and ending= %s", name, ending);
-        SikuliX.terminate(122);
-      }
-    }
-    return runner;
-  }
-
-  public static IScriptRunner setRunner(IScriptRunner _runner) {
-    runner = _runner;
-    return runner;
-  }
-
-  public static IScriptRunner getRunner() {
-    return runner;
   }
 
   private static class FileFilterScript implements FilenameFilter {
