@@ -50,7 +50,7 @@ from org.sikuli.script.KeyModifier import KEY_CTRL, KEY_SHIFT, KEY_META, KEY_CMD
 Debug.log(3, "Jython: sikuli: Sikuli: import from Basics")
 from org.sikuli.basics import ImageLocator
 from org.sikuli.basics import Settings
-from org.sikuli.script import ExtensionManager
+from org.sikuli.basics import ExtensionManager
 
 Debug.log(3, "Jython: sikuli: Sikuli: import from compare")
 from org.sikuli.script.compare import DistanceComparator
