@@ -15,7 +15,7 @@ public class SysUtil {
   static OSUtil osUtil = null;
 
   static String getOSUtilClass() {
-    String pkg = "org.sikuli.system.";
+    String pkg = "org.sikuli.basics.";
     switch (Settings.getOS()) {
       case Settings.ISMAC:
         return pkg + "MacUtil";

@@ -40,7 +40,7 @@ public abstract class HotkeyManager {
   }
 
   private static String getOSHotkeyManagerClass() {
-    String pkg = "org.sikuli.system.";
+    String pkg = "org.sikuli.basics.";
     int theOS = Settings.getOS();
     switch (theOS) {
       case Settings.ISMAC:
