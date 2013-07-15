@@ -102,5 +102,8 @@ class Region(JRegion):
                 return None
             else:
                 r = (JRegion(self))
-                r.setEvtMgr(self.getEvtMgr())
+                e = self.getEvtMgr()
+                e.setRegion(r)
+                r.setEvtMgr(e)
+                r.setObserveScanRate(self.getObserveScanRate())
                 return r.observeInBackground(time)
