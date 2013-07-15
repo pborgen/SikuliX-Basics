@@ -32,8 +32,6 @@ public class Debug {
   private long _beginTime;
   private static PrintStream printout = null;
   private static PrintStream printoutuser = null;
-  private static String logfile;
-  private static String logfileuser;
   private static final DateFormat df =
           DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
@@ -45,37 +43,53 @@ public class Debug {
     } else {
       try {
         DEBUG_LEVEL = Integer.parseInt(debug);
-        Settings.DebugLogs = true;
+        if (DEBUG_LEVEL > 0) {
+          Settings.DebugLogs = true;
+        } else {
+          Settings.DebugLogs = false;
+        }
       } catch (NumberFormatException numberFormatException) {
       }
     }
-    logfile = System.getProperty("sikuli.Logfile");
-    if (logfile != null) {
-      if ("".equals(logfile)) {
-        logfile = FileManager.slashify(System.getProperty("user.dir"), true) + "SikuliLog.txt";
+    setLogFile(null);
+    setUserLogFile(null);
+  }
+  
+  public static void setLogFile(String fileName) {
+    if (fileName == null) {
+      fileName = System.getProperty("sikuli.Logfile");
+    } 
+    if (fileName != null) {
+      if ("".equals(fileName)) {
+        fileName = FileManager.slashify(System.getProperty("user.dir"), true) + "SikuliLog.txt";
       }
       try {
-        printout = new PrintStream(logfile);
+        printout = new PrintStream(fileName);
       } catch (FileNotFoundException ex) {
-        System.out.printf("[Error] Logfile %s not accessible - check given path", logfile);
-        System.out.println();
-      }
-    }
-    logfileuser = System.getProperty("sikuli.LogfileUser");
-    if (logfileuser != null) {
-      if ("".equals(logfileuser)) {
-        logfileuser = FileManager.slashify(System.getProperty("user.dir"), true) + "UserLog.txt";
-      }
-      try {
-        printoutuser = new PrintStream(logfileuser);
-      } catch (FileNotFoundException ex) {
-        System.out.printf("[Error] User logfile %s not accessible - check given path", logfileuser);
+        System.out.printf("[Error] Logfile %s not accessible - check given path", fileName);
         System.out.println();
       }
     }
   }
 
-  /**
+  public static void setUserLogFile(String fileName) {
+    if (fileName == null) {
+      fileName = System.getProperty("sikuli.LogfileUser");
+    } 
+    if (fileName != null) {
+      if ("".equals(fileName)) {
+        fileName = FileManager.slashify(System.getProperty("user.dir"), true) + "UserLog.txt";
+      }
+      try {
+        printoutuser = new PrintStream(fileName);
+      } catch (FileNotFoundException ex) {
+        System.out.printf("[Error] User logfile %s not accessible - check given path", fileName);
+        System.out.println();
+      }
+    }
+  }
+  
+/**
    *
    * @return current debug level
    */
@@ -89,6 +103,11 @@ public class Debug {
    */
   public static int setDebugLevel() {
     setDebugLevel(DEFAULT_LEVEL);
+    if (DEBUG_LEVEL > 0) {
+      Settings.DebugLogs = true;
+    } else {
+      Settings.DebugLogs = false;
+    }
     return DEBUG_LEVEL;
   }
 
@@ -98,6 +117,27 @@ public class Debug {
    */
   public static void setDebugLevel(int level) {
     DEBUG_LEVEL = level;
+    if (DEBUG_LEVEL > 0) {
+      Settings.DebugLogs = true;
+    } else {
+      Settings.DebugLogs = false;
+    }
+  }
+
+  /**
+   * set debug level to given value
+   * @param level
+   */
+  public static void setDebugLevel(String level) {
+    try {
+      DEBUG_LEVEL = Integer.parseInt(level);
+      if (DEBUG_LEVEL > 0) {
+        Settings.DebugLogs = true;
+      } else {
+        Settings.DebugLogs = false;
+      }
+    } catch (NumberFormatException numberFormatException) {
+    }
   }
 
   /**

@@ -31,11 +31,6 @@ public class SikuliScript {
    */
   public static void main(String[] args) {
 
-    Settings.showJavaInfo();
-
-    for (int i = 0; i < args.length; i++) {
-      Debug.log(2, "arg %d: %s", i + 1, args[i]);
-    }
     CommandArgs cmdArgs = new CommandArgs("SCRIPT");
     CommandLine cmdLine = cmdArgs.getCommandLine(args);
 
@@ -59,6 +54,22 @@ public class SikuliScript {
       }
       System.exit(1);
     }
+
+    if (cmdLine.hasOption(CommandArgsEnum.DEBUG.shortname())) {
+      Debug.setDebugLevel(cmdLine.getOptionValue(CommandArgsEnum.DEBUG.longname()));      
+    }
+    
+    if (cmdLine.hasOption(CommandArgsEnum.LOGFILE.shortname())) {
+      String val = cmdLine.getOptionValue(CommandArgsEnum.LOGFILE.longname());
+      Debug.setLogFile(val == null ? "" : val);
+    }
+    
+    if (cmdLine.hasOption(CommandArgsEnum.USERLOGFILE.shortname())) {
+      String val = cmdLine.getOptionValue(CommandArgsEnum.USERLOGFILE.longname());      
+      Debug.setUserLogFile(val == null ? "" : val);
+    }
+    
+    Settings.showJavaInfo();
 
 //TODO    if (cmdLine.hasOption(CommandArgsEnum.IMAGEPATH.shortname())) {
     if (false) {
@@ -110,10 +121,8 @@ public class SikuliScript {
       }
       ImageLocator.setBundlePath(imagePath.getAbsolutePath());
       int exitCode = runAsTest
-              ? runner.runTest(script, imagePath,
-              cmdLine.getOptionValues(CommandArgsEnum.ARGS.longname()), null)
-              : runner.runScript(script, imagePath,
-              cmdLine.getOptionValues(CommandArgsEnum.ARGS.longname()), null);
+              ? runner.runTest(script, imagePath, cmdArgs.getUserArgs(), null)
+              : runner.runScript(script, imagePath, cmdArgs.getUserArgs(), null);
       runner.close();
       SikuliX.endNormal(exitCode);
     } else {

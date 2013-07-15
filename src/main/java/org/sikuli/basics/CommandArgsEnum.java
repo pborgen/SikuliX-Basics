@@ -7,6 +7,15 @@ public enum CommandArgsEnum {
     /** Shows the help */
     HELP("help", "h", null, "print this help message"),
 
+    /** set debug level */
+    DEBUG("debug", "d", "debug level", "positive integer (1)"),
+
+    /** outputfile for Sikuli logging messages */
+    LOGFILE("logfile", "f", "Sikuli logfile", "a valid filename (WorkingDir/SikuliLog.txt)"),
+
+    /** outputfile for user logging messages */
+    USERLOGFILE("userlog", "u", "User logfile", "a valid filename (WorkingDir/UserLog.txt)"),
+
     /** Starts an interactive session */
     INTERACTIVE("interactive", "i", "[runner (jython)]", "start interactive session and/or select ScriptRunner"),
 
@@ -17,13 +26,10 @@ public enum CommandArgsEnum {
     TEST("test", "t", "foobar.sikuli", "runs script as unittest"),
 
     /** Prints all errormessages to stdout */
-    STDERR("stderr", "s", null, "print runtime errors to stderr , not in a popup"),
+    CONSOLE("console", "c", null, "print all output to commandline (IDE message area)"),
 
     /** Preloads script in IDE */
-    LOAD("load", "l", "one or more foobar.sikuli", "preload scripts in IDE"),
-
-    /** Arguments to be passed to the Script */
-    ARGS("args", null, "arguments", "arguments passed to the script as parameters");
+    LOAD("load", "l", "one or more foobar.sikuli", "preload scripts in IDE");
 
     /** Longname of the parameter */
     private String longname;

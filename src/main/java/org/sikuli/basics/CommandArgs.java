@@ -6,6 +6,7 @@
  */
 package org.sikuli.basics;
 
+import java.util.ArrayList;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -18,6 +19,8 @@ public class CommandArgs {
 
   Options _options;
   String _callerType;
+  ArrayList<String> userArgs = new ArrayList<String>();
+  ArrayList<String> sikuliArgs = new ArrayList<String>();
 
   public static boolean isIDE(String callerType) {
     return ("IDE".equals(callerType));
@@ -44,12 +47,30 @@ public class CommandArgs {
   public CommandLine getCommandLine(String[] args) {
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;
+    
+    boolean isUserArg = false;
+    for (int i=0; i < args.length; i++) {
+      Debug.log(3, "arg %d: %s", i + 1, args[i]);
+      if (!isUserArg && args[i].startsWith("--")) {
+        isUserArg = true;
+        continue;
+      }
+      if (isUserArg) {
+        userArgs.add(args[i]);
+      } else {
+        sikuliArgs.add(args[i]);
+      }
+    }
     try {
-      cmd = parser.parse(_options, args, true);
+      cmd = parser.parse(_options, sikuliArgs.toArray(new String[]{}), true);
     } catch (ParseException exp) {
       Debug.error(exp.getMessage());
     }
     return cmd;
+  }
+  
+  public String[] getUserArgs() {
+    return userArgs.toArray(new String[]{});
   }
 
   /**
@@ -58,9 +79,34 @@ public class CommandArgs {
   @SuppressWarnings("static-access")
   private void init() {
     _options = new Options();
-    _options.addOption(CommandArgsEnum.HELP.shortname(), CommandArgsEnum.HELP.longname(), false, CommandArgsEnum.HELP.description());
+    _options.addOption(CommandArgsEnum.HELP.shortname(), 
+            CommandArgsEnum.HELP.longname(), false, CommandArgsEnum.HELP.description());
+
+    _options.addOption(
+            OptionBuilder.withLongOpt(CommandArgsEnum.DEBUG.longname())
+            .hasArg()
+            .withArgName(CommandArgsEnum.DEBUG.argname())
+            .withDescription(CommandArgsEnum.DEBUG.description())
+            .create(CommandArgsEnum.DEBUG.shortname().charAt(0)));
+
+    _options.addOption(
+            OptionBuilder.withLongOpt(CommandArgsEnum.LOGFILE.longname())
+            .hasOptionalArg()
+            .withArgName(CommandArgsEnum.LOGFILE.argname())
+            .withDescription(CommandArgsEnum.LOGFILE.description())
+            .create(CommandArgsEnum.LOGFILE.shortname().charAt(0)));
+
+    _options.addOption(
+            OptionBuilder.withLongOpt(CommandArgsEnum.USERLOGFILE.longname())
+            .hasOptionalArg()
+            .withArgName(CommandArgsEnum.USERLOGFILE.argname())
+            .withDescription(CommandArgsEnum.USERLOGFILE.description())
+            .create(CommandArgsEnum.USERLOGFILE.shortname().charAt(0)));
+
     if (isIDE(_callerType)) {
-      _options.addOption(CommandArgsEnum.STDERR.shortname(), CommandArgsEnum.STDERR.longname(), false, CommandArgsEnum.STDERR.description());
+      _options.addOption(CommandArgsEnum.CONSOLE.shortname(), 
+              CommandArgsEnum.CONSOLE.longname(), false, CommandArgsEnum.CONSOLE.description());
+
       _options.addOption(
               OptionBuilder.withLongOpt(CommandArgsEnum.LOAD.longname())
               .withDescription(CommandArgsEnum.LOAD.description())
@@ -87,11 +133,6 @@ public class CommandArgs {
               .withArgName(CommandArgsEnum.RUN.argname())
               .withDescription(CommandArgsEnum.RUN.description())
               .create(CommandArgsEnum.RUN.shortname().charAt(0)));
-      _options.addOption(
-              OptionBuilder.withLongOpt(CommandArgsEnum.ARGS.longname())
-              .withArgName(CommandArgsEnum.ARGS.argname())
-              .withDescription(CommandArgsEnum.ARGS.description())
-              .create());
     }
   }
 
