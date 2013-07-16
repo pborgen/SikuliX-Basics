@@ -1,6 +1,8 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2010-2013, Sikuli.org
+ * Released under the MIT License.
+ *
+ * added RaiMan 2013
  */
 package org.sikuli.basics;
 
@@ -8,11 +10,13 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.security.CodeSource;
-import java.util.Iterator;
 
 /**
  *
- * @author rhocke
+ * Can be used in pure Jython environments to add the Sikuli Python API to sys.path<br />
+ * Usage: (before any Sikuli features are used)<br />
+ * import org.sikuli.basics.SikuliXforJython<br />
+ * from sikuli import *
  */
 public class SikuliXforJython {
 

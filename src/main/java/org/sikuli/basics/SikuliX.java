@@ -12,7 +12,7 @@ import java.util.ServiceLoader;
 
 /**
  *
- * Only used as anchor for the preferences store
+ * used as anchor for the preferences store and for global supporting features
  */
 public class SikuliX {
 
@@ -25,7 +25,7 @@ public class SikuliX {
   private static void callScriptEndMethod(String m, int n) {
     try {
       ScriptCl = Class.forName(ScriptSikuliXCL);
-      endWhat = ScriptCl.getMethod(m, new Class[]{Integer.class});
+      endWhat = ScriptCl.getMethod(m, new Class[]{int.class});
       endWhat.invoke(ScriptCl, new Object[]{n});
     } catch (Exception ex) {
       Debug.error("BasicsFinalCleanUp: Fatal Error 999: could not be run!");

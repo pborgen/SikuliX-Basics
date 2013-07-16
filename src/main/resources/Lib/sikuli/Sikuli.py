@@ -62,6 +62,7 @@ import SikuliImporter
 
 Debug.log(3, "Jython: sikuli: Sikuli: import SikuliScript")
 from org.sikuli.basics import SikuliScript
+from org.sikuli.basics import SikuliX
 
 ##
 # some support for handling unicode and strings

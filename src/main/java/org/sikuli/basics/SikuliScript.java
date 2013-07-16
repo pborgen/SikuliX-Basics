@@ -17,6 +17,7 @@ import org.apache.commons.cli.CommandLine;
  */
 public class SikuliScript {
 
+  private static final String me = "SikuliScript: ";
   /**
    * The ScriptRunner that is used to execute the script.
    */
@@ -95,7 +96,7 @@ public class SikuliScript {
       }
       if (!cmdLine.hasOption(CommandArgsEnum.RUN.shortname()) &&
               !cmdLine.hasOption(CommandArgsEnum.TEST.shortname())) {
-        exitCode = runner.runInteractive(args);
+        exitCode = runner.runInteractive(cmdArgs.getUserArgs());
         runner.close();
         SikuliX.endNormal(exitCode);
       }
@@ -164,7 +165,7 @@ public class SikuliScript {
         lines = lines + '\n' + line;
       }
     } catch (Exception err) {
-      err.printStackTrace();
+      Debug.error(me +"run: Problems running command\n%s\nerror: %s", cmdline, err.getMessage());
     }
     return lines;
   }
