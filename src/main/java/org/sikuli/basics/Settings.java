@@ -108,8 +108,12 @@ public class Settings {
   public static int ObserveMinChangedPixels = 50; // in pixels
   public static int WaitForVanish = 1; // wait 1 second for visual to vanish after action
   public static double MinSimilarity = 0.7;
+
   public static double DelayBeforeDrop = 0.3;
   public static double DelayAfterDrag = 0.3;
+  public static double TypeDelay = 0.0;
+  public static double ClickDelay = 0.0;
+
   public static String BundlePath = null;
   public static boolean OcrTextSearch = false;
   public static boolean OcrTextRead = false;
