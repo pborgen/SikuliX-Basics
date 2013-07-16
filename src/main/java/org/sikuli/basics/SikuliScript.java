@@ -178,6 +178,6 @@ public class SikuliScript {
   }
   
   public static void cleanUp() {
-    SikuliX.cleanup(0);
+    SikuliX.cleanUp(0);
   }
 }

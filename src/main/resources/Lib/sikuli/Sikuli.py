@@ -62,7 +62,7 @@ import SikuliImporter
 
 Debug.log(3, "Jython: sikuli: Sikuli: import SikuliScript")
 from org.sikuli.basics import SikuliScript
-from org.sikuli.basics import SikuliX
+from org.sikuli.script import SikuliX
 
 ##
 # some support for handling unicode and strings
@@ -226,7 +226,7 @@ def popup(msg, title="Sikuli"):
     SikuliScript.popup(msg, title)
 
 def exit(code=0):
-    SikuliScript.cleanUp()
+    SikuliX.cleanUp(code)
     sys.exit(code)
 
 ##

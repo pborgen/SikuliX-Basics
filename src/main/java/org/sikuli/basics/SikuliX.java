@@ -61,11 +61,11 @@ public class SikuliX {
             + "! Sorry, but it makes no sense to continue!\n"
             + "If you do not have any idea about the error cause or solution, run again\n"
             + "with a Debug level of 3. You might paste the output to the Q&A board.", n);
-    cleanup(0);
+    cleanUp(0);
     System.exit(1);
   }
 
-  public static void cleanup(int n) {
+  public static void cleanUp(int n) {
     callScriptEndMethod("cleanUp", n);
   }
 
