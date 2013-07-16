@@ -495,20 +495,25 @@ public class FileManager {
   }
 
   public static IResourceLoader getNativeLoader(String name, String[] args) {
-    IResourceLoader nativeLoader = null;
+    if (nativeLoader != null) {
+      return nativeLoader;
+    }
+    IResourceLoader nl = null;
     ServiceLoader<IResourceLoader> loader = ServiceLoader.load(IResourceLoader.class);
     Iterator<IResourceLoader> scriptRunnerIterator = loader.iterator();
     while (scriptRunnerIterator.hasNext()) {
       IResourceLoader currentRunner = scriptRunnerIterator.next();
       if ((name != null && currentRunner.getName().toLowerCase().equals(name.toLowerCase()))) {
-        nativeLoader = currentRunner;
-        nativeLoader.init(args);
+        nl = currentRunner;
+        nl.init(args);
         break;
       }
     }
-    if (nativeLoader == null) {
+    if (nl == null) {
       log0(-1, "Fatal error 121: Could not load any NativeLoader!");
       SikuliX.terminate(121);
+    } else {
+      nativeLoader = nl;
     }
     return nativeLoader;
   }

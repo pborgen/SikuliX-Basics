@@ -10,7 +10,7 @@ public interface IResourceLoader {
 
   /**
    * Can be used to initialize the NativeLoader. This method is called at the beginning of program
-   * execution. The given parameters can be used to parse any ScriptRunner specific custom options.
+   * execution. The given parameters can be used to parse any specific custom options.
    *
    * @param args 
    */
