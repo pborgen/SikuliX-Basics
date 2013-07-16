@@ -17,20 +17,28 @@ import org.apache.commons.cli.PosixParser;
 
 public class CommandArgs {
 
+  private static String _callerType = "";
   Options _options;
-  String _callerType;
   ArrayList<String> userArgs = new ArrayList<String>();
   ArrayList<String> sikuliArgs = new ArrayList<String>();
 
-  public static boolean isIDE(String callerType) {
+  private static boolean isIDE(String callerType) {
     return ("IDE".equals(callerType));
   }
+  
+  public static boolean isIDE() {
+    return ("IDE".equals(_callerType));
+  }
 
-  public static boolean isScript(String callerType) {
+  private static boolean isScript(String callerType) {
     return ("SCRIPT".equals(callerType));
   }
 
-  public static boolean isOther(String callerType) {
+  public static boolean isScript() {
+    return ("SCRIPT".equals(_callerType));
+  }
+
+  private static boolean isOther(String callerType) {
     return (!isIDE(callerType) && !isScript(callerType));
   }
 
@@ -103,37 +111,36 @@ public class CommandArgs {
             .withDescription(CommandArgsEnum.USERLOGFILE.description())
             .create(CommandArgsEnum.USERLOGFILE.shortname().charAt(0)));
 
-    if (isIDE(_callerType)) {
-      _options.addOption(CommandArgsEnum.CONSOLE.shortname(), 
-              CommandArgsEnum.CONSOLE.longname(), false, CommandArgsEnum.CONSOLE.description());
+    _options.addOption(CommandArgsEnum.CONSOLE.shortname(), 
+            CommandArgsEnum.CONSOLE.longname(), false, CommandArgsEnum.CONSOLE.description());
 
-      _options.addOption(
-              OptionBuilder.withLongOpt(CommandArgsEnum.LOAD.longname())
-              .withDescription(CommandArgsEnum.LOAD.description())
-              .hasOptionalArgs()
-              .withArgName(CommandArgsEnum.LOAD.argname())
-              .create(CommandArgsEnum.LOAD.shortname().charAt(0)));
-    }
-    if (isScript(_callerType)) {
-      _options.addOption(
-              OptionBuilder.withLongOpt(CommandArgsEnum.INTERACTIVE.longname())
-              .hasOptionalArg()
-              .withArgName(CommandArgsEnum.INTERACTIVE.argname())
-              .withDescription(CommandArgsEnum.INTERACTIVE.description())
-              .create(CommandArgsEnum.INTERACTIVE.shortname().charAt(0)));
-      _options.addOption(
-              OptionBuilder.withLongOpt(CommandArgsEnum.TEST.longname())
-              .hasArg()
-              .withArgName(CommandArgsEnum.TEST.argname())
-              .withDescription(CommandArgsEnum.TEST.description())
-              .create(CommandArgsEnum.TEST.shortname().charAt(0)));
-      _options.addOption(
-              OptionBuilder.withLongOpt(CommandArgsEnum.RUN.longname())
-              .hasArg()
-              .withArgName(CommandArgsEnum.RUN.argname())
-              .withDescription(CommandArgsEnum.RUN.description())
-              .create(CommandArgsEnum.RUN.shortname().charAt(0)));
-    }
+    _options.addOption(
+            OptionBuilder.withLongOpt(CommandArgsEnum.LOAD.longname())
+            .withDescription(CommandArgsEnum.LOAD.description())
+            .hasOptionalArgs()
+            .withArgName(CommandArgsEnum.LOAD.argname())
+            .create(CommandArgsEnum.LOAD.shortname().charAt(0)));
+
+    _options.addOption(
+            OptionBuilder.withLongOpt(CommandArgsEnum.INTERACTIVE.longname())
+            .hasOptionalArg()
+            .withArgName(CommandArgsEnum.INTERACTIVE.argname())
+            .withDescription(CommandArgsEnum.INTERACTIVE.description())
+            .create(CommandArgsEnum.INTERACTIVE.shortname().charAt(0)));
+
+    _options.addOption(
+            OptionBuilder.withLongOpt(CommandArgsEnum.TEST.longname())
+            .hasArg()
+            .withArgName(CommandArgsEnum.TEST.argname())
+            .withDescription(CommandArgsEnum.TEST.description())
+            .create(CommandArgsEnum.TEST.shortname().charAt(0)));
+
+    _options.addOption(
+            OptionBuilder.withLongOpt(CommandArgsEnum.RUN.longname())
+            .hasArg()
+            .withArgName(CommandArgsEnum.RUN.argname())
+            .withDescription(CommandArgsEnum.RUN.description())
+            .create(CommandArgsEnum.RUN.shortname().charAt(0)));
   }
 
   /**
