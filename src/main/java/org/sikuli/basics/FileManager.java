@@ -276,6 +276,8 @@ public class FileManager {
                 && child.startsWith(current + ".")) {
           log0(lvl, "xcopy: SaveAs: deleting %s", child);
           continue;
+        } else if(child.endsWith("$py.class")){
+          continue;
         }
         xcopy(src + File.separator + child, dest + File.separator + child, null);
       }
