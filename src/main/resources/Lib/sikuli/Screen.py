@@ -12,15 +12,20 @@ from Region import *
 
 class Screen(Region):
     def __init__(self, id=None):
-        Debug.log(3,"**IN** init: Jython Screen");
-        if id != None:
-            r = JScreen.getBounds(id)
-        else:
-            r = JScreen.getBounds(JScreen.getPrimaryId())
-        (x, y, w, h) = (int(r.getX()), int(r.getY()), \
-                        int(r.getWidth()), int(r.getHeight()))
-        Region.__init__(self, x, y, w, h)
-        Debug.log(3,"**OUT** init: Jython Screen " + self.getScreen().toStringShort())
+        try:
+            if id != None:
+                r = JScreen.getBounds(id)
+                s = JScreen.getScreen(id)
+            else:
+                id = JScreen.getPrimaryId()
+                r = JScreen.getBounds(id)
+                s = JScreen.getScreen(id)
+            (self.x, self.y, self.w, self.h) = (int(r.getX()), int(r.getY()), \
+                            int(r.getWidth()), int(r.getHeight()))
+            self.initScreen(s)
+        except:
+            Debug.log(3, "Jython: init: exception while initializing Screen\n%s", sys.exc_info(0))
+            sys.exit(1)
 
     @classmethod
     def getNumberScreens(cls):
@@ -78,7 +83,6 @@ class Screen(Region):
                         'toGlobalCoord', 'toString', 'getLocationFromPSRML', 'getRegionFromPSRM',
                        'capture', 'selectRegion', 'create', 'observeInBackground', 'waitAll',
                         'updateSelf', 'findNow', 'findAllNow', 'getEventManager']
-        Debug.log(3,"**IN** Jython Screen _exposeAllMethods: " + self.getScreen().toStringShort())
         dict = sys.modules[mod].__dict__
         for name in dir(self):
             if name in exclude_list: continue
