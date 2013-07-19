@@ -21,15 +21,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.security.CodeSource;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.ServiceLoader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
+import javax.swing.JFrame;
 
 public class FileManager {
 
@@ -41,20 +45,23 @@ public class FileManager {
   private static void log(int level, String message, Object... args) {
     Debug.logx(level, "", me + ": " + mem + ": " + message, args);
   }
+
   private static void log0(int level, String message, Object... args) {
     Debug.logx(level, "", me + ": " + message, args);
   }
   //</editor-fold>  
+  
   static final int DOWNLOAD_BUFFER_SIZE = 153600;
   static IResourceLoader nativeLoader = null;
-  
+  private static MultiFrame _progress = null;
+
   /**
-   * System.load() the given library module <br /> 
+   * System.load() the given library module <br />
    * from standard places (folder libs or SikuliX/libs) in the following order<br />
-   * 1. -Dsikuli.Home=<br /> 2. Environement SIKULIX_HOME<br /> 
+   * 1. -Dsikuli.Home=<br /> 2. Environement SIKULIX_HOME<br />
    * 3. parent folder of sikuli-script.jar (or main jar)<br />
    * 4. folder user's home (user.home)<br/>
-   * 5. current working dir or parent of current working dir<br />  
+   * 5. current working dir or parent of current working dir<br />
    * 6. standard installation places of Sikuli
    *
    * @param libname
@@ -69,8 +76,24 @@ public class FileManager {
     nativeLoader.doSomethingSpecial("loadLib", new String[]{libname});
   }
 
+  private static int tryGetFileSize(URL url) {
+    HttpURLConnection conn = null;
+    try {
+      conn = (HttpURLConnection) url.openConnection();
+      conn.setRequestMethod("HEAD");
+      conn.getInputStream();
+      return conn.getContentLength();
+    } catch (IOException e) {
+      return -1;
+    } finally {
+      conn.disconnect();
+    }
+  }
+
+  
   /**
    * download a file at the given url to a local folder
+   *
    * @param url a valid url
    * @param localPath the folder where the file should go (will be created if necessary)
    * @return the absolute path to the downloaded file or null on any error
@@ -79,6 +102,10 @@ public class FileManager {
     String[] path = url.getPath().split("/");
     String filename = path[path.length - 1];
     String targetPath = null;
+    int srcLength = 0;
+    int srcLengthKB = -1;
+    int done;
+    int totalBytesRead = 0;
     File fullpath = new File(localPath);
     if (fullpath.exists()) {
       if (fullpath.isFile()) {
@@ -94,22 +121,59 @@ public class FileManager {
     if (fullpath != null) {
       fullpath = new File(localPath, filename);
       targetPath = fullpath.getAbsolutePath();
+      srcLength = tryGetFileSize(url);
+      if (srcLength > 0) {
+        srcLengthKB = (int) (srcLength / 1024);
+      }
+      log0(lvl, "Downloading %s having %d KB", filename, srcLengthKB);
+      done = 0;
+      if (_progress != null) {
+        _progress.setProFile(filename);
+        _progress.setProSize(srcLengthKB);
+        _progress.setProDone(0);
+        _progress.setVisible(true);
+      }
       try {
         FileOutputStream writer = new FileOutputStream(fullpath);
         InputStream reader = url.openStream();
         byte[] buffer = new byte[DOWNLOAD_BUFFER_SIZE];
-        int totalBytesRead = 0;
         int bytesRead = 0;
+        long begin_t = (new Date()).getTime();
+        long chunk = (new Date()).getTime();
         while ((bytesRead = reader.read(buffer)) > 0) {
           writer.write(buffer, 0, bytesRead);
           totalBytesRead += bytesRead;
+          if (srcLength > 0) {
+            done = (int) ((totalBytesRead / (double) srcLength) * 100);
+          } else {
+            done = (int) (totalBytesRead / 1024);
+          }
+          if (((new Date()).getTime() - chunk) > 1000) {
+            if (_progress != null) {
+              _progress.setProDone(done);
+            }
+            chunk = (new Date()).getTime();
+          }
         }
         reader.close();
         writer.close();
-        log0(lvl, "download %d KB to %s",(int) (totalBytesRead/1024), targetPath);
+        log0(lvl, "downloaded %d KB to %s", (int) (totalBytesRead / 1024), targetPath);
+        log0(lvl, "download time: %d", (int) (((new Date()).getTime() - begin_t) / 1000));
       } catch (IOException ex) {
         log0(-1, "problems while downloading\n" + ex.getMessage());
         targetPath = null;
+      }
+      if (_progress != null) {
+        if (targetPath == null) {
+          _progress.setProDone(-1);
+        } else {
+          if (srcLength <= 0) {
+            _progress.setProSize((int) (totalBytesRead / 1024));
+          }
+          _progress.setProDone(100);
+        }
+        _progress.closeAfter(3);
+        _progress = null;
       }
     }
     return targetPath;
@@ -117,6 +181,7 @@ public class FileManager {
 
   /**
    * download a file at the given url to a local folder
+   *
    * @param url a string representing a valid url
    * @param localPath the folder where the file should go (will be created if necessary)
    * @return the absolute path to the downloaded file or null on any error
@@ -132,9 +197,15 @@ public class FileManager {
     return downloadURL(src, localPath);
   }
 
+  public static String downloadURL(String url, String localPath, JFrame progress) {
+    _progress = (MultiFrame) progress;
+    return downloadURL(url, localPath);
+  }
+
   /**
    * open the given url in the standard browser
-   * @param url string representing a valid url 
+   *
+   * @param url string representing a valid url
    * @return false on error, true otherwise
    */
   public static boolean openURL(String url) {
@@ -276,7 +347,7 @@ public class FileManager {
                 && child.startsWith(current + ".")) {
           log0(lvl, "xcopy: SaveAs: deleting %s", child);
           continue;
-        } else if(child.endsWith("$py.class")){
+        } else if (child.endsWith("$py.class")) {
           continue;
         }
         xcopy(src + File.separator + child, dest + File.separator + child, null);
@@ -417,7 +488,7 @@ public class FileManager {
     File scriptFile = null;
     if (scriptName.getPath().contains("..")) {
       //TODO accept double-dot pathnames
-      log0(-1,"Sorry, scriptnames with dot or double-dot path elements are not supported: %s", scriptName.getPath());
+      log0(-1, "Sorry, scriptnames with dot or double-dot path elements are not supported: %s", scriptName.getPath());
       SikuliX.terminate(0);
     }
     int pos = scriptName.getName().lastIndexOf(".");
@@ -518,5 +589,20 @@ public class FileManager {
       nativeLoader = nl;
     }
     return nativeLoader;
+  }
+  
+  public static String getJarParentFolder() {
+    CodeSource src = FileManager.class.getProtectionDomain().getCodeSource();
+    String jarParentPath = "--- not known ---";
+    String RunningFromJar = "Y";
+    if (src.getLocation() != null) {
+      String jarPath = src.getLocation().getPath();
+      if (!jarPath.endsWith(".jar")) RunningFromJar = "N";
+      jarParentPath = FileManager.slashify((new File(jarPath)).getParent(), true);
+    } else {
+      log(-1, "Fatal Error 101: Not possible to access the jar files!");
+      SikuliX.terminate(101);
+    }
+    return RunningFromJar + jarParentPath;
   }
 }
