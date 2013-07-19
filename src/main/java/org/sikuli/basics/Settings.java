@@ -98,6 +98,7 @@ public class Settings {
   public static final int ISMAC = 1;
   public static final int ISLINUX = 2;
   public static final int ISNOTSUPPORTED = 3;
+  public static String osName;
   public static final float FOREVER = Float.POSITIVE_INFINITY;
   public static final int JavaVersion = Integer.parseInt(java.lang.System.getProperty("java.version").substring(2, 3));
   public static final String JREVersion = java.lang.System.getProperty("java.runtime.version");
@@ -216,10 +217,13 @@ public class Settings {
     String os = System.getProperty("os.name").toLowerCase();
     if (os.startsWith("mac")) {
       osRet = ISMAC;
+      osName = "Mac OSX";
     } else if (os.startsWith("windows")) {
       osRet = ISWINDOWS;
+      osName = "Windows";
     } else if (os.startsWith("linux")) {
       osRet = ISLINUX;
+      osName = "Linux";
     }
     return osRet;
   }
