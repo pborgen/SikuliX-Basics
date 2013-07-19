@@ -83,8 +83,8 @@ public class ResourceLoader implements IResourceLoader {
   /**
    * in-jar folder to load native libs from
    */
-  private static String libSource32 = "META-INF/libs/libs32/";
-  private static String libSource64 = "META-INF/libs/libs64/";
+  private static String libSource32 = "META-INF/%s/libs/libs32/";
+  private static String libSource64 = "META-INF/%s/libs/libs64/";
   private String libSource;
   private String osarch;
   private String javahome;
@@ -150,7 +150,7 @@ public class ResourceLoader implements IResourceLoader {
           log(-1, "Mac: only 64-Bit supported");
           SikuliX.terminate(0);
         }
-        libSource = libSource64;
+        libSource = String.format(libSource64, "mac");
         checkFileName = checkFileNameMac;
         checkLib = "MacUtil";
         if ((new File(libPathMac)).exists()) {
@@ -477,6 +477,8 @@ public class ResourceLoader implements IResourceLoader {
       String retval = runcmd((String[]) args);
       args[0] = retval;
       return true;
+    } else if ("checkLibsDir".equals(action)) {
+      return (libsDir == null);
     } else {
       return false;
     }
