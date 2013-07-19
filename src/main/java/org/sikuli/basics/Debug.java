@@ -34,6 +34,7 @@ public class Debug {
   private static PrintStream printoutuser = null;
   private static final DateFormat df =
           DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+  public static String logfile;
 
   static {
     String debug = System.getProperty("sikuli.Debug");
@@ -55,7 +56,7 @@ public class Debug {
     setUserLogFile(null);
   }
   
-  public static void setLogFile(String fileName) {
+  public static boolean setLogFile(String fileName) {
     if (fileName == null) {
       fileName = System.getProperty("sikuli.Logfile");
     } 
@@ -64,15 +65,19 @@ public class Debug {
         fileName = FileManager.slashify(System.getProperty("user.dir"), true) + "SikuliLog.txt";
       }
       try {
+        logfile = fileName;
         printout = new PrintStream(fileName);
-      } catch (FileNotFoundException ex) {
+        return true;
+      } catch (Exception ex) {
         System.out.printf("[Error] Logfile %s not accessible - check given path", fileName);
         System.out.println();
+        return false;
       }
     }
+    return false;
   }
 
-  public static void setUserLogFile(String fileName) {
+  public static boolean setUserLogFile(String fileName) {
     if (fileName == null) {
       fileName = System.getProperty("sikuli.LogfileUser");
     } 
@@ -82,12 +87,15 @@ public class Debug {
       }
       try {
         printoutuser = new PrintStream(fileName);
+        return true;
       } catch (FileNotFoundException ex) {
         System.out.printf("[Error] User logfile %s not accessible - check given path", fileName);
         System.out.println();
+        return false;
       }
     }
-  }
+    return false;
+ }
   
 /**
    *
