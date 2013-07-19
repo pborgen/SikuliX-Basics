@@ -39,7 +39,7 @@ class SikuliImporter:
               
             try:
                 return imp.load_module(fullname, file, pathname, desc)
-            except Exception,e:
+            except:
                 etype, evalue, etb = sys.exc_info()
                 evalue = etype("!!WHILE IMPORTING!! %s" % evalue)
                 raise etype, evalue, etb
