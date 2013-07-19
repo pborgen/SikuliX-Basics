@@ -26,54 +26,14 @@
   </developers>
 
   <scm>
-    <connection>scm:git://github.com/RaiMan/SikuliX-Setup.git</connection>
-    <developerConnection>scm:git:git://github.com/RaiMan/SikuliX-Setup.git</developerConnection>
-    <url>git://github.com/RaiMan/SikuliX-Setup.git</url>
+    <connection>scm:git://github.com/RaiMan/SikuliX-Basics.git</connection>
+    <developerConnection>scm:git:git://github.com/RaiMan/SikuliX-Basics.git</developerConnection>
+    <url>git://github.com/RaiMan/SikuliX-Basics.git</url>
   </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <native.libs.dir.windows>src/main/resources-libs/windows/</native.libs.dir.windows>
-    <native.libs.dir.linux>src/main/resources-libs/linux/</native.libs.dir.linux>
-    <native.libs.dir.mac>src/main/resources-libs/mac/</native.libs.dir.mac>
   </properties>
-
-  <!-- Profiles are needed to include the right native resources -->
-  <profiles>
-    <profile>
-      <id>Windows</id>
-      <activation>
-        <os>
-          <family>windows</family>
-        </os>
-      </activation>
-      <properties>
-        <native.libs.dir>${native.libs.dir.windows}</native.libs.dir>
-      </properties>
-    </profile>
-    <profile>
-      <id>Linux</id>
-      <activation>
-        <os>
-          <name>linux</name>
-        </os>
-      </activation>
-      <properties>
-        <native.libs.dir>${native.libs.dir.linux}</native.libs.dir>
-      </properties>
-    </profile>
-    <profile>
-      <id>Mac</id>
-      <activation>
-        <os>
-          <family>mac</family>
-        </os>
-      </activation>
-      <properties>
-        <native.libs.dir>${native.libs.dir.mac}</native.libs.dir>
-      </properties>
-    </profile>
-  </profiles>
 
   <repositories>
     <repository> <!-- needed for jxgrabkey -->
@@ -116,7 +76,12 @@
       <artifactId>junit</artifactId>
       <version>4.4</version>
       <scope>test</scope>
-    </dependency>    
+    </dependency>
+    <dependency>
+      <groupId>org.swinglabs</groupId>
+      <artifactId>swing-layout</artifactId>
+      <version>1.0.3</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -125,7 +90,7 @@
     <!-- copy native resources -->
     <resources>
       <resource> <!-- Native Resources, OS dependent -->
-        <directory>${native.libs.dir}</directory>
+        <directory>src/main/resources-libs</directory>
         <targetPath>META-INF</targetPath>
       </resource>
       <resource>
