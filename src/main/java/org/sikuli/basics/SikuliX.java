@@ -6,9 +6,13 @@
  */
 package org.sikuli.basics;
 
+import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import static org.sikuli.basics.RunSetup.popError;
 
 /**
  *
@@ -16,11 +20,33 @@ import java.util.ServiceLoader;
  */
 public class SikuliX {
 
+  //<editor-fold defaultstate="collapsed" desc="new logging concept">
+  private static String me = "SikuliX";
+  private static String mem = "...";
+  private static int lvl = 2;
+  private static String msg;
+
+  private static void log(int level, String message, Object... args) {
+    Debug.logx(level, level < 0 ? "error" : "debug",
+            me + ": " + mem + ": " + message, args);
+  }
+
+  private static void log0(int level, String message, Object... args) {
+    Debug.logx(level, level < 0 ? "error" : "debug",
+            me + ": " + message, args);
+  }
+  //</editor-fold>
+
   private static IScriptRunner runner;
   private static final String ScriptSikuliXCL = "org.sikuli.script.SikuliX";
   private static final String ScriptKeyCL = "org.sikuli.script.Key";
   private static Class ScriptCl, KeyCl;
   private static Method endWhat, toJavaKeyCode;
+  private static boolean runningSetup = false;
+
+  public static void setRunningSetup(boolean runningSetup) {
+    SikuliX.runningSetup = runningSetup;
+  }
 
   private static void callScriptEndMethod(String m, int n) {
     try {
@@ -61,6 +87,11 @@ public class SikuliX {
             + "! Sorry, but it makes no sense to continue!\n"
             + "If you do not have any idea about the error cause or solution, run again\n"
             + "with a Debug level of 3. You might paste the output to the Q&A board.", n);
+    if (runningSetup) {
+      popError("Something serious happened! Sikuli not useable!\n" +
+              "Check the error log at " + Debug.logfile);
+      System.exit(0);
+    }
     cleanUp(0);
     System.exit(1);
   }
@@ -126,5 +157,31 @@ public class SikuliX {
 
   public static IScriptRunner getRunner() {
     return runner;
+  }
+
+  protected static boolean addToClasspath(String jar) {
+    Method method;
+    URLClassLoader sysLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+    URL[] urls = sysLoader.getURLs();
+    log0(lvl, "before adding to classpath: " + jar);
+    for (int i = 0; i < urls.length; i++) {
+      log0(lvl, "%d: %s", i, urls[i]);
+    }
+    Class sysclass = URLClassLoader.class;
+    try {
+      URL u = new URL("file://" + jar);
+      method = sysclass.getDeclaredMethod("addURL", new Class[]{URL.class});
+      method.setAccessible(true);
+      method.invoke(sysLoader, new Object[]{u});
+    } catch (Exception ex) {
+      log0(-1, ex.getMessage());
+      return false;
+    }
+    urls = sysLoader.getURLs();
+    log0(lvl, "after adding to classpath");
+    for (int i = 0; i < urls.length; i++) {
+      log0(lvl, "%d: %s", i, urls[i]);
+    }
+    return true;
   }
 }
