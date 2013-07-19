@@ -32,6 +32,26 @@ public class SikuliScript {
    */
   public static void main(String[] args) {
 
+    if (args != null && args.length > 1 && args[0] == "-testSetup") {
+      runner = SikuliX.getScriptRunner(args[1], null, args);
+      if (runner == null) {
+        args[0] = null;
+        return;
+      }
+      String[] stmts = new String[0];
+      if (args.length > 2) {
+        stmts = new String[args.length - 2];
+        for (int i = 0; i < stmts.length; i++) {
+          stmts[i] = args[i+2];
+        }
+      }
+      if (0 != runner.runScript(null, null, stmts, null)) {
+        args[0] = null;
+        return;
+      }
+      return;
+    }
+
     CommandArgs cmdArgs = new CommandArgs("SCRIPT");
     CommandLine cmdLine = cmdArgs.getCommandLine(args);
 
@@ -56,20 +76,24 @@ public class SikuliScript {
       System.exit(1);
     }
 
-    if (cmdLine.hasOption(CommandArgsEnum.DEBUG.shortname())) {
-      Debug.setDebugLevel(cmdLine.getOptionValue(CommandArgsEnum.DEBUG.longname()));      
-    }
-    
     if (cmdLine.hasOption(CommandArgsEnum.LOGFILE.shortname())) {
       String val = cmdLine.getOptionValue(CommandArgsEnum.LOGFILE.longname());
-      Debug.setLogFile(val == null ? "" : val);
+      if (!Debug.setLogFile(val == null ? "" : val)) {
+        System.exit(1);
+      }
     }
-    
+
     if (cmdLine.hasOption(CommandArgsEnum.USERLOGFILE.shortname())) {
-      String val = cmdLine.getOptionValue(CommandArgsEnum.USERLOGFILE.longname());      
-      Debug.setUserLogFile(val == null ? "" : val);
+      String val = cmdLine.getOptionValue(CommandArgsEnum.USERLOGFILE.longname());
+      if (!Debug.setUserLogFile(val == null ? "" : val)) {
+        System.exit(1);
+      }
     }
-    
+
+    if (cmdLine.hasOption(CommandArgsEnum.DEBUG.shortname())) {
+      Debug.setDebugLevel(cmdLine.getOptionValue(CommandArgsEnum.DEBUG.longname()));
+    }
+
     Settings.showJavaInfo();
 
 //TODO    if (cmdLine.hasOption(CommandArgsEnum.IMAGEPATH.shortname())) {
@@ -94,8 +118,8 @@ public class SikuliScript {
           }
         }
       }
-      if (!cmdLine.hasOption(CommandArgsEnum.RUN.shortname()) &&
-              !cmdLine.hasOption(CommandArgsEnum.TEST.shortname())) {
+      if (!cmdLine.hasOption(CommandArgsEnum.RUN.shortname())
+              && !cmdLine.hasOption(CommandArgsEnum.TEST.shortname())) {
         exitCode = runner.runInteractive(cmdArgs.getUserArgs());
         runner.close();
         SikuliX.endNormal(exitCode);
@@ -165,7 +189,7 @@ public class SikuliScript {
         lines = lines + '\n' + line;
       }
     } catch (Exception err) {
-      Debug.error(me +"run: Problems running command\n%s\nerror: %s", cmdline, err.getMessage());
+      Debug.error(me + "run: Problems running command\n%s\nerror: %s", cmdline, err.getMessage());
     }
     return lines;
   }
@@ -176,7 +200,7 @@ public class SikuliScript {
   public static void shelp() {
     System.out.println(runner.getInteractiveHelp());
   }
-  
+
   public static void cleanUp() {
     SikuliX.cleanUp(0);
   }
