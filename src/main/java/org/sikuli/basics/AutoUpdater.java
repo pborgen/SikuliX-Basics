@@ -13,6 +13,7 @@ import java.net.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
+
 public class AutoUpdater {
 
   private String details, bdetails;
@@ -170,7 +171,6 @@ public class AutoUpdater {
     }
   }
 }
-
 class UpdateFrame extends JFrame {
   public UpdateFrame(String title, String text, String server) {
     setTitle(title);
