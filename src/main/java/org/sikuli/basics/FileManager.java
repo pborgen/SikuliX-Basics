@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -604,5 +605,20 @@ public class FileManager {
       SikuliX.terminate(101);
     }
     return RunningFromJar + jarParentPath;
+  }
+  
+  public static boolean writeStringToFile(String text, String path) {
+    PrintStream out = null;
+    try {
+      out = new PrintStream(new FileOutputStream(path));
+      out.print(text);
+    } catch (Exception e) {
+      log0(-1,"writeStringToFile: did not work: " + path + "\n" + e.getMessage());
+    }
+    if (out != null) {
+      out.close();
+      return true;
+    }
+    return false;
   }
 }

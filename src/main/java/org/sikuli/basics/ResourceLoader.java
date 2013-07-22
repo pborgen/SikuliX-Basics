@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -489,13 +490,48 @@ public class ResourceLoader implements IResourceLoader {
   }
 
   private String runcmd(String args[]) {
+    if (args.length == 0) {
+      return "";
+    }
+    if (args.length == 1) {
+      String separator = "\"";
+      ArrayList<String> argsx = new ArrayList<String>();
+      StringTokenizer toks;
+      String tok;
+      toks = new StringTokenizer(args[0]);
+      while (toks.hasMoreTokens()) {
+        tok = toks.nextToken(" ");
+        if (tok.length() == 0) {
+          continue;
+        }
+        if (separator.equals(tok)) {
+          continue;
+        }
+        if (tok.startsWith(separator)) {
+          if (tok.endsWith(separator)) {
+            tok = tok.substring(1, tok.length() - 1);
+          } else {
+            tok = tok.substring(1);
+            tok += toks.nextToken(separator);
+          }
+        }
+        argsx.add(tok);
+      }
+      args = argsx.toArray(new String[0]);
+    }
+    if (args[0].startsWith("#")) {
+      String pgm = args[0].substring(1);
+      args[0] = (new File (libsDir, pgm)).getAbsolutePath();
+      runcmd(new String[] {"chmod",  "ugo+x", args[0]});
+    }
     String memx = mem;
     mem = "runcmd";
     String result = "";
     String error = "*** error ***" + NL;
     try {
-      log(lvl, args[0]);
-      Process process = Runtime.getRuntime().exec(args[0]);
+      log(lvl, arrayToString(args));
+      Debug.info("runcmd: " + arrayToString(args));
+      Process process = Runtime.getRuntime().exec(args);
       BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
       BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
       String s;
@@ -509,12 +545,24 @@ public class ResourceLoader implements IResourceLoader {
         result += s;
       }
     } catch (Exception e) {
-      e.printStackTrace(System.err);
+      log(-1, "fatal error: " + e.getMessage());
+      result = error + e.getMessage();
     }
     mem = memx;
     return result;
   }
 
+  private String arrayToString(String[] args) {
+    String ret = "";
+    for (String s : args) {
+      if (s.contains(" ")) {
+        s = "\"" + s + "\"";
+      }
+      ret += s + " ";
+    }
+    return ret;
+  }
+  
   /**
    * {@inheritDoc}
    */

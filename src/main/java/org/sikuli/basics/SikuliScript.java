@@ -6,9 +6,7 @@
  */
 package org.sikuli.basics;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
 
@@ -178,20 +176,10 @@ public class SikuliScript {
   }
 
   public static String run(String cmdline) {
-    //TODO: improve run command
-    String lines = "";
-    try {
-      String line;
-      Process p = Runtime.getRuntime().exec(cmdline);
-      BufferedReader input =
-              new BufferedReader(new InputStreamReader(p.getInputStream()));
-      while ((line = input.readLine()) != null) {
-        lines = lines + '\n' + line;
-      }
-    } catch (Exception err) {
-      Debug.error(me + "run: Problems running command\n%s\nerror: %s", cmdline, err.getMessage());
-    }
-    return lines;
+    IResourceLoader loader = FileManager.getNativeLoader("basic", new String[0]);
+    String[] args = new String[] {cmdline};
+    loader.doSomethingSpecial("runcmd", args);
+    return args[0];    
   }
 
   /**
