@@ -58,7 +58,6 @@ public class CommandArgs {
     
     boolean isUserArg = false;
     for (int i=0; i < args.length; i++) {
-      Debug.log(3, "arg %d: %s", i + 1, args[i]);
       if (!isUserArg && args[i].startsWith("--")) {
         isUserArg = true;
         continue;
@@ -78,7 +77,11 @@ public class CommandArgs {
   }
   
   public String[] getUserArgs() {
-    return userArgs.toArray(new String[]{});
+    return userArgs.toArray(new String[0]);
+  }
+
+  public String[] getSikuliArgs() {
+    return sikuliArgs.toArray(new String[0]);
   }
 
   /**
@@ -92,7 +95,7 @@ public class CommandArgs {
 
     _options.addOption(
             OptionBuilder.withLongOpt(CommandArgsEnum.DEBUG.longname())
-            .hasArg()
+            .hasOptionalArg()
             .withArgName(CommandArgsEnum.DEBUG.argname())
             .withDescription(CommandArgsEnum.DEBUG.description())
             .create(CommandArgsEnum.DEBUG.shortname().charAt(0)));
@@ -114,6 +117,9 @@ public class CommandArgs {
     _options.addOption(CommandArgsEnum.CONSOLE.shortname(), 
             CommandArgsEnum.CONSOLE.longname(), false, CommandArgsEnum.CONSOLE.description());
 
+    _options.addOption(CommandArgsEnum.SPLASH.shortname(), 
+            CommandArgsEnum.SPLASH.longname(), false, CommandArgsEnum.SPLASH.description());
+
     _options.addOption(
             OptionBuilder.withLongOpt(CommandArgsEnum.LOAD.longname())
             .withDescription(CommandArgsEnum.LOAD.description())
@@ -130,14 +136,14 @@ public class CommandArgs {
 
     _options.addOption(
             OptionBuilder.withLongOpt(CommandArgsEnum.TEST.longname())
-            .hasArg()
+            .hasOptionalArg()
             .withArgName(CommandArgsEnum.TEST.argname())
             .withDescription(CommandArgsEnum.TEST.description())
             .create(CommandArgsEnum.TEST.shortname().charAt(0)));
 
     _options.addOption(
             OptionBuilder.withLongOpt(CommandArgsEnum.RUN.longname())
-            .hasArg()
+            .hasOptionalArg()
             .withArgName(CommandArgsEnum.RUN.argname())
             .withDescription(CommandArgsEnum.RUN.description())
             .create(CommandArgsEnum.RUN.shortname().charAt(0)));
@@ -148,20 +154,16 @@ public class CommandArgs {
    */
   public void printHelp() {
     HelpFormatter formatter = new HelpFormatter();
-    if (isScript(_callerType)) {
-      formatter.printHelp(80, "\n",
-              "----- Running Sikuli script using sikuli-script.jar "
-              + "---------------------------",
-              _options,
-              "-----\n<foobar.sikuli>\n"
-              + "path relative to current working directory or absolute path\n"
-              + "though deprecated: so called executables .skl can be used too\n"
-              + "-------------------------------------------------------------",
-              true);
-    } else if (isIDE(_callerType)) {
-      formatter.printHelp("Sikuli-IDE", _options, true);
-    } else {
-      formatter.printHelp("--?????--", _options, true);
-    }
+    formatter.printHelp(80, "\n",
+        "----- Running SikuliX-IDE or SikuliX-Script "
+      + "-------------",
+      _options,
+        "-----\n<foobar.sikuli>\n"
+      + "path relative to current working directory or absolute path\n"
+      + "though deprecated: so called executables .skl can be used too\n"
+      + "------\n anything after --\nor after something beginning with --\n"
+      + "go to script as user parameters (respecting enclosing \")\n"
+      + "----------------------------------------------------------------",
+      true);
   }
 }

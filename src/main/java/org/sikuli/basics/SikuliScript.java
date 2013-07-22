@@ -23,6 +23,7 @@ public class SikuliScript {
   private static File imagePath;
   private static Boolean runAsTest;
 
+
   /**
    * Main method
    *
@@ -52,15 +53,10 @@ public class SikuliScript {
 
     CommandArgs cmdArgs = new CommandArgs("SCRIPT");
     CommandLine cmdLine = cmdArgs.getCommandLine(args);
-
+    String cmdValue;
+    
     if (cmdLine == null || cmdLine.getOptions().length == 0) {
       Debug.error("Did not find any valid option on command line!");
-      System.exit(1);
-    }
-
-    // check if any commandline args were loaded and print std help and runner specific help
-    if (cmdLine == null) {
-      Debug.error("Nothing to do! No valid arguments on commandline!");
       cmdArgs.printHelp();
       System.exit(1);
     }
@@ -75,24 +71,27 @@ public class SikuliScript {
     }
 
     if (cmdLine.hasOption(CommandArgsEnum.LOGFILE.shortname())) {
-      String val = cmdLine.getOptionValue(CommandArgsEnum.LOGFILE.longname());
-      if (!Debug.setLogFile(val == null ? "" : val)) {
+      cmdValue = cmdLine.getOptionValue(CommandArgsEnum.LOGFILE.longname());
+      if (!Debug.setLogFile(cmdValue == null ? "" : cmdValue)) {
         System.exit(1);
       }
     }
 
     if (cmdLine.hasOption(CommandArgsEnum.USERLOGFILE.shortname())) {
-      String val = cmdLine.getOptionValue(CommandArgsEnum.USERLOGFILE.longname());
-      if (!Debug.setUserLogFile(val == null ? "" : val)) {
+      cmdValue = cmdLine.getOptionValue(CommandArgsEnum.USERLOGFILE.longname());
+      if (!Debug.setUserLogFile(cmdValue == null ? "" : cmdValue)) {
         System.exit(1);
       }
     }
 
     if (cmdLine.hasOption(CommandArgsEnum.DEBUG.shortname())) {
-      Debug.setDebugLevel(cmdLine.getOptionValue(CommandArgsEnum.DEBUG.longname()));
+      cmdValue = cmdLine.getOptionValue(CommandArgsEnum.DEBUG.longname());
+      Debug.setDebugLevel(cmdValue == null ? "3" : cmdValue);      
     }
 
+    Settings.setArgs(cmdArgs.getUserArgs(), cmdArgs.getSikuliArgs());
     Settings.showJavaInfo();
+    Settings.printArgs();
 
 //TODO    if (cmdLine.hasOption(CommandArgsEnum.IMAGEPATH.shortname())) {
     if (false) {
@@ -130,7 +129,8 @@ public class SikuliScript {
     if (cmdLine.hasOption(CommandArgsEnum.RUN.shortname())) {
       givenScriptName = cmdLine.getOptionValue(CommandArgsEnum.RUN.longname());
     } else if (cmdLine.hasOption(CommandArgsEnum.TEST.shortname())) {
-      givenScriptName = cmdLine.getOptionValue(CommandArgsEnum.TEST.longname());
+      givenScriptName = cmdLine.getOptionValue(CommandArgsEnum.DEBUG.longname());
+      Debug.error("Command line option -t: not yet supported!", args);
       runAsTest = true;
     }
     if (givenScriptName != null) {

@@ -28,6 +28,9 @@ public enum CommandArgsEnum {
     /** Prints all errormessages to stdout */
     CONSOLE("console", "c", null, "print all output to commandline (IDE message area)"),
 
+    /** Prints all errormessages to stdout */
+    SPLASH("splash", "x", null, "show a splash screen to enter options"),
+
     /** Preloads script in IDE */
     LOAD("load", "l", "one or more foobar.sikuli", "preload scripts in IDE");
 

@@ -46,6 +46,7 @@ public class Settings {
    */
   public static String SikuliRepo;
   private static String[] args = new String[0];
+  private static String[] sargs = new String[0];
   public static String[] ServerList = {"https://dl.dropbox.com/u/42895525/SikuliX"};
   public static final int SikuliVersionMajor = 1;
   public static final int SikuliVersionMinor = 0;
@@ -248,12 +249,17 @@ public class Settings {
     return SikuliVersion;
   }
 
-  public static void setArgs(String[] args) {
+  public static void setArgs(String[] args, String[] sargs) {
     Settings.args = args;
+    Settings.sargs = sargs;
   }
 
   public static String[] getArgs() {
     return Settings.args;
+  }
+
+  public static String[] getSikuliArgs() {
+    return Settings.sargs;
   }
 
   public static String getTimestamp() {
@@ -263,5 +269,25 @@ public class Settings {
   private static void log(int level, String message, Object... args) {
     Debug.logx(level, level < 0 ? "error" : "debug",
             me + ": " + mem + ": " + message, args);
+  }
+
+  public static void printArgs() {
+    if (Debug.getDebugLevel() < 3) {
+      return;
+    }
+    String[] args = Settings.getSikuliArgs();
+    if (args.length > 0) {
+      Debug.log(3, "--- Sikuli parameters ---");
+      for (int i = 0; i < args.length; i++) {
+        Debug.log(3, "%d: %s", i + 1, args[i]);
+      }
+    }
+    args = Settings.getArgs();
+    if (args.length > 0) {
+      Debug.log(3, "--- User parameters ---");
+      for (int i = 0; i < args.length; i++) {
+        Debug.log(3, "%d: %s", i + 1, args[i]);
+      }
+    }
   }
 }
