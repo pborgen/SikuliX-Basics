@@ -232,6 +232,7 @@ public class FileManager {
       File tmpDir = createTempDir();
       File sikuliDir = new File(tmpDir + File.separator + name + ".sikuli");
       sikuliDir.mkdir();
+      sikuliDir.deleteOnExit();
       unzip(fileName, sikuliDir.getAbsolutePath());
       return sikuliDir.getAbsolutePath();
     } catch (IOException e) {
