@@ -7,6 +7,7 @@
 package org.sikuli.basics;
 
 import java.io.File;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
 
@@ -22,7 +23,6 @@ public class SikuliScript {
   private static IScriptRunner runner;
   private static File imagePath;
   private static Boolean runAsTest;
-
 
   /**
    * Main method
@@ -50,6 +50,8 @@ public class SikuliScript {
       }
       return;
     }
+    
+    SikuliX.displaySplash(args);
 
     CommandArgs cmdArgs = new CommandArgs("SCRIPT");
     CommandLine cmdLine = cmdArgs.getCommandLine(args);
@@ -86,7 +88,10 @@ public class SikuliScript {
 
     if (cmdLine.hasOption(CommandArgsEnum.DEBUG.shortname())) {
       cmdValue = cmdLine.getOptionValue(CommandArgsEnum.DEBUG.longname());
-      Debug.setDebugLevel(cmdValue == null ? "3" : cmdValue);      
+      Debug.setDebugLevel(cmdValue == null ? "3" : cmdValue); 
+      if (Debug.getDebugLevel() > 2) {
+        Settings.LogTime = true;
+      }
     }
 
     Settings.setArgs(cmdArgs.getUserArgs(), cmdArgs.getSikuliArgs());
@@ -123,18 +128,33 @@ public class SikuliScript {
       }
     }
 
-    // start script execution using scriptrunner (-i) or decide from contained scriptfile
     String givenScriptName = null;
     runAsTest = false;
+
+    if (cmdLine.hasOption(CommandArgsEnum.LOAD.shortname())) {
+      String loadScript = FileManager.slashify(cmdLine.getOptionValue(CommandArgsEnum.LOAD.longname()),false);    
+      Debug.log(3, "Sikuli-Script: requested to run: " + loadScript);
+      givenScriptName = loadScript;
+    }
+
     if (cmdLine.hasOption(CommandArgsEnum.RUN.shortname())) {
       givenScriptName = cmdLine.getOptionValue(CommandArgsEnum.RUN.longname());
     } else if (cmdLine.hasOption(CommandArgsEnum.TEST.shortname())) {
-      givenScriptName = cmdLine.getOptionValue(CommandArgsEnum.DEBUG.longname());
+      givenScriptName = cmdLine.getOptionValue(CommandArgsEnum.TEST.longname());
       Debug.error("Command line option -t: not yet supported!", args);
       runAsTest = true;
     }
+    
     if (givenScriptName != null) {
-      File script = FileManager.getScriptFile(new File(givenScriptName), runner, args);
+      if (givenScriptName.endsWith(".skl")) {
+        givenScriptName = FileManager.unzipSKL(givenScriptName);
+        if (givenScriptName == null) {
+          Debug.error(me + "not possible to make .skl runnable!");
+          System.exit(1);
+        }
+      }
+      File sf = new File(givenScriptName);
+      File script = FileManager.getScriptFile(sf, runner, args);
       if (script == null) {
         System.exit(1);
       }
@@ -143,6 +163,7 @@ public class SikuliScript {
         imagePath = FileManager.resolveImagePath(script);
       }
       ImageLocator.setBundlePath(imagePath.getAbsolutePath());
+      Debug.log(3, "Trying to run script: " + script.getAbsolutePath());
       int exitCode = runAsTest
               ? runner.runTest(script, imagePath, cmdArgs.getUserArgs(), null)
               : runner.runScript(script, imagePath, cmdArgs.getUserArgs(), null);

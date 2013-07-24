@@ -11,6 +11,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import javax.swing.JFrame;
 import static org.sikuli.basics.RunSetup.popError;
 
 /**
@@ -47,6 +48,32 @@ public class SikuliX {
     SikuliX.runningSetup = runningSetup;
   }
 
+  private static JFrame splash = null;
+ 
+  public static void displaySplash(String [] args) {
+    if (args == null) {
+      if (splash != null) splash.dispose();
+      return;
+    }
+    String[] splashArgs = new String[ ] { 
+      "splash", "#", "#SikuliX-Script-1.0.1", "", "#", "#... starting - pls. wait ..." };
+    for (String e : args) {
+      splashArgs[3] += e + " ";
+    }
+    splashArgs[3] = splashArgs[3].trim();
+    splash = new MultiFrame(splashArgs);
+  }
+  
+  public static void displaySplashFirstTime(String [] args) {
+    if (args == null) {
+      if (splash != null) splash.dispose();
+      return;
+    }
+    String[] splashArgs = new String[ ] { 
+      "splash", "#", "#SikuliX-IDE-1.0.1", "#... setting up environement - pls. wait ..." };
+    splash = new MultiFrame(splashArgs);
+  }
+  
   private static void callScriptEndMethod(String m, int n) {
     try {
       ScriptCl = Class.forName(ScriptSikuliXCL);
