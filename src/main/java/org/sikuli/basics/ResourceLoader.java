@@ -71,7 +71,7 @@ public class ResourceLoader implements IResourceLoader {
   /**
    * Mac: standard place for native libs
    */
-  private static String libPathMac = "/Applications/SikuliX-IDE.app/Contents/libs";
+  private static String libPathMac = Settings.appPathMac + "/libs";
   /**
    * Win: standard place for native libs
    */
@@ -96,6 +96,12 @@ public class ResourceLoader implements IResourceLoader {
     if (src.getLocation() != null) {
       jarPath = src.getLocation().getPath();
       jarParentPath = FileManager.slashify((new File(jarPath)).getParent(), true);
+      if (Settings.isMac()) {
+        if (jarParentPath.startsWith(Settings.appPathMac)) {
+          log0(lvl, "Sikuli-IDE is running from /Applications folder");
+          Settings.isMacApp = true;
+        }
+      }
     } else {
       log(-1, "Fatal Error 101: Not possible to access the jar files!");
       SikuliX.terminate(101);
@@ -211,6 +217,24 @@ public class ResourceLoader implements IResourceLoader {
         libsDir = checkLibsDir(libPath);
       }
 
+      // check parent folder of jar file
+      if (libPath == null && jarPath != null) {
+        if (jarPath.endsWith(".jar")) {
+          String lfp = jarParentPath + "libs";
+          libsfolder = (new File(lfp));
+          if (libsfolder.exists()) {
+            libPath = lfp;
+          }
+          if (Settings.isMacApp) {
+            libPath = libPathMac;
+          }
+          log(lvl, "Exists libs folder at location of jar? %s: %s", libPath == null ? "NO" : "YES", jarParentPath);
+          libsDir = checkLibsDir(libPath);
+        } else {
+          log(lvl, "not running from jar: " + jarParentPath);
+        }
+      }
+
       // check the users home folder
       if (libPath == null && userSikuli != null) {
         File ud = new File(userSikuli + suffixLibs);
@@ -220,21 +244,6 @@ public class ResourceLoader implements IResourceLoader {
         log(lvl, "Exists libs folder in user home folder? %s: %s", libPath == null ? "NO" : "YES",
                 ud.getAbsolutePath());
         libsDir = checkLibsDir(libPath);
-      }
-
-      // check parent folder of jar file
-      if (libPath == null && jarPath != null) {
-        if (jarPath.endsWith(".jar")) {
-          String lfp = jarParentPath + "libs";
-          libsfolder = (new File(lfp));
-          if (libsfolder.exists()) {
-            libPath = lfp;
-          }
-          log(lvl, "Exists libs folder at location of jar? %s: %s", libPath == null ? "NO" : "YES", jarParentPath);
-          libsDir = checkLibsDir(libPath);
-        } else {
-          log(lvl, "not running from jar: " + jarParentPath);
-        }
       }
 
       // check the working directory and its parent
@@ -268,6 +277,9 @@ public class ResourceLoader implements IResourceLoader {
       log(-1, "libs dir is empty, has wrong content or is outdated");
       log(-2, "Please wait! Trying to extract libs to: " + libPath);
       File dir = new File(libPath);
+      if (!dir.exists()) {
+        dir.mkdirs();
+      }
       File[] dirList = dir.listFiles();
       boolean success = true;
       if (dirList.length > 0) {
