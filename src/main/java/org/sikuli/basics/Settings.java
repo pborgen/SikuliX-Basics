@@ -17,7 +17,7 @@ public class Settings {
   private static String mem = "...";
   private static int lvl = 2;
   public static int breakPoint = 0;
-  public static boolean hasMacBundles = false;
+  public static boolean handlesMacBundles = true;
   
   /**
    * location of folder Tessdata
@@ -99,6 +99,9 @@ public class Settings {
   public static final int ISMAC = 1;
   public static final int ISLINUX = 2;
   public static final int ISNOTSUPPORTED = 3;
+  public static boolean isMacApp = false;
+  public static final String appPathMac = "/Applications/SikuliX-IDE.app/Contents";
+
   public static String osName;
   public static final float FOREVER = Float.POSITIVE_INFINITY;
   public static final int JavaVersion = Integer.parseInt(java.lang.System.getProperty("java.version").substring(2, 3));
