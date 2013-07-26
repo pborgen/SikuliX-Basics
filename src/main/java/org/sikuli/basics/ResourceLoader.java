@@ -45,9 +45,10 @@ public class ResourceLoader implements IResourceLoader {
   private Map<String, String[]> regMap = new HashMap<String, String[]>();
   private StringBuffer alreadyLoaded = new StringBuffer("");
   private ClassLoader cl;
+  private CodeSource codeSrc;
   private String jarParentPath = null;
   private String jarPath = null;
-  private List<String[]> libsList = new ArrayList<String[]>();
+  private URL jarURL = null;
   private String fileList = "/filelist.txt";
   private static final String sikhomeEnv = System.getenv("SIKULIX_HOME");
   private static final String sikhomeProp = System.getProperty("sikuli.Home");
@@ -68,6 +69,9 @@ public class ResourceLoader implements IResourceLoader {
   private static final String suffixLibs = "/libs";
   private static final String libSub = prefixSikuli + suffixLibs;
   private String userSikuli = null;
+  private boolean extractingFromJar = false;
+  private boolean itIsJython = false;
+  
   /**
    * Mac: standard place for native libs
    */
@@ -92,10 +96,15 @@ public class ResourceLoader implements IResourceLoader {
 
   public ResourceLoader() {
     cl = this.getClass().getClassLoader();
-    CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
-    if (src.getLocation() != null) {
-      jarPath = src.getLocation().getPath();
+    codeSrc = this.getClass().getProtectionDomain().getCodeSource();
+    if (codeSrc != null && codeSrc.getLocation() != null) {
+      jarURL = codeSrc.getLocation();
+      jarPath = jarURL.getPath();
       jarParentPath = FileManager.slashify((new File(jarPath)).getParent(), true);
+      if (jarPath.endsWith(".jar")) {
+        extractingFromJar = true;
+      }
+
       if (Settings.isMac()) {
         if (jarParentPath.startsWith(Settings.appPathMac)) {
           log0(lvl, "Sikuli-IDE is running from /Applications folder");
@@ -266,33 +275,18 @@ public class ResourceLoader implements IResourceLoader {
         libPath = libPathFallBack;
         log(lvl, "Checking available fallback for libs folder: " + libPath);
         libsDir = checkLibsDir(libPath);
-        if (libsDir == null) {
-          libPath = null; // non-valid fallback makes no sense
-          log(lvl, "We do not update the fallback libs folder");
-        }
       }
     }
 
     if (libsDir == null && libPath != null) {
       log(-1, "libs dir is empty, has wrong content or is outdated");
       log(-2, "Please wait! Trying to extract libs to: " + libPath);
-      File dir = new File(libPath);
-      if (!dir.exists()) {
-        dir.mkdirs();
+      if (!FileManager.deleteFileOrFolder(libPath)) {
+        log(-1, "Fatal Error 102: not possible to empty libs dir");
+        SikuliX.terminate(102);
       }
-      File[] dirList = dir.listFiles();
-      boolean success = true;
-      if (dirList.length > 0) {
-        for (File f : dirList) {
-          if (f.isFile() && !f.delete()) {
-            success = false;
-          }
-        }
-        if (!success) {
-          log(-1, "Fatal Error 102: not possible to empty libs dir");
-          SikuliX.terminate(102);
-        }
-      }
+      File dir = (new File(libPath));
+      dir.mkdirs();
       if (extractLibs(dir.getParent(), libSource) == null) {
         log(-1, "not possible!");
         libPath = null;
@@ -464,8 +458,36 @@ public class ResourceLoader implements IResourceLoader {
    * {@inheritDoc}
    */
   @Override
-  public void export(String res, String target) {
+  public boolean export(String res, String target) {
+    String memx = mem;
     mem = "export";
+    log(lvl, "Trying to access package");
+    List<String[]> entries = makePackageFileList(jarURL, res, true);
+    String targetName = null;
+    File targetFile;
+    long targetDate;
+    for (String[] e : entries) {
+      try {
+        targetFile = new File(target, e[0]);
+        if (targetFile.exists()) {
+          targetDate = targetFile.lastModified();
+        } else {
+          targetDate = 0;
+          targetFile.getParentFile().mkdirs();
+        }
+        if (targetDate == 0 || targetDate < Long.valueOf(e[1])) {
+          extractResource(e[0], targetFile, extractingFromJar);
+          log(lvl + 2, "is from: %s (%d)", e[1], targetDate);
+        } else {
+          log(lvl + 2, "already in place: " + targetName);
+        }
+      } catch (IOException ex) {
+        log(-1, "IO-problem extracting: %s\n%s", targetName, ex.getMessage());
+        mem = memx;
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -492,6 +514,9 @@ public class ResourceLoader implements IResourceLoader {
       return true;
     } else if ("checkLibsDir".equals(action)) {
       return (libsDir == null);
+    } else if ("itIsJython".equals(action)) {
+      itIsJython = true;
+      return true;
     } else {
       return false;
     }
@@ -646,56 +671,8 @@ public class ResourceLoader implements IResourceLoader {
   private File extractLibs(String targetDir, String libSource) {
     String memx = mem;
     mem = "extractLibs";
-    log(lvl, "Trying to access package");
-    CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
-    int iDir = 0;
-    int iFile = 0;
-    URL jar;
-    boolean isJar = false;
-    if (src != null) {
-      jar = src.getLocation();
-      if (jar == null) {
-        log(-1, "Not running from jar");
-        mem = memx;
-        return null;
-      } else if (!jar.getPath().endsWith(".jar")) {
-        File folder = new File(jar.getPath(), libSource);
-        log(lvl, "accessing folder: " + folder.getAbsolutePath());
-        File[] flist = folder.listFiles();
-        for (File f : flist) {
-          log(lvl + 2, "file: " + f.getAbsolutePath());
-          if (f.isFile()) {
-            libsList.add(new String[]{FileManager.slashify(f.getAbsolutePath(), false),
-                      String.format("%d", f.lastModified())});
-            iFile++;
-          }
-        }
-        log(lvl, "Found in %s: %d files", libSource, iFile);
-      } else {
-        try {
-          ZipInputStream zip = new ZipInputStream(jar.openStream());
-          ZipEntry ze;
-          log(lvl, "Accessing jar: " + jar.toString());
-          while ((ze = zip.getNextEntry()) != null) {
-            String entryName = ze.getName();
-            if (entryName.startsWith(libSource)
-                    && !entryName.endsWith("/")) {
-              log(lvl + 2, "%d: %s", iFile, entryName);
-              libsList.add(new String[]{FileManager.slashify(entryName, false),
-                        String.format("%d", ze.getTime())});
-              iFile++;
-            }
-          }
-          log(lvl, "Found %d Files in %s", iFile, libSource);
-          isJar = true;
-        } catch (IOException e) {
-          log(-1, "Did not work!\n%s", e.getMessage());
-          mem = memx;
-          return null;
-        }
-      }
-    } else {
-      Debug.error("Cannot access jar");
+    List<String[]> libsList = makePackageFileList(jarURL, libSource, false);
+    if (libsList == null) {
       mem = memx;
       return null;
     }
@@ -714,7 +691,7 @@ public class ResourceLoader implements IResourceLoader {
           targetDate = 0;
         }
         if (targetDate == 0 || targetDate < Long.valueOf(e[1])) {
-          extractResource(e[0], targetFile, isJar);
+          extractResource(e[0], targetFile, extractingFromJar);
           log(lvl + 2, "is from: %s (%d)", e[1], targetDate);
         } else {
           log(lvl + 2, "already in place: " + targetName);
@@ -726,9 +703,66 @@ public class ResourceLoader implements IResourceLoader {
       }
     }
     mem = memx;
+    if (itIsJython) export("Lib/sikuli", targetDir);
     return new File(targetDir);
   }
 
+  private List<String[]> makePackageFileList(URL jar, String path, boolean deep) {
+    List<String[]> fList = new ArrayList<String[]>();
+    int iFile = 0;
+    if (extractingFromJar) {
+      try {
+        ZipInputStream zip = new ZipInputStream(jar.openStream());
+        ZipEntry ze;
+        log(lvl, "Accessing jar: " + jar.toString());
+        while ((ze = zip.getNextEntry()) != null) {
+          String entryName = ze.getName();
+          if (entryName.startsWith(path)
+                  && !entryName.endsWith("/")) {
+            log(lvl + 2, "%d: %s", iFile, entryName);
+            fList.add(new String[]{FileManager.slashify(entryName, false),
+              String.format("%d", ze.getTime())});
+            iFile++;
+          }
+        }
+        log(lvl, "Found %d Files in %s", iFile, path);
+      } catch (IOException e) {
+        log(-1, "Did not work!\n%s", e.getMessage());
+        return null;
+      }
+    } else {
+      File folder = new File(jar.getPath(), path);
+      log(lvl, "accessing folder: " + folder.getAbsolutePath());
+      for (File f : getDeepFileList(folder, deep)) {
+        log(lvl + 2, "file: " + f.getAbsolutePath());
+        fList.add(new String[]{FileManager.slashify(f.getAbsolutePath(), false),
+          String.format("%d", f.lastModified())});
+        iFile++;
+      }
+      log(lvl, "Found %d Files in %s", iFile, path);
+    }
+    return fList;
+  }
+  
+  private List<File> getDeepFileList(File entry, boolean deep) {
+    List<File> filelist = new ArrayList<File>();
+    if (entry.isDirectory()) {
+      for (File f : entry.listFiles()) {
+        if (f.isDirectory()) {
+          if (!deep) {
+            continue;
+          }
+          filelist.addAll(getDeepFileList(f, deep));
+        } else {
+          filelist.add(f);
+        }
+      }
+    } else {
+      return null;
+    }
+    return filelist;
+  }
+  
   /**
    * extract a resource to a writable file
    *

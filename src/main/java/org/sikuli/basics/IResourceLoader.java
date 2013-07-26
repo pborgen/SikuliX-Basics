@@ -24,7 +24,7 @@ public interface IResourceLoader {
   /**
    * copy the res stuff from the jar to the target file/folder
    */
-  public void export(String res, String target);
+  public boolean export(String res, String target);
   
   /**
    * to be called from a main() to support standalone features

@@ -19,7 +19,7 @@ import java.security.CodeSource;
  * from sikuli import *
  */
 public class SikuliXforJython {
-
+  
   static {
     String mem = "SikuliXforJython: ";
     String sikuliStuff = "sikuli/Sikuli.py";
@@ -70,6 +70,7 @@ public class SikuliXforJython {
             e = (String) pssPath[n];
             Debug.log(3, mem + "sys.path[%d]: " + e.toString(), n);
           }
+          FileManager.getNativeLoader("basic", null).doSomethingSpecial("itIsJython", null);
        }
       } catch (Exception e) {
         Debug.error(mem + "Fatal error: Jython not found on classpath or not accessible - Sikuli might not work");
