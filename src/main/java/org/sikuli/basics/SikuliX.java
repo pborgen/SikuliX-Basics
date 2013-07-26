@@ -9,10 +9,10 @@ package org.sikuli.basics;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import javax.swing.JFrame;
-import static org.sikuli.basics.RunSetup.popError;
 
 /**
  *
@@ -45,16 +45,22 @@ public class SikuliX {
   private static boolean runningSetup = false;
 
   public static void setRunningSetup(boolean runningSetup) {
-    SikuliX.runningSetup = runningSetup;
+    runningSetup = runningSetup;
   }
 
   private static JFrame splash = null;
+  private static long start;
  
   public static void displaySplash(String [] args) {
     if (args == null) {
       if (splash != null) splash.dispose();
+      if (start > 0) {
+        Debug.log(3, "Sikuli-Script startup: " + ((new Date()).getTime() - start));
+        start = 0;
+      }
       return;
     }
+    start = (new Date()).getTime();
     String[] splashArgs = new String[ ] { 
       "splash", "#", "#SikuliX-Script-1.0.1", "", "#", "#... starting - pls. wait ..." };
     for (String e : args) {
@@ -67,8 +73,13 @@ public class SikuliX {
   public static void displaySplashFirstTime(String [] args) {
     if (args == null) {
       if (splash != null) splash.dispose();
+      if (start > 0) {
+        Debug.log(3, "Sikuli-IDE environment setup: " + ((new Date()).getTime() - start));
+        start = 0;
+     }
       return;
     }
+    start = (new Date()).getTime();
     String[] splashArgs = new String[ ] { 
       "splash", "#", "#SikuliX-IDE-1.0.1", "#... setting up environement - pls. wait ..." };
     splash = new MultiFrame(splashArgs);
@@ -114,7 +125,7 @@ public class SikuliX {
             + "If you do not have any idea about the error cause or solution, run again\n"
             + "with a Debug level of 3. You might paste the output to the Q&A board.", n);
     if (runningSetup) {
-      popError("Something serious happened! Sikuli not useable!\n" +
+      RunSetup.popError("Something serious happened! Sikuli not useable!\n" +
               "Check the error log at " + Debug.logfile);
       System.exit(0);
     }
