@@ -27,10 +27,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.security.CodeSource;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.ServiceLoader;
+import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
@@ -258,19 +260,35 @@ public class FileManager {
   }
 
   public static void deleteTempDir(String path) {
-    File fpath = new File(path);
-    String[] files = fpath.list();
-    if (files != null) {
-      for (String fname : files) {
-        (new File(fpath, fname)).delete();
+    if (!deleteFileOrFolder(path)) {
+      log0(-1, "tempdir delete not possible: %s", path);
+    } else {
+      log0(lvl, "tempdir delete: %s", path);
+    }
+  }
+  
+  public static boolean deleteFileOrFolder(String path) {
+    File entry = new File(path);
+    File f;
+    String[] entries;
+    if (entry.isDirectory()) {
+      entries = entry.list();
+      for (int i = 0; i < entries.length; i++) {
+        f = new File(entry, entries[i]);
+        if (f.isDirectory()) {
+          if (!deleteFileOrFolder(f.getAbsolutePath())) {
+            return false;
+          }
+        } else {
+          // return file entries
+          if (!f.delete()) {
+            return false;
+          }
+        }
       }
     }
-    fpath.delete();
-    if (fpath.exists()) {
-      log0(-1, "tempdir delete not possible: %s", fpath);
-    } else {
-      log0(lvl, "tempdir delete: %s", fpath);
-    }
+    // deletes intermediate empty directories and finally the top now empty dir
+    return entry.delete();
   }
 
   public static File createTempFile(String suffix) {
@@ -446,7 +464,7 @@ public class FileManager {
     return f.getName();
   }
 
-  public static String slashify(String path, boolean isDirectory) {
+  public static String slashify(String path, Boolean isDirectory) {
     String p;
     if (path == null) {
       p = "";
@@ -455,12 +473,14 @@ public class FileManager {
       if (File.separatorChar != '/') {
         p = p.replace(File.separatorChar, '/');
       }
-      if (isDirectory) {
-        if (!p.endsWith("/")) {
-          p = p + "/";
+      if (isDirectory != null) {
+        if (isDirectory) {
+          if (!p.endsWith("/")) {
+            p = p + "/";
+          }
+        } else if (p.endsWith("/")) {
+          p = p.substring(0, p.length() - 1);
         }
-      } else if (p.endsWith("/")) {
-        p = p.substring(0, p.length() - 1);
       }
     }
     if (p.contains("%")) {
@@ -556,13 +576,10 @@ public class FileManager {
   }
 
   private static class FileFilterScript implements FilenameFilter {
-
     private String _check;
-
     public FileFilterScript(String check) {
       _check = check;
     }
-
     @Override
     public boolean accept(File dir, String fileName) {
       return fileName.startsWith(_check);
@@ -622,4 +639,128 @@ public class FileManager {
     }
     return false;
   }
+
+  public static boolean packJar(String folderName, String jarName, String prefix) {
+    jarName = FileManager.slashify(jarName, false);
+    if (!jarName.endsWith(".jar")) {
+      jarName += ".jar";
+    }
+    File dir = new File(jarName).getParentFile();
+    if (dir != null && !dir.exists()) {
+      dir.mkdirs();
+    }
+    folderName = FileManager.slashify(folderName, true);
+    if (!(new File(folderName)).isDirectory()) {
+      log0(-1, "packJar: not a directory or does not exist: " + folderName);
+      return false;
+    }
+    try {
+      URL src = new URL(folderName);
+      URL target = new URL(jarName);
+      JarOutputStream jout = new JarOutputStream(new FileOutputStream(target.getFile()));
+      addToJar(jout, new File(src.getFile()), prefix);
+      jout.close();
+    } catch (Exception ex) {
+      log0(-1, "packJar: " + ex.getMessage());
+      return false;
+    }
+    return true;
+  }
+
+  public static boolean buildJar(String jarName, String[] jars, String[] files, String[] prefixs, FileManager.JarFileFilter filter) {
+    try {
+      JarOutputStream jout = new JarOutputStream(new FileOutputStream(jarName));
+      ArrayList done = new ArrayList();
+      for (int i = 0; i < jars.length; i++) {
+        BufferedInputStream bin = new BufferedInputStream(new FileInputStream(jars[i]));
+        ZipInputStream zin = new ZipInputStream(bin);
+        for (ZipEntry zipentry = zin.getNextEntry(); zipentry != null; zipentry = zin.getNextEntry()) {
+          if (filter == null || (filter != null && filter.accept(zipentry))) {
+            if (!done.contains(zipentry.getName())) {
+              jout.putNextEntry(zipentry);
+              if (!zipentry.isDirectory()) {
+                bufferedWrite(zin, jout);
+              }
+              done.add(zipentry.getName());
+            }
+          }
+        }
+        zin.close();
+        bin.close();
+      }
+      for (int i = 0; i < files.length; i++) {
+        addToJar(jout, new File(files[i]), prefixs[i]);
+      }
+      jout.close();
+    } catch (Exception ex) {
+      log0(-1, "unpackJar: " + ex.getMessage());
+      return false;
+    }
+    return true;
+  }
+
+  public static boolean unpackJar(String jarName, String folderName) {
+    ZipInputStream in = null;
+    BufferedOutputStream out = null;
+    try {
+      in = new ZipInputStream(new BufferedInputStream(new FileInputStream(jarName)));
+      for (ZipEntry z = in.getNextEntry(); z != null; z = in.getNextEntry()) {
+        File f = new File(folderName, z.getName());
+        if (z.isDirectory()) {
+          f.mkdirs();
+        } else {
+          f.getParentFile().mkdirs();
+          out = new BufferedOutputStream(new FileOutputStream(f));
+          bufferedWrite(in, out);
+          out.close();
+        }
+      }
+      in.close();
+    } catch (Exception ex) {
+      log0(-1, "unpackJar: " + ex.getMessage());
+      return false;
+    }
+    return true;
+  }
+
+  private static void addToJar(JarOutputStream jar, File dir, String prefix) throws IOException {
+    File[] content = dir.listFiles();
+    if (dir.isDirectory()) {
+      for (int i = 0, l = content.length; i < l; ++i) {
+        if (content[i].isDirectory()) {
+          jar.putNextEntry(new ZipEntry(prefix + (prefix.equals("") ? "" : "/") + content[i].getName() + "/"));
+          addToJar(jar, content[i], prefix + (prefix.equals("") ? "" : "/") + content[i].getName());
+        } else {
+          jar.putNextEntry(new ZipEntry(prefix + (prefix.equals("") ? "" : "/") + content[i].getName()));
+          FileInputStream in = new FileInputStream(content[i]);
+          bufferedWrite(in, jar);
+          in.close();
+        }
+      }
+    } else {
+      jar.putNextEntry(new ZipEntry(prefix + (prefix.equals("") ? "" : "/") + dir.getName()));
+      FileInputStream in = new FileInputStream(dir);
+      bufferedWrite(in, jar);
+      in.close();
+    }
+  }
+
+  public interface JarFileFilter {
+    public boolean accept(ZipEntry entry);
+  }
+
+  private static synchronized void bufferedWrite(InputStream in, OutputStream out) throws IOException {
+    byte[] buffer = new byte[1024 * 512];
+    int read;
+    while (true) {
+      read = in.read(buffer);
+      if (read == -1) {
+        break;
+      }
+      out.write(buffer, 0, read);
+    }
+    out.flush();
+  }
+
 }
+
