@@ -50,7 +50,7 @@ public class Settings {
   public static String[] ServerList = {"https://dl.dropbox.com/u/42895525/SikuliX"};
   public static final int SikuliVersionMajor = 1;
   public static final int SikuliVersionMinor = 0;
-  public static final int SikuliVersionSub = 0;
+  public static final int SikuliVersionSub = 1;
   public static final int SikuliVersionBetaN = 0;
   private static final String sversion = String.format("%d.%d.%d",
           SikuliVersionMajor, SikuliVersionMinor, SikuliVersionSub);
@@ -60,8 +60,12 @@ public class Settings {
   public static final String SikuliVersionBeta = "Sikuli " + bversion;
   public static final String SikuliVersionDefaultIDE = "Sikuli IDE " + sversion;
   public static final String SikuliVersionBetaIDE = "Sikuli IDE " + bversion;
+  public static final String SikuliVersionDefaultScript = "Sikuli Script " + sversion;
+  public static final String SikuliVersionBetaScript = "Sikuli Script " + bversion;
   public static String SikuliVersion;
   public static String SikuliVersionIDE;
+  public static String SikuliVersionScript;
+  public static final String versionMonth = "August 2013";
   /**
    * Resource types to be used with IResourceLoader implementations
    */
@@ -90,9 +94,11 @@ public class Settings {
     if (SikuliVersionSub == 0 && SikuliVersionBetaN > 0) {
       SikuliVersion = SikuliVersionBeta;
       SikuliVersionIDE = SikuliVersionBetaIDE;
+      SikuliVersionScript = SikuliVersionBetaScript;
     } else {
       SikuliVersion = SikuliVersionDefault;
       SikuliVersionIDE = SikuliVersionDefaultIDE;
+      SikuliVersionScript = SikuliVersionDefaultScript;
     }
   }
   public static final int ISWINDOWS = 0;

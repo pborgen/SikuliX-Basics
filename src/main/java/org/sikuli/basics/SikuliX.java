@@ -62,7 +62,7 @@ public class SikuliX {
     }
     start = (new Date()).getTime();
     String[] splashArgs = new String[ ] { 
-      "splash", "#", "#SikuliX-Script-1.0.1", "", "#", "#... starting - pls. wait ..." };
+      "splash", "#", "#" + Settings.SikuliVersionScript, "", "#", "#... starting - pls. wait ..." };
     for (String e : args) {
       splashArgs[3] += e + " ";
     }
