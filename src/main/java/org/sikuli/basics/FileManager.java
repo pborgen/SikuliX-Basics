@@ -267,7 +267,7 @@ public class FileManager {
     }
   }
   
-  public static boolean deleteFileOrFolder(String path) {
+  public static boolean deleteFileOrFolder(String path, fileFilter filter) {
     File entry = new File(path);
     File f;
     String[] entries;
@@ -275,6 +275,9 @@ public class FileManager {
       entries = entry.list();
       for (int i = 0; i < entries.length; i++) {
         f = new File(entry, entries[i]);
+        if (filter != null && !filter.accept(f)) {
+          continue;
+        }
         if (f.isDirectory()) {
           if (!deleteFileOrFolder(f.getAbsolutePath())) {
             return false;
@@ -288,7 +291,14 @@ public class FileManager {
       }
     }
     // deletes intermediate empty directories and finally the top now empty dir
-    return entry.delete();
+    if (filter == null && entry.exists()) {
+      return entry.delete();
+    }
+    return true;
+  }
+  
+  public static boolean deleteFileOrFolder(String path) {
+    return deleteFileOrFolder(path, null);
   }
 
   public static File createTempFile(String suffix) {
@@ -747,6 +757,10 @@ public class FileManager {
 
   public interface JarFileFilter {
     public boolean accept(ZipEntry entry);
+  }
+
+  public interface fileFilter {
+    public boolean accept(File entry);
   }
 
   private static synchronized void bufferedWrite(InputStream in, OutputStream out) throws IOException {

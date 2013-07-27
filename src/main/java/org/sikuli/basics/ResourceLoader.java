@@ -281,7 +281,16 @@ public class ResourceLoader implements IResourceLoader {
     if (libsDir == null && libPath != null) {
       log(-1, "libs dir is empty, has wrong content or is outdated");
       log(-2, "Please wait! Trying to extract libs to: " + libPath);
-      if (!FileManager.deleteFileOrFolder(libPath)) {
+      if (!FileManager.deleteFileOrFolder(libPath,
+              new FileManager.fileFilter() {
+                  @Override
+                  public boolean accept(File entry) {
+                    if (entry.getPath().contains("tessdata")) {
+                      return false;
+                    }
+                    return true;
+                  }})
+      ) {
         log(-1, "Fatal Error 102: not possible to empty libs dir");
         SikuliX.terminate(102);
       }
