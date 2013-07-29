@@ -6,8 +6,7 @@
   * Copyright 2010-2013, Sikuli.org
   * Released under the MIT License.
   *
-  * added Kelthuzad 2013
-  * modified RaiMan 2013
+  * RaiMan 2013
   -->
 
   <modelVersion>4.0.0</modelVersion>
@@ -101,10 +100,6 @@
 
     <!-- copy native resources -->
     <resources>
-      <resource> <!-- Native Resources, OS dependent -->
-        <directory>src/main/resources-libs</directory>
-        <targetPath>META-INF</targetPath>
-      </resource>
       <resource>
         <directory>src/main/resources</directory>
       </resource>

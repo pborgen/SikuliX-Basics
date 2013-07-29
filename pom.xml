@@ -89,7 +89,7 @@
 
     <!-- copy native resources -->
     <resources>
-      <resource> <!-- Native Resources, OS dependent -->
+      <resource> 
         <directory>src/main/resources-libs</directory>
         <targetPath>META-INF</targetPath>
       </resource>
