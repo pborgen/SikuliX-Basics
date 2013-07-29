@@ -665,27 +665,33 @@ public class FileManager {
       return false;
     }
     try {
+      log0(lvl, "packJar: %s from %s", jarName, folderName);
+      if (!folderName.startsWith("http://") && !folderName.startsWith("https://")) {
+        folderName = "file://" + folderName;
+      }
       URL src = new URL(folderName);
-      URL target = new URL(jarName);
-      JarOutputStream jout = new JarOutputStream(new FileOutputStream(target.getFile()));
+      JarOutputStream jout = new JarOutputStream(new FileOutputStream(jarName));
       addToJar(jout, new File(src.getFile()), prefix);
       jout.close();
     } catch (Exception ex) {
       log0(-1, "packJar: " + ex.getMessage());
       return false;
     }
+    log0(lvl, "packJar: completed");
     return true;
   }
 
   public static boolean buildJar(String jarName, String[] jars, String[] files, String[] prefixs, FileManager.JarFileFilter filter) {
+    log0(lvl, "buildJar: " + jarName);
     try {
       JarOutputStream jout = new JarOutputStream(new FileOutputStream(jarName));
       ArrayList done = new ArrayList();
       for (int i = 0; i < jars.length; i++) {
+        log0(lvl, "buildJar: adding: " + jars[i]);
         BufferedInputStream bin = new BufferedInputStream(new FileInputStream(jars[i]));
         ZipInputStream zin = new ZipInputStream(bin);
         for (ZipEntry zipentry = zin.getNextEntry(); zipentry != null; zipentry = zin.getNextEntry()) {
-          if (filter == null || (filter != null && filter.accept(zipentry))) {
+          if (filter == null || filter.accept(zipentry)) {
             if (!done.contains(zipentry.getName())) {
               jout.putNextEntry(zipentry);
               if (!zipentry.isDirectory()) {
@@ -698,14 +704,18 @@ public class FileManager {
         zin.close();
         bin.close();
       }
-      for (int i = 0; i < files.length; i++) {
-        addToJar(jout, new File(files[i]), prefixs[i]);
+      if (files != null) {
+        for (int i = 0; i < files.length; i++) {
+          log0(lvl, "buildJar: adding: " + files[i]);
+          addToJar(jout, new File(files[i]), prefixs[i]);
+        }
       }
       jout.close();
     } catch (Exception ex) {
-      log0(-1, "unpackJar: " + ex.getMessage());
+      log0(-1, "buildJar: " + ex.getMessage());
       return false;
     }
+    log0(lvl, "buildJar: completed");
     return true;
   }
 
@@ -713,7 +723,9 @@ public class FileManager {
     ZipInputStream in = null;
     BufferedOutputStream out = null;
     try {
+      FileManager.deleteFileOrFolder(folderName);
       in = new ZipInputStream(new BufferedInputStream(new FileInputStream(jarName)));
+      log0(lvl, "unpackJar: %s to %s", jarName, folderName);
       for (ZipEntry z = in.getNextEntry(); z != null; z = in.getNextEntry()) {
         File f = new File(folderName, z.getName());
         if (z.isDirectory()) {
@@ -730,29 +742,36 @@ public class FileManager {
       log0(-1, "unpackJar: " + ex.getMessage());
       return false;
     }
+    log0(lvl, "unpackJar: completed");
     return true;
   }
 
   private static void addToJar(JarOutputStream jar, File dir, String prefix) throws IOException {
-    File[] content = dir.listFiles();
+    File[] content;
+    prefix = prefix == null ? "" : prefix;
     if (dir.isDirectory()) {
+      content  = dir.listFiles();
       for (int i = 0, l = content.length; i < l; ++i) {
         if (content[i].isDirectory()) {
           jar.putNextEntry(new ZipEntry(prefix + (prefix.equals("") ? "" : "/") + content[i].getName() + "/"));
           addToJar(jar, content[i], prefix + (prefix.equals("") ? "" : "/") + content[i].getName());
         } else {
-          jar.putNextEntry(new ZipEntry(prefix + (prefix.equals("") ? "" : "/") + content[i].getName()));
-          FileInputStream in = new FileInputStream(content[i]);
-          bufferedWrite(in, jar);
-          in.close();
+          addToJarWriteFile(jar, content[i], prefix);
         }
       }
     } else {
-      jar.putNextEntry(new ZipEntry(prefix + (prefix.equals("") ? "" : "/") + dir.getName()));
-      FileInputStream in = new FileInputStream(dir);
-      bufferedWrite(in, jar);
-      in.close();
+      addToJarWriteFile(jar, dir, prefix);
     }
+  }
+  
+  private static void addToJarWriteFile(JarOutputStream jar, File file, String prefix) throws IOException {
+      if (file.getName().startsWith(".")) {
+        return;
+      }
+      jar.putNextEntry(new ZipEntry(prefix + (prefix.equals("") ? "" : "/") + file.getName()));
+      FileInputStream in = new FileInputStream(file);
+      bufferedWrite(in, jar);
+      in.close();    
   }
 
   public interface JarFileFilter {
