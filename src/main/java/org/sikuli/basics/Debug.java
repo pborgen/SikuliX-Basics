@@ -59,10 +59,14 @@ public class Debug {
   public static boolean setLogFile(String fileName) {
     if (fileName == null) {
       fileName = System.getProperty("sikuli.Logfile");
-    } 
+    }
     if (fileName != null) {
       if ("".equals(fileName)) {
-        fileName = FileManager.slashify(System.getProperty("user.dir"), true) + "SikuliLog.txt";
+        if (Settings.isMacApp) {
+          fileName = "SikuliLog.txt";
+        } else {
+          fileName = FileManager.slashify(System.getProperty("user.dir"), true) + "SikuliLog.txt";
+        }
       }
       try {
         logfile = fileName;
@@ -83,7 +87,11 @@ public class Debug {
     } 
     if (fileName != null) {
       if ("".equals(fileName)) {
-        fileName = FileManager.slashify(System.getProperty("user.dir"), true) + "UserLog.txt";
+        if (Settings.isMacApp) {
+          fileName = "UserLog.txt";
+        } else {
+          fileName = FileManager.slashify(System.getProperty("user.dir"), true) + "UserLog.txt";
+        }
       }
       try {
         printoutuser = new PrintStream(fileName);
