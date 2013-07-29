@@ -88,10 +88,15 @@ public class SikuliScript {
 
     if (cmdLine.hasOption(CommandArgsEnum.DEBUG.shortname())) {
       cmdValue = cmdLine.getOptionValue(CommandArgsEnum.DEBUG.longname());
-      Debug.setDebugLevel(cmdValue == null ? "3" : cmdValue); 
-      if (Debug.getDebugLevel() > 2) {
+      if (cmdValue == null) {
+        Debug.setDebugLevel(3);
         Settings.LogTime = true;
-      }
+        if (!Debug.isLogToFile()) {
+          Debug.setLogFile("");
+        }
+      } else {
+        Debug.setDebugLevel(cmdValue);
+      }      
     }
 
     Settings.setArgs(cmdArgs.getUserArgs(), cmdArgs.getSikuliArgs());

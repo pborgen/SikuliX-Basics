@@ -55,7 +55,7 @@ public class Debug {
     setLogFile(null);
     setUserLogFile(null);
   }
-  
+
   public static boolean setLogFile(String fileName) {
     if (fileName == null) {
       fileName = System.getProperty("sikuli.Logfile");
@@ -70,7 +70,11 @@ public class Debug {
       }
       try {
         logfile = fileName;
+        if (printout != null) {
+          printout.close();
+        }
         printout = new PrintStream(fileName);
+        log(3, "Debug: setLogFile: " + fileName);
         return true;
       } catch (Exception ex) {
         System.out.printf("[Error] Logfile %s not accessible - check given path", fileName);
@@ -81,10 +85,14 @@ public class Debug {
     return false;
   }
 
+  public static boolean isLogToFile() {
+    return (printout != null);
+  }
+
   public static boolean setUserLogFile(String fileName) {
     if (fileName == null) {
       fileName = System.getProperty("sikuli.LogfileUser");
-    } 
+    }
     if (fileName != null) {
       if ("".equals(fileName)) {
         if (Settings.isMacApp) {
@@ -94,7 +102,11 @@ public class Debug {
         }
       }
       try {
+        if (printoutuser != null) {
+          printoutuser.close();
+        }
         printoutuser = new PrintStream(fileName);
+        log(3, "Debug: setLogFile: " + fileName);
         return true;
       } catch (FileNotFoundException ex) {
         System.out.printf("[Error] User logfile %s not accessible - check given path", fileName);
@@ -103,9 +115,13 @@ public class Debug {
       }
     }
     return false;
- }
-  
-/**
+  }
+
+  public static boolean isUserLogToFile() {
+    return (printoutuser != null);
+  }
+
+  /**
    *
    * @return current debug level
    */
@@ -115,6 +131,7 @@ public class Debug {
 
   /**
    * set debug level to default level
+   *
    * @return default level
    */
   public static int setDebugLevel() {
@@ -129,6 +146,7 @@ public class Debug {
 
   /**
    * set debug level to given value
+   *
    * @param level
    */
   public static void setDebugLevel(int level) {
@@ -142,6 +160,7 @@ public class Debug {
 
   /**
    * set debug level to given value
+   *
    * @param level
    */
   public static void setDebugLevel(String level) {
