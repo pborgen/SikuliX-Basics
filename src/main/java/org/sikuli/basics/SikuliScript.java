@@ -54,7 +54,7 @@ public class SikuliScript {
     SikuliX.displaySplash(args);
 
     CommandArgs cmdArgs = new CommandArgs("SCRIPT");
-    CommandLine cmdLine = cmdArgs.getCommandLine(args);
+    CommandLine cmdLine = cmdArgs.getCommandLine(CommandArgs.scanArgs(args));
     String cmdValue;
     
     if (cmdLine == null || cmdLine.getOptions().length == 0) {
@@ -95,6 +95,7 @@ public class SikuliScript {
     }
 
     Settings.setArgs(cmdArgs.getUserArgs(), cmdArgs.getSikuliArgs());
+    Debug.log(3, me + "CmdOrg: " + System.getenv("SIKULI_COMMAND"));
     Settings.showJavaInfo();
     Settings.printArgs();
 
@@ -153,6 +154,7 @@ public class SikuliScript {
           System.exit(1);
         }
       }
+      Debug.log(3, me + "givenScriptName: " + givenScriptName);
       File sf = new File(givenScriptName);
       File script = FileManager.getScriptFile(sf, runner, args);
       if (script == null) {

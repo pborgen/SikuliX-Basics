@@ -7,6 +7,9 @@
 package org.sikuli.basics;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -165,5 +168,42 @@ public class CommandArgs {
       + "go to script as user parameters (respecting enclosing \")\n"
       + "----------------------------------------------------------------",
       true);
+  }
+  
+  public static String[] scanArgs(String[] args) {
+    String cmdOrg = System.getenv("SIKULI_COMMAND");
+    String sep = "\"";
+    String temp = null;
+    Pattern pat;
+    Matcher m;
+    List<String> nargs = new ArrayList<String>();
+    for (String arg : args) {
+      if (arg.startsWith(sep)) {
+        if (!arg.endsWith(sep)) {
+          temp = arg.substring(1);
+          continue;
+        }
+      } else if (arg.endsWith(sep)) {
+        if (temp != null) {
+          arg = temp + " " + arg.substring(0, arg.length() - 1);
+          if (cmdOrg != null && !cmdOrg.contains(arg)) {
+            arg = arg.replace(" ", " *?");
+            pat = Pattern.compile("(" + arg + ")");
+            m = pat.matcher(cmdOrg);
+            if (m.find()) {
+              arg = m.group();
+            } else {
+              arg = "?" + arg + "?";
+            }
+          }
+          temp = null;
+        }
+      } else if (temp != null) {
+        temp += " " + arg;
+        continue;
+      }
+      nargs.add(arg);
+    }
+    return nargs.toArray(new String[0]);
   }
 }
