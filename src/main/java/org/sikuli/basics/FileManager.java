@@ -57,6 +57,7 @@ public class FileManager {
   static final int DOWNLOAD_BUFFER_SIZE = 153600;
   static IResourceLoader nativeLoader = null;
   private static MultiFrame _progress = null;
+  private static final String EXECUTABLE = "#executable";
 
   /**
    * System.load() the given library module <br />
@@ -271,11 +272,13 @@ public class FileManager {
     File entry = new File(path);
     File f;
     String[] entries;
+    boolean somethingLeft = false;
     if (entry.isDirectory()) {
       entries = entry.list();
       for (int i = 0; i < entries.length; i++) {
         f = new File(entry, entries[i]);
         if (filter != null && !filter.accept(f)) {
+          somethingLeft = true;
           continue;
         }
         if (f.isDirectory()) {
@@ -291,7 +294,7 @@ public class FileManager {
       }
     }
     // deletes intermediate empty directories and finally the top now empty dir
-    if (filter == null && entry.exists()) {
+    if (!somethingLeft && entry.exists()) {
       return entry.delete();
     }
     return true;
@@ -655,19 +658,23 @@ public class FileManager {
     if (!jarName.endsWith(".jar")) {
       jarName += ".jar";
     }
-    File dir = new File(jarName).getParentFile();
-    if (dir != null && !dir.exists()) {
-      dir.mkdirs();
-    }
     folderName = FileManager.slashify(folderName, true);
     if (!(new File(folderName)).isDirectory()) {
       log0(-1, "packJar: not a directory or does not exist: " + folderName);
       return false;
     }
     try {
-      log0(lvl, "packJar: %s from %s", jarName, folderName);
+      File dir = new File((new File(jarName)).getAbsolutePath()).getParentFile();
+      if (dir != null) {
+        if (!dir.exists()) {
+          dir.mkdirs();
+        }
+      } else {
+        throw new Exception("workdir is null");
+      }
+      log0(lvl, "packJar: %s from %s in workDir %s", jarName, folderName, dir.getAbsolutePath());
       if (!folderName.startsWith("http://") && !folderName.startsWith("https://")) {
-        folderName = "file://" + folderName;
+        folderName = "file://" + (new File(folderName)).getAbsolutePath();
       }
       URL src = new URL(folderName);
       JarOutputStream jout = new JarOutputStream(new FileOutputStream(jarName));
@@ -687,6 +694,9 @@ public class FileManager {
       JarOutputStream jout = new JarOutputStream(new FileOutputStream(jarName));
       ArrayList done = new ArrayList();
       for (int i = 0; i < jars.length; i++) {
+        if (jars[i] == null) {
+          continue;
+        }
         log0(lvl, "buildJar: adding: " + jars[i]);
         BufferedInputStream bin = new BufferedInputStream(new FileInputStream(jars[i]));
         ZipInputStream zin = new ZipInputStream(bin);
@@ -698,6 +708,7 @@ public class FileManager {
                 bufferedWrite(zin, jout);
               }
               done.add(zipentry.getName());
+              log0(lvl+2, "adding: " + zipentry.getName());
             }
           }
         }
@@ -719,22 +730,37 @@ public class FileManager {
     return true;
   }
 
-  public static boolean unpackJar(String jarName, String folderName) {
+  public static boolean unpackJar(String jarName, String folderName, boolean del) {
     ZipInputStream in = null;
     BufferedOutputStream out = null;
     try {
-      FileManager.deleteFileOrFolder(folderName);
+      if (del) {
+        FileManager.deleteFileOrFolder(folderName);
+      }
       in = new ZipInputStream(new BufferedInputStream(new FileInputStream(jarName)));
       log0(lvl, "unpackJar: %s to %s", jarName, folderName);
+      boolean isExecutable;
+      int n;
+      File f;
       for (ZipEntry z = in.getNextEntry(); z != null; z = in.getNextEntry()) {
-        File f = new File(folderName, z.getName());
         if (z.isDirectory()) {
-          f.mkdirs();
+          (new File(folderName, z.getName())).mkdirs();
         } else {
+          n = z.getName().lastIndexOf(EXECUTABLE);
+          if (n >= 0) {
+            f = new File(folderName, z.getName().substring(0, n));
+            isExecutable = true;
+          } else {
+            f = new File(folderName, z.getName());
+            isExecutable = false;
+          }
           f.getParentFile().mkdirs();
           out = new BufferedOutputStream(new FileOutputStream(f));
           bufferedWrite(in, out);
           out.close();
+          if (isExecutable) {
+            f.setExecutable(true, false);
+          }
         }
       }
       in.close();
@@ -765,13 +791,17 @@ public class FileManager {
   }
   
   private static void addToJarWriteFile(JarOutputStream jar, File file, String prefix) throws IOException {
-      if (file.getName().startsWith(".")) {
-        return;
-      }
-      jar.putNextEntry(new ZipEntry(prefix + (prefix.equals("") ? "" : "/") + file.getName()));
-      FileInputStream in = new FileInputStream(file);
-      bufferedWrite(in, jar);
-      in.close();    
+    if (file.getName().startsWith(".")) {
+      return;
+    }
+    String suffix = "";
+    if (file.canExecute()) {
+      suffix = EXECUTABLE;
+    }
+    jar.putNextEntry(new ZipEntry(prefix + (prefix.equals("") ? "" : "/") + file.getName() + suffix));
+    FileInputStream in = new FileInputStream(file);
+    bufferedWrite(in, jar);
+    in.close();
   }
 
   public interface JarFileFilter {
