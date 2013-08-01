@@ -50,6 +50,10 @@ public class SetUpSelect extends javax.swing.JPanel {
     ask3 = new javax.swing.JButton();
     ask4 = new javax.swing.JButton();
     setupNow = new javax.swing.JButton();
+    option5 = new javax.swing.JCheckBox();
+    ask5 = new javax.swing.JButton();
+    option6 = new javax.swing.JCheckBox();
+    ask6 = new javax.swing.JButton();
 
     jLabel1.setText("SikuliX 1.0.1 SetUp");
     jLabel1.setAlignmentX(0.5F);
@@ -70,23 +74,23 @@ public class SetUpSelect extends javax.swing.JPanel {
 
     jLabel5.setText("Please check the appropriate options below:   (click the [ ? ] buttons to get more specific information about the option)");
 
-    option1.setText("I want to use all options: Sikuli IDE, running scripts from commandline (and optionally Java developement)");
+    option1.setText("Pack1: I want to use all options: Sikuli IDE, running scripts from commandline (and optionally Java developement)");
 
-    option4.setText("I only want to develop in Java or Jython using NetBeans, Eclipse or other IDE's (I do not need the Sikuli IDE)");
+    option4.setText("Pack3: I only want to develop in Java or Jython using NetBeans, Eclipse or other IDE's (I do not need Pack1 nor Pack2)");
     option4.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option4ActionPerformed(evt);
       }
     });
 
-    option3.setText("Additionally I want to develop and run scripts in Jython language using NetBeans, Eclipse or any other IDE or script editor");
+    option3.setText("Pack3: Additionally I want to develop and run scripts in Jython language using Eclipse or any other IDE or script editor");
     option3.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option3ActionPerformed(evt);
       }
     });
 
-    option2.setText("I want to run Sikuli scripts from command line (I do not need the Sikuli IDE)");
+    option2.setText("Pack2: I want to run Sikuli scripts from command line (usage as Pack 1, but I do not need the Sikuli IDE)");
     option2.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option2ActionPerformed(evt);
@@ -128,17 +132,68 @@ public class SetUpSelect extends javax.swing.JPanel {
       }
     });
 
+    option5.setText("I want to use Tesseract based OCR features (You should know what you are doing and be experienced!)");
+    option5.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        option5ActionPerformed(evt);
+      }
+    });
+
+    ask5.setText("?");
+    ask5.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        ask5ActionPerformed(evt);
+      }
+    });
+
+    option6.setText("I want the packages to be useable on Windows, Mac and Linux (they contain the stuff for all systems - one pack for all)");
+    option6.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        option6ActionPerformed(evt);
+      }
+    });
+
+    ask6.setText("?");
+    ask6.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        ask6ActionPerformed(evt);
+      }
+    });
+
     org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-      .add(jSeparator6)
       .add(layout.createSequentialGroup()
         .addContainerGap()
         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
           .add(jSeparator1)
           .add(jSeparator2)
           .add(jSeparator5)
+          .add(layout.createSequentialGroup()
+            .add(option1)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(ask1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+          .add(layout.createSequentialGroup()
+            .add(option2)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(ask2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+          .add(layout.createSequentialGroup()
+            .add(option3)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(ask3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+          .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(0, 0, Short.MAX_VALUE)
+            .add(setupNow))
+          .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator6)
+          .add(layout.createSequentialGroup()
+            .add(option5)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(ask4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+          .add(layout.createSequentialGroup()
+            .add(option4)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(ask5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
           .add(layout.createSequentialGroup()
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
               .add(jLabel1)
@@ -161,24 +216,9 @@ public class SetUpSelect extends javax.swing.JPanel {
               .add(jLabel5))
             .add(0, 0, Short.MAX_VALUE))
           .add(layout.createSequentialGroup()
-            .add(option1)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(ask1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-          .add(layout.createSequentialGroup()
-            .add(option2)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(ask2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-          .add(layout.createSequentialGroup()
-            .add(option3)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 35, Short.MAX_VALUE)
-            .add(ask3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-          .add(layout.createSequentialGroup()
-            .add(option4)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(ask4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-          .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-            .add(0, 0, Short.MAX_VALUE)
-            .add(setupNow)))
+            .add(option6)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 48, Short.MAX_VALUE)
+            .add(ask6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         .addContainerGap())
       .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
         .add(layout.createSequentialGroup()
@@ -228,17 +268,25 @@ public class SetUpSelect extends javax.swing.JPanel {
         .add(18, 18, 18)
         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
           .add(option4)
+          .add(ask5))
+        .add(18, 18, 18)
+        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+          .add(option5)
           .add(ask4))
+        .add(18, 18, 18)
+        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+          .add(ask6)
+          .add(option6))
         .add(18, 18, 18)
         .add(jSeparator6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         .add(18, 18, 18)
         .add(setupNow)
-        .addContainerGap(16, Short.MAX_VALUE))
+        .addContainerGap(15, Short.MAX_VALUE))
       .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
         .add(layout.createSequentialGroup()
           .add(172, 172, 172)
           .add(jSeparator4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-          .addContainerGap(331, Short.MAX_VALUE)))
+          .addContainerGap(424, Short.MAX_VALUE)))
     );
   }// </editor-fold>//GEN-END:initComponents
 
@@ -275,11 +323,29 @@ public class SetUpSelect extends javax.swing.JPanel {
     setBackground(Color.YELLOW);
   }//GEN-LAST:event_setupNowActionPerformed
 
+  private void option5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_option5ActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_option5ActionPerformed
+
+  private void ask5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ask5ActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_ask5ActionPerformed
+
+  private void option6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_option6ActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_option6ActionPerformed
+
+  private void ask6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ask6ActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_ask6ActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   public javax.swing.JButton ask1;
   public javax.swing.JButton ask2;
   public javax.swing.JButton ask3;
   public javax.swing.JButton ask4;
+  public javax.swing.JButton ask5;
+  public javax.swing.JButton ask6;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
@@ -294,6 +360,8 @@ public class SetUpSelect extends javax.swing.JPanel {
   protected javax.swing.JCheckBox option2;
   protected javax.swing.JCheckBox option3;
   protected javax.swing.JCheckBox option4;
+  protected javax.swing.JCheckBox option5;
+  protected javax.swing.JCheckBox option6;
   private javax.swing.JButton setupNow;
   public javax.swing.JLabel suFolder;
   protected javax.swing.JLabel suJava;
