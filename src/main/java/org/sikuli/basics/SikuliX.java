@@ -53,7 +53,9 @@ public class SikuliX {
  
   public static void displaySplash(String [] args) {
     if (args == null) {
-      if (splash != null) splash.dispose();
+      if (splash != null) {
+        splash.dispose();
+      }
       if (start > 0) {
         Debug.log(3, "Sikuli-Script startup: " + ((new Date()).getTime() - start));
         start = 0;
