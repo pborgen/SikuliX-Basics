@@ -7,7 +7,6 @@
 package org.sikuli.basics;
 
 import java.io.File;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
 
@@ -24,12 +23,20 @@ public class SikuliScript {
   private static File imagePath;
   private static Boolean runAsTest;
 
+  private static boolean isRunningInteractive = false;
+  public static void runningInteractive() {
+    isRunningInteractive = true;
+    SikuliX.displaySplash(null);
+  }
+  
   /**
    * Main method
    *
    * @param args passed arguments
    */
   public static void main(String[] args) {
+
+    SikuliX.displaySplash(args);
 
     if (args != null && args.length > 1 && args[0] == "-testSetup") {
       runner = SikuliX.getScriptRunner(args[1], null, args);
@@ -51,8 +58,6 @@ public class SikuliScript {
       return;
     }
     
-    SikuliX.displaySplash(args);
-
     CommandArgs cmdArgs = new CommandArgs("SCRIPT");
     CommandLine cmdLine = cmdArgs.getCommandLine(CommandArgs.scanArgs(args));
     String cmdValue;
