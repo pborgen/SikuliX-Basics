@@ -88,8 +88,8 @@ public class ResourceLoader implements IResourceLoader {
   /**
    * in-jar folder to load native libs from
    */
-  private static String libSource32 = "META-INF/%s/libs/libs32/";
-  private static String libSource64 = "META-INF/%s/libs/libs64/";
+  private static String libSource32 = "META-INF/libs/%s/libs32/";
+  private static String libSource64 = "META-INF/libs/%s/libs64/";
   private String libSource;
   private String osarch;
   private String javahome;
@@ -177,13 +177,13 @@ public class ResourceLoader implements IResourceLoader {
       // Windows specific 
       if (Settings.isWindows()) {
         if (osarch.contains("64")) {
-          libSource = libSource64;
+          libSource = String.format(libSource64, "windows");
           checkFileName = checkFileNameW64;
           if ((new File(libPathWin)).exists()) {
             libPathFallBack = libPathWin;
           }
         } else {
-          libSource = libSource32;
+          libSource = String.format(libSource32, "windows");
           checkFileName = checkFileNameW32;
           if ((new File(libPathWin)).exists()) {
             libPathFallBack = libPathWin;
@@ -197,10 +197,10 @@ public class ResourceLoader implements IResourceLoader {
       // Linux specific
       if (Settings.isLinux()) {
         if (!osarch.contains("64")) {
-          libSource = libSource64;
+          libSource = String.format(libSource64, "linux");
           checkFileName = checkFileNameL64;
         } else {
-          libSource = libSource32;
+          libSource = String.format(libSource32, "linux");
           checkFileName = checkFileNameL32;
         }
         checkLib = "JXGrabKey";
@@ -285,7 +285,8 @@ public class ResourceLoader implements IResourceLoader {
               new FileManager.fileFilter() {
                   @Override
                   public boolean accept(File entry) {
-                    if (entry.getPath().contains("tessdata")) {
+                    if (entry.getPath().contains("tessdata") ||
+                        entry.getPath().contains("Lib")) {
                       return false;
                     }
                     return true;
@@ -471,13 +472,27 @@ public class ResourceLoader implements IResourceLoader {
     String memx = mem;
     mem = "export";
     log(lvl, "Trying to access package");
+    String resOrg = res;
+    boolean fastReturn = false;
+    int prefix = 1 + resOrg.indexOf("#");
+    if (prefix > 0) {
+      res = res.replace("#", "/");
+      fastReturn = true;
+    }
     List<String[]> entries = makePackageFileList(jarURL, res, true);
+    if (entries == null || entries.isEmpty()) {
+      return false;
+    }
     String targetName = null;
     File targetFile;
     long targetDate;
     for (String[] e : entries) {
       try {
-        targetFile = new File(target, e[0]);
+        if (prefix > 0) {
+          targetFile = new File(target, e[0].substring(prefix));
+        } else {
+          targetFile = new File(target, e[0]);
+        }
         if (targetFile.exists()) {
           targetDate = targetFile.lastModified();
         } else {
@@ -489,6 +504,9 @@ public class ResourceLoader implements IResourceLoader {
           log(lvl + 2, "is from: %s (%d)", e[1], targetDate);
         } else {
           log(lvl + 2, "already in place: " + targetName);
+          if (fastReturn) {
+            return true;
+          }
         }
       } catch (IOException ex) {
         log(-1, "IO-problem extracting: %s\n%s", targetName, ex.getMessage());
@@ -522,7 +540,7 @@ public class ResourceLoader implements IResourceLoader {
       args[0] = retval;
       return true;
     } else if ("checkLibsDir".equals(action)) {
-      return (libsDir == null);
+      return (libsDir != null);
     } else if ("itIsJython".equals(action)) {
       itIsJython = true;
       return true;
@@ -712,7 +730,10 @@ public class ResourceLoader implements IResourceLoader {
       }
     }
     mem = memx;
-    if (itIsJython) export("Lib/sikuli", targetDir);
+    if (itIsJython) {
+      export("Lib/sikuli", targetDir);
+    }
+    export("META-INF/libs#tessdata", targetDir);
     return new File(targetDir);
   }
 
@@ -766,8 +787,6 @@ public class ResourceLoader implements IResourceLoader {
           filelist.add(f);
         }
       }
-    } else {
-      return null;
     }
     return filelist;
   }
