@@ -45,7 +45,9 @@ public class RunSetup {
   private static boolean getIDE, getScript, getJava, getTess;
   private static String localJar;
   private static boolean test = false;
+  private static boolean ignoreErrors = false;
   private static List<String> options = new ArrayList<String>();
+
   //<editor-fold defaultstate="collapsed" desc="new logging concept">
   private static String me = "RunSetup";
   private static String mem = "...";
@@ -80,7 +82,10 @@ public class RunSetup {
 
   public static void main(String[] args) {
     mem = "main";
-
+    
+    Settings.runningSetup = true;
+    IResourceLoader loader = FileManager.getNativeLoader("basic", args);
+    
     options.addAll(Arrays.asList(args));
     if (args.length > 0 && "test".equals(args[0])) {
       test = true;
@@ -112,9 +117,9 @@ public class RunSetup {
     Debug.setDebugLevel(3);
 
     if (args.length > 0) {
-      log(lvl, "... starting with " + args[0]);
+      log1(lvl, "... starting with " + args[0]);
     } else {
-      log(lvl, "... starting with no args given");
+      log1(lvl, "... starting with no args given");
     }
 
     //<editor-fold defaultstate="collapsed" desc="option reset">
@@ -217,10 +222,28 @@ public class RunSetup {
 //***
 // starting normal setup
 //***
-    if ((new File(workDir, "libs").exists())
-            || new File(workDir, localIDE).exists()
-            || new File(workDir, localScript).exists()
-            || new File(workDir, localJava).exists()) {
+    if (options.size() > 0 && options.get(0).equals("ignore-errors")) {
+      ignoreErrors = true;      
+    }
+    
+    if (Settings.isWindows()) {
+      if (!ignoreErrors && !new File(workDir, "libs").exists()) {
+        loader.export("sikuli-setup.cmd", workDir);
+        if (!new File(workDir, "sikuli-setup.cmd").exists()) {
+          String msg = "Fatal error 002: sikuli-setup.cmd could not be exported to " + workDir;
+          log0(-1, msg);
+          popError(msg);
+          System.exit(2);
+        }
+        popInfo("Now open a command window, go to the folder\n" + workDir + 
+                "\n and run sikuli-setup.cmd to finalize the setup process.");
+        System.exit(0);
+      }
+    }
+
+    if ((new File(workDir, localIDE)).exists()
+         || (new File(workDir, localScript)).exists()
+         || (new File(workDir, localJava)).exists()) {
       popError(workDir + "\n... folder we are running in must not be a current Sikuli folder! \n"
               + "pls. correct the problem and start again.");
       if (!test) {
@@ -228,7 +251,7 @@ public class RunSetup {
       }
     }
 
-    log0(lvl, "user home: %s", uhome);
+    log1(lvl, "user home: %s", uhome);
 
     winSetup = new JFrame("SikuliX-Setup");
     Container winCP = winSetup.getContentPane();
@@ -368,7 +391,7 @@ public class RunSetup {
         }
         downloadOK &= dlOK;
       }
-      log0(lvl, "Download ended");
+      log1(lvl, "Download ended");
       if (!test && !downloadOK) {
         terminate("download not completed successfully");
       }
@@ -427,7 +450,7 @@ public class RunSetup {
       if (path == null) {
         continue;
       }
-      log0(lvl, "adding native stuff to " + path);
+      log1(lvl, "adding native stuff to " + path);
       localJar = (new File(workDir, path)).getAbsolutePath();
       jarsList[0] = localJar;
       jarsList[1] = (new File(workDir, localSetup)).getAbsolutePath();
@@ -463,7 +486,6 @@ public class RunSetup {
       FileManager.deleteFileOrFolder(folderLibs.getAbsolutePath());
     }
     folderLibs.mkdirs();
-    IResourceLoader loader = FileManager.getNativeLoader("basic", args);
     loader.check(Settings.SIKULI_LIB);
     if (loader.doSomethingSpecial("checkLibsDir", null)) {
       closeSplash(splash);
@@ -589,19 +611,19 @@ public class RunSetup {
     String fname = FileManager.downloadURL(sDir + item, tDir, progress);
     progress.dispose();
     if (null == fname) {
-      log(-1, "Fatal error 001: not able to download: %s", item);
+      log1(-1, "Fatal error 001: not able to download: %s", item);
       return false;
     }
     if (!(new File(tDir, item)).renameTo(new File(jar))) {
-      log0(-1, "rename to %s did not work", jar);
+      log1(-1, "rename to %s did not work", jar);
       return false;
     }
     return true;
   }
 
   private static void terminate(String msg) {
-    log0(-1, msg);
-    log0(-1, "... terminated abnormally :-(");
+    log1(-1, msg);
+    log1(-1, "... terminated abnormally :-(");
     popError("Something serious happened! Sikuli not useable!\n"
             + "Check the error log at " + logfile);
     System.exit(0);

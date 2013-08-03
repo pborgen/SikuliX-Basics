@@ -18,6 +18,7 @@ public class Settings {
   private static int lvl = 2;
   public static int breakPoint = 0;
   public static boolean handlesMacBundles = true;
+  public static boolean runningSetup = false;
   
   /**
    * location of folder Tessdata
