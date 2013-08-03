@@ -44,8 +44,8 @@ public class SikuliX {
   private static Method endWhat, toJavaKeyCode;
   private static boolean runningSetup = false;
 
-  public static void setRunningSetup(boolean runningSetup) {
-    runningSetup = runningSetup;
+  public static void setRunningSetup(boolean _runningSetup) {
+    runningSetup = _runningSetup;
   }
 
   private static JFrame splash = null;
