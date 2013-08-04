@@ -353,100 +353,101 @@ public class ResourceLoader implements IResourceLoader {
     File dir = null;
     if (path != null) {
       log(lvl, path);
+      if (!Settings.runningSetup && Settings.isWindows()) {
+        // is on system path?
+        String syspath = System.getenv("PATH");
+        path = (new File(path).getAbsolutePath()).replaceAll("/", "\\");
+        if (!syspath.contains(path)) {
+          String error = "*** error ***";
+          log(-1, "libs dir is not on system path: " + path);
+          if (Debug.getDebugLevel() >= lvl) {
+            for (String e : syspath.split(";")) {
+              System.out.println(e);
+            }
+          }
+          log(-2, "Please wait! Trying to add it to user's path");
+          if (runcmd(cmdRegCheck).startsWith(error)) {
+            log(-1, "Fatal Error 104: Not possible to access registry!");
+            SikuliX.terminate(104);
+          }
+          String[] val = regMap.get("EnvPath");
+          String envPath = "";
+          String newPath;
+          int step = 0;
+          String cmdQ = String.format(cmdRegQuery, val[0], val[1]);
+          String regResult = runcmd(cmdQ);
+          if (regResult.startsWith(error)) {
+            log(lvl, "users PATH seems to be empty: " + regResult);
+            step = 1;
+          } else {
+            String[] regResultLines = regResult.split(NL);
+            for (String line : regResultLines) {
+              line = line.trim();
+              if (step == 0 && line.startsWith(val[0])) {
+                step = 1;
+                continue;
+              }
+              if (step == 1 && line.startsWith(val[1]) && line.contains(val[2])) {
+                step = 1;
+                envPath = line;
+                continue;
+              }
+              if (!line.isEmpty()) {
+                log(lvl, line);
+              }
+            }
+          }
+          if (step == 0) {
+            log(-1, "Fatal Error 105: Not possible to get user's PATH from registry");
+            SikuliX.terminate(105);
+          } else {
+            if (!envPath.isEmpty()) {
+              envPath = envPath.substring(envPath.indexOf(val[2]) + val[2].length()).trim();
+              log(lvl, "current:(%s %s): %s", val[0], val[1], envPath);
+              if (envPath.contains(path)) {
+                log(-1, "Logout and Login again! (Since libs folder is in user's path, but not activated)");
+                SikuliX.terminate(0);
+              }
+            }
+            newPath = path + (envPath.isEmpty() ? "" : ";" + envPath);
+            String finalPath = "";
+            char c;
+            for (int i = 0; i < newPath.length(); i++) {
+              c = newPath.charAt(i);
+              if (c == ' ') {
+                finalPath += "\" \"";
+              } else {
+                finalPath += c;
+              }
+            }
+            String cmdA = String.format(cmdRegAdd, val[0], val[1], val[2], finalPath);
+            log(lvl, runcmd(cmdA));
+            regResult = runcmd(cmdQ);
+            log(lvl, "Changed to: " + regResult);
+            if (!regResult.contains(path)) {
+              log(-1, "Fatal error 106: libs folder could not be added to PATH - giving up!");
+              SikuliX.terminate(106);
+            }
+          }
+          log(-1, "Successfully added the libs folder to users PATH!\n" + ""
+                  + "RESTART all processes/IDE's using Sikuli for new PATH to be used!/n"
+                  + "For usages from command line logout/login might be necessary!");
+          SikuliX.terminate(0);
+        }
+        //convenience: jawt.dll in libsdir avoids need for java/bin in system path
+        String lib = "jawt.dll";
+        try {
+          extractResource(javahome + "bin/" + lib, new File(path, lib), false);
+        } catch (IOException ex) {
+          log(-1, "Fatal error 107: problem copying " + lib + "\n" + ex.getMessage());
+          SikuliX.terminate(107);
+        }
+      }
       File checkFile = (new File(FileManager.slashify(path, true) + checkFileName));
       if (checkFile.exists()) {
         if ((new File(jarPath)).lastModified() > checkFile.lastModified()) {
           log(-1, "libs folder outdated!");
         } else {
-          if (!Settings.runningSetup && Settings.isWindows()) {
-            // is on system path?
-            String syspath = System.getenv("PATH");
-            if (!syspath.contains((new File(path).getAbsolutePath()))) {
-              String error = "*** error ***";
-              log(-1, "libs dir is not on system path: " + path);
-              if (Debug.getDebugLevel() >= lvl) {
-                for (String e : syspath.split(";")) {
-                  System.out.println(e);
-                }
-              }
-              log(-2, "Please wait! Trying to add it to user's path");
-              if (runcmd(cmdRegCheck).startsWith(error)) {
-                log(-1, "Fatal Error 104: Not possible to access registry!");
-                SikuliX.terminate(104);
-              }
-              String[] val = regMap.get("EnvPath");
-              String envPath = "";
-              String newPath;
-              int step = 0;
-              String cmdQ = String.format(cmdRegQuery, val[0], val[1]);
-              String regResult = runcmd(cmdQ);
-              if (regResult.startsWith(error)) {
-                log(lvl, "users PATH seems to be empty: " + regResult);
-                step = 1;
-              } else {
-                String[] regResultLines = regResult.split(NL);
-                for (String line : regResultLines) {
-                  line = line.trim();
-                  if (step == 0 && line.startsWith(val[0])) {
-                    step = 1;
-                    continue;
-                  }
-                  if (step == 1 && line.startsWith(val[1]) && line.contains(val[2])) {
-                    step = 1;
-                    envPath = line;
-                    continue;
-                  }
-                  if (!line.isEmpty()) {
-                    log(lvl, line);
-                  }
-                }
-              }
-              if (step == 0) {
-                log(-1, "Fatal Error 105: Not possible to get user's PATH from registry");
-                SikuliX.terminate(105);
-              } else {
-                if (!envPath.isEmpty()) {
-                  envPath = envPath.substring(envPath.indexOf(val[2]) + val[2].length()).trim();
-                  log(lvl, "current:(%s %s): %s", val[0], val[1], envPath);
-                  if (envPath.contains(path)) {
-                    log(-1, "Logout and Login again! (Since libs folder is in user's path, but not activated)");
-                    SikuliX.terminate(0);
-                  }
-                }
-                newPath = path.replaceAll("/", "\\") + (envPath.isEmpty() ? "" : ";" + envPath);
-                String finalPath = "";
-                char c;
-                for (int i = 0; i < newPath.length(); i++) {
-                  c = newPath.charAt(i);
-                  if (c == ' ') {
-                    finalPath += "\" \"";
-                  } else {
-                    finalPath += c;
-                  }
-                }
-                String cmdA = String.format(cmdRegAdd, val[0], val[1], val[2], finalPath);
-                log(lvl, runcmd(cmdA));
-                regResult = runcmd(cmdQ);
-                log(lvl, "Changed to: " + regResult);
-                if (!regResult.contains(path)) {
-                  log(-1, "Fatal error 106: libs folder could not be added to PATH - giving up!");
-                  SikuliX.terminate(106);
-                }
-              }
-              log(-1, "Successfully added the libs folder to users PATH!\n" + ""
-                      + "RESTART all processes/IDE's using Sikuli for new PATH to be used!/n"
-                      + "For usages from command line logout/login might be necessary!");
-              SikuliX.terminate(0);
-            }
-            //convenience: jawt.dll in libsdir avoids need for java/bin in system path
-            String lib = "jawt.dll";
-            try {
-              extractResource(javahome + "bin/" + lib, new File(path, lib), false);
-            } catch (IOException ex) {
-              log(-1, "Fatal error 107: problem copying " + lib + "\n" + ex.getMessage());
-              SikuliX.terminate(107);
-            }
-          }
           loadLib(checkLib);
           log(lvl, "Using libs at: " + path);
           dir = new File(path);

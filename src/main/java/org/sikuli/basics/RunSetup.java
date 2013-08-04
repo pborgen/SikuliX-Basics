@@ -45,7 +45,7 @@ public class RunSetup {
   private static boolean getIDE, getScript, getJava, getTess;
   private static String localJar;
   private static boolean test = false;
-  private static boolean ignoreErrors = false;
+  private static boolean ignoreLibsErrors = false;
   private static List<String> options = new ArrayList<String>();
 
   //<editor-fold defaultstate="collapsed" desc="new logging concept">
@@ -222,14 +222,21 @@ public class RunSetup {
 //***
 // starting normal setup
 //***
-    if (options.size() > 0 && options.get(0).equals("ignore-errors")) {
-      ignoreErrors = true;      
+    if (options.size() > 0 && options.get(0).equals("ignore-libs-error")) {
+      ignoreLibsErrors = true;      
     }
     
     if (Settings.isWindows()) {
-      if (!ignoreErrors && !new File(workDir, "libs").exists()) {
-        loader.export("sikuli-setup.cmd", workDir);
-        if (!new File(workDir, "sikuli-setup.cmd").exists()) {
+      String syspath = System.getenv("PATH");
+      for (String p : syspath.split(";")) {
+        log1(lvl, "syspath: " + p);
+      }
+      File fLibs = new File(workDir, "libs");
+      String pLibs = fLibs.getAbsolutePath().replaceAll("/", "\\");
+      log1(lvl, "syspath? " + pLibs);
+      if (!syspath.contains(pLibs)) {
+        loader.export("Commands/windows#", workDir);
+        if (!new File(workDir, "runSetup.cmd").exists()) {
           String msg = "Fatal error 002: sikuli-setup.cmd could not be exported to " + workDir;
           log0(-1, msg);
           popError(msg);
