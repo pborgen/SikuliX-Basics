@@ -26,7 +26,7 @@ Debug.log(3, "Jython: sikuli: Sikuli: import Screen")
 from org.sikuli.script import Screen as JScreen
 from Screen import *
 
-Debug.log(3, "Jython: sikuli: Sikuli: Env.addHotey")
+Debug.log(3, "Jython: sikuli: Sikuli: Env.addHotkey")
 from Env import *
 
 Debug.log(3, "Jython: sikuli: Sikuli: import Match")

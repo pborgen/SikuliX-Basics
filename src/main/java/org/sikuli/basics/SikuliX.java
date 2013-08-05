@@ -104,7 +104,7 @@ public class SikuliX {
   public static int[] callKeyToJavaKeyCodeMethod(char key) {
     try {
       KeyCl = Class.forName(ScriptKeyCL);
-      toJavaKeyCode = KeyCl.getMethod("toJavaKeyCode", new Class[]{Character.class});
+      toJavaKeyCode = KeyCl.getMethod("toJavaKeyCode", new Class[]{char.class});
       return (int[]) toJavaKeyCode.invoke(KeyCl, new Object[]{key});
     } catch (Exception ex) {
       return null;
@@ -140,22 +140,6 @@ public class SikuliX {
 
   public static void cleanUp(int n) {
     callScriptEndMethod("cleanUp", n);
-  }
-
-  public static boolean removeHotkey(char key, int modifiers) {
-    return HotkeyManager.getInstance().removeHotkey(key, modifiers);
-  }
-
-  public static boolean removeHotkey(String key, int modifiers) {
-    return HotkeyManager.getInstance().removeHotkey(key, modifiers);
-  }
-
-  public static boolean addHotkey(char key, int modifiers, HotkeyListener listener) {
-    return HotkeyManager.getInstance().addHotkey(key, modifiers, listener);
-  }
-
-  public static boolean addHotkey(String key, int modifiers, HotkeyListener listener) {
-    return HotkeyManager.getInstance().addHotkey(key, modifiers, listener);
   }
 
   /**

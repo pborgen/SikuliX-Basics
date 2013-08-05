@@ -1,7 +1,8 @@
 # Copyright 2010-2013, Sikuli.org
 # Released under the MIT License.
-from org.sikuli.script import Env as JEnv
 from org.sikuli.basics import HotkeyListener
+from org.sikuli.basics import HotkeyManager
+from org.sikuli.script import Env as JEnv
 
 class Env(JEnv):
 
@@ -10,6 +11,6 @@ class Env(JEnv):
         class AnonyListener(HotkeyListener):
             def hotkeyPressed(self, event):
                 handler(event)
-        return JEnv.addHotkey(key, modifiers, AnonyListener())
+        return HotkeyManager.getInstance().addHotkey(key, modifiers, AnonyListener())
 
 
