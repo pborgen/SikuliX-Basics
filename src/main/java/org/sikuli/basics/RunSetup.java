@@ -1,3 +1,10 @@
+/*
+ * Copyright 2010-2013, Sikuli.org
+ * Released under the MIT License.
+ *
+ * RaiMan 2013
+ */
+
 package org.sikuli.basics;
 
 import java.awt.BorderLayout;

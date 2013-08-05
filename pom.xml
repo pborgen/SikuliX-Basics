@@ -1,5 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  
+  <!--
+  * Copyright 2010-2013, Sikuli.org
+  * Released under the MIT License.
+  *
+  * RaiMan 2013
+  -->
+
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.sikuli</groupId>
@@ -72,22 +80,22 @@
     </dependency>
 
     <dependency>
+      <groupId>org.swinglabs</groupId>
+      <artifactId>swing-layout</artifactId>
+      <version>1.0.3</version>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.4</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.swinglabs</groupId>
-      <artifactId>swing-layout</artifactId>
-      <version>1.0.3</version>
     </dependency>
   </dependencies>
 
   <build>
     <finalName>sikulix-basics</finalName>
 
-    <!-- copy native resources -->
     <resources>
       <resource> 
         <directory>src/main/resources-libs</directory>
@@ -107,22 +115,6 @@
           <target>1.6</target>
         </configuration>
       </plugin>
-
-      <!-- Plugin to create an additional jar containing the source 
-      <plugin>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>2.2.1</version>
-        <executions>
-          <execution>
-            <id>attach-sources</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>jar-no-fork</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      -->
     </plugins>
   </build>
 </project>
