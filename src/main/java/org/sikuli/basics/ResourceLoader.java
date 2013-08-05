@@ -2,9 +2,8 @@
  * Copyright 2010-2013, Sikuli.org
  * Released under the MIT License.
  *
- * RaiMan 2013
+ * modified RaiMan 2012
  */
-
 package org.sikuli.basics;
 
 import java.io.BufferedReader;
@@ -410,19 +409,11 @@ public class ResourceLoader implements IResourceLoader {
                 SikuliX.terminate(0);
               }
             }
-            newPath = path + (envPath.isEmpty() ? "" : ";" + envPath);
-            String finalPath = "";
-            char c;
-            for (int i = 0; i < newPath.length(); i++) {
-              c = newPath.charAt(i);
-              if (c == ' ') {
-                finalPath += "\" \"";
-              } else {
-                finalPath += c;
-              }
-            }
+            newPath = path.trim() + (envPath.isEmpty() ? "" : ";" + envPath);
+            String finalPath = newPath.replaceAll(" ", "%20;");           
             String cmdA = String.format(cmdRegAdd, val[0], val[1], val[2], finalPath);
-            log(lvl, runcmd(cmdA));
+            regResult = runcmd(cmdA);
+            log(lvl, regResult);
             regResult = runcmd(cmdQ);
             log(lvl, "Changed to: " + regResult);
             if (!regResult.contains(path)) {
@@ -574,7 +565,11 @@ public class ResourceLoader implements IResourceLoader {
       ArrayList<String> argsx = new ArrayList<String>();
       StringTokenizer toks;
       String tok;
-      toks = new StringTokenizer(args[0]);
+      String cmd = args[0];
+      if (Settings.isWindows()) {
+        cmd = cmd.replaceAll("\\ ", "%20;");
+      }
+      toks = new StringTokenizer(cmd);
       while (toks.hasMoreTokens()) {
         tok = toks.nextToken(" ");
         if (tok.length() == 0) {
@@ -591,7 +586,7 @@ public class ResourceLoader implements IResourceLoader {
             tok += toks.nextToken(separator);
           }
         }
-        argsx.add(tok);
+        argsx.add(tok.replaceAll("%20;", " "));
       }
       args = argsx.toArray(new String[0]);
     }
