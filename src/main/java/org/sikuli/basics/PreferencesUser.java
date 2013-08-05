@@ -82,9 +82,8 @@ public class PreferencesUser {
 	}
 
 	private int defaultCaptureHotkeyModifiers() {
-		String os = System.getProperty("os.name").toLowerCase();
-		int mod = Event.SHIFT_MASK + Event.META_MASK; // mac default
-		if (os.startsWith("windows") || os.startsWith("linux")) {
+		int mod = Event.SHIFT_MASK + Event.META_MASK;
+		if (!Settings.isMac()) {
 			mod = Event.SHIFT_MASK + Event.CTRL_MASK;
 		}
 		return mod;
@@ -116,9 +115,8 @@ public class PreferencesUser {
 	}
 
 	private int defaultStopHotkeyModifiers() {
-		String os = System.getProperty("os.name").toLowerCase();
-		int mod = Event.SHIFT_MASK + Event.META_MASK; // mac default
-		if (os.startsWith("windows") || os.startsWith("linux")) {
+		int mod = Event.SHIFT_MASK + Event.META_MASK;
+		if (!Settings.isMac()) {
 			mod = Event.SHIFT_MASK + Event.ALT_MASK;
 		}
 		return mod;
