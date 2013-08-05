@@ -6,7 +6,9 @@
  */
 package org.sikuli.basics;
 
+import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Date;
@@ -208,7 +210,11 @@ public class SikuliX {
     }
     Class sysclass = URLClassLoader.class;
     try {
-      URL u = new URL("file://" + jar);
+      jar = FileManager.slashify(new File(jar).getAbsolutePath(), false);
+      if (Settings.isWindows()) {
+        jar = "/" + jar;
+      }
+      URL u = (new URI("file", jar, null)).toURL();
       method = sysclass.getDeclaredMethod("addURL", new Class[]{URL.class});
       method.setAccessible(true);
       method.invoke(sysLoader, new Object[]{u});

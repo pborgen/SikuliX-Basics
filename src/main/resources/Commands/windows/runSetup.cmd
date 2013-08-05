@@ -43,9 +43,9 @@ goto STOPIT
 :JAVA_OK 
 echo +++ running this Java
 "%JAVA_HOME%\bin\java.exe" -version
-PATH=%SIKULIX_HOME%\libs;%PATH%
+PATH=%SIKULIX_HOME%libs;%PATH%
 echo +++ trying to start Sikuli Setup in %SIKULIX_HOME%
-"%JAVA_HOME%\bin\java.exe" %PARMS% -jar "%SIKULIX_HOME%\sikuli-setup.jar" %*
+"%JAVA_HOME%\bin\java.exe" %PARMS% -jar "%SIKULIX_HOME%sikuli-setup.jar" %*
 
 GOTO FINALLY
 :STOPIT

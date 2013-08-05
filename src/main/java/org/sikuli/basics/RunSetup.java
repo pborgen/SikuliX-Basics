@@ -45,7 +45,7 @@ public class RunSetup {
   private static boolean getIDE, getScript, getJava, getTess;
   private static String localJar;
   private static boolean test = false;
-  private static boolean ignoreLibsErrors = false;
+  private static boolean skipOnDebug = false;
   private static List<String> options = new ArrayList<String>();
 
   //<editor-fold defaultstate="collapsed" desc="new logging concept">
@@ -222,9 +222,6 @@ public class RunSetup {
 //***
 // starting normal setup
 //***
-    if (options.size() > 0 && options.get(0).equals("ignore-libs-error")) {
-      ignoreLibsErrors = true;      
-    }
     
     if (Settings.isWindows()) {
       String syspath = System.getenv("PATH");
@@ -233,8 +230,8 @@ public class RunSetup {
       }
       File fLibs = new File(workDir, "libs");
       String pLibs = fLibs.getAbsolutePath().replaceAll("/", "\\");
-      log1(lvl, "syspath? " + pLibs);
       if (!syspath.contains(pLibs)) {
+        log1(lvl, "Not on syspath: " + pLibs + " --- Extracting runSetup.cmd.");
         loader.export("Commands/windows#", workDir);
         if (!new File(workDir, "runSetup.cmd").exists()) {
           String msg = "Fatal error 002: sikuli-setup.cmd could not be exported to " + workDir;

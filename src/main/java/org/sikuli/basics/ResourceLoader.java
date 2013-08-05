@@ -152,7 +152,7 @@ public class ResourceLoader implements IResourceLoader {
 
       if (userhome != null) {
         if (Settings.isWindows()) {
-          userSikuli = System.getenv("APPDATA");
+          userSikuli = System.getenv("HOMEPATH");
           if (userSikuli != null) {
             userSikuli = FileManager.slashify(userSikuli, true) + prefixSikuli;
           }
@@ -320,7 +320,7 @@ public class ResourceLoader implements IResourceLoader {
           libPath = jarPathLibs.getAbsolutePath();
         }
       }
-      if (!Settings.runningSetup && libPath == null && userSikuli != null) {
+      if (libPath == null && userSikuli != null) {
         log(-2, "Please wait! Trying to extract libs to user home: " + userSikuli);
         File userhomeLibs = extractLibs((new File(userSikuli)).getAbsolutePath(), libSource);
         if (userhomeLibs == null) {
@@ -483,6 +483,12 @@ public class ResourceLoader implements IResourceLoader {
     if (prefix > 0) {
       res = res.replace("#", "/");
       fastReturn = true;
+    }
+    if (!extractingFromJar) {
+      prefix += jarPath.length();
+      if (Settings.isWindows()) {
+        prefix -= 1;
+      }
     }
     List<String[]> entries = makePackageFileList(jarURL, res, true);
     if (entries == null || entries.isEmpty()) {
