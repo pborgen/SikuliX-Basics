@@ -567,7 +567,7 @@ public class ResourceLoader implements IResourceLoader {
       String tok;
       String cmd = args[0];
       if (Settings.isWindows()) {
-        cmd = cmd.replaceAll("\\ ", "%20;");
+        cmd = cmd.replaceAll("\\\\ ", "%20;");
       }
       toks = new StringTokenizer(cmd);
       while (toks.hasMoreTokens()) {
