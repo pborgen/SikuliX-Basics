@@ -52,7 +52,7 @@ public class SikuliX {
   }
 
   private static JFrame splash = null;
-  private static long start;
+  private static long start = 0;
  
   public static void displaySplash(String [] args) {
     if (args == null) {
@@ -77,7 +77,9 @@ public class SikuliX {
   
   public static void displaySplashFirstTime(String [] args) {
     if (args == null) {
-      if (splash != null) splash.dispose();
+      if (splash != null) {
+        splash.dispose();
+      }
       if (start > 0) {
         Debug.log(3, "Sikuli-IDE environment setup: " + ((new Date()).getTime() - start));
         start = 0;
@@ -85,8 +87,8 @@ public class SikuliX {
       return;
     }
     start = (new Date()).getTime();
-    String[] splashArgs = new String[ ] { 
-      "splash", "#", "#SikuliX-IDE-1.0.1", "#... setting up environement - pls. wait ..." };
+    String[] splashArgs = new String[] { 
+      "splash", "#", "#" + Settings.SikuliVersionIDE, "", "#", "#... setting up environement - pls. wait ..." };
     splash = new MultiFrame(splashArgs);
   }
   
