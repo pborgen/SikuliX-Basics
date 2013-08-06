@@ -239,7 +239,7 @@ public class RunSetup {
       String pLibs = fLibs.getAbsolutePath().replaceAll("/", "\\");
       if (!syspath.contains(pLibs)) {
         log1(lvl, "Not on syspath: " + pLibs + " --- Extracting runSetup.cmd.");
-        loader.export("Commands/windows#", workDir);
+        loader.export("Commands/windows#runSetup.cmd", workDir);
         if (!new File(workDir, "runSetup.cmd").exists()) {
           String msg = "Fatal error 002: sikuli-setup.cmd could not be exported to " + workDir;
           log0(-1, msg);
@@ -483,12 +483,19 @@ public class RunSetup {
       jarsList = new String[] {(new File(workDir, localIDE)).getAbsolutePath()};
       success &= FileManager.buildJar(targetJar, jarsList, null, null, libsFilter);
     }
+    if (Settings.isWindows()) {
+      if (getIDE) {
+        loader.export("Commands/windows#runIDE.cmd", workDir);
+      }
+      else if (getScript) {
+        loader.export("Commands/windows#runScript.cmd", workDir);
+      }
+    }
     closeSplash(splash);
     if (!success) {
       popError("Bad things happened trying to add native stuff to selected jars --- terminating!");
       System.exit(1);
     }
-
 
     // create libsDir and system path entry (windows)
     splash = showSplash("Now I will try to set up the environment!", "pls. wait - may take some seconds ...");
