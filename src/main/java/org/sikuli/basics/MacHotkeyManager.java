@@ -8,9 +8,6 @@ package org.sikuli.basics;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import org.sikuli.basics.FileManager;
-import org.sikuli.basics.HotkeyListener;
-import org.sikuli.basics.HotkeyManager;
 
 // http://lists.apple.com/archives/mac-games-dev/2001/Sep/msg00113.html
 // full key table: http://www.mactech.com/articles/mactech/Vol.04/04.12/Macinkeys/

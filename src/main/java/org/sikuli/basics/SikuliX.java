@@ -101,10 +101,10 @@ public class SikuliX {
     }
   }
 
-  public static int[] callKeyToJavaKeyCodeMethod(char key) {
+  public static int[] callKeyToJavaKeyCodeMethod(String key) {
     try {
       KeyCl = Class.forName(ScriptKeyCL);
-      toJavaKeyCode = KeyCl.getMethod("toJavaKeyCode", new Class[]{char.class});
+      toJavaKeyCode = KeyCl.getMethod("toJavaKeyCode", new Class[]{String.class});
       return (int[]) toJavaKeyCode.invoke(KeyCl, new Object[]{key});
     } catch (Exception ex) {
       return null;

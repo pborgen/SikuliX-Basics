@@ -76,8 +76,8 @@ public abstract class HotkeyManager {
    *
    * @return true if success. false otherwise.
    */
-  public boolean addHotkey(String key, int modifiers, HotkeyListener listener) {
-    return addHotkey(key.charAt(0), modifiers, listener);
+  public boolean addHotkey(char key, int modifiers, HotkeyListener listener) {
+    return addHotkey(""+key, modifiers, listener);
   }
 
   /**
@@ -85,9 +85,9 @@ public abstract class HotkeyManager {
    *
    * @return true if success. false otherwise.
    */
-  public boolean addHotkey(char key, int modifiers, HotkeyListener listener) {
-    int[] keyCodes = SikuliX.callKeyToJavaKeyCodeMethod(key);
-    int keyCode = keyCodes[keyCodes.length - 1];
+  public boolean addHotkey(String key, int modifiers, HotkeyListener listener) {
+    int[] keyCodes = SikuliX.callKeyToJavaKeyCodeMethod(key.toLowerCase());
+    int keyCode = keyCodes[0];
     String txtMod = getKeyModifierText(modifiers);
     String txtCode = getKeyCodeText(keyCode);
     Debug.info("add hotkey: " + txtMod + " " + txtCode);
@@ -104,8 +104,8 @@ public abstract class HotkeyManager {
    *
    * @return true if success. false otherwise.
    */
-  public boolean removeHotkey(String key, int modifiers) {
-    return removeHotkey(key.charAt(0), modifiers);
+  public boolean removeHotkey(char key, int modifiers) {
+    return removeHotkey(""+key, modifiers);
   }
 
   /**
@@ -113,9 +113,9 @@ public abstract class HotkeyManager {
    *
    * @return true if success. false otherwise.
    */
-  public boolean removeHotkey(char key, int modifiers) {
-    int[] keyCodes = SikuliX.callKeyToJavaKeyCodeMethod(key);
-    int keyCode = keyCodes[keyCodes.length - 1];
+  public boolean removeHotkey(String key, int modifiers) {
+    int[] keyCodes = SikuliX.callKeyToJavaKeyCodeMethod(key.toLowerCase());
+    int keyCode = keyCodes[0];
     String txtMod = getKeyModifierText(modifiers);
     String txtCode = getKeyCodeText(keyCode);
     Debug.info("remove hotkey: " + txtMod + " " + txtCode);
