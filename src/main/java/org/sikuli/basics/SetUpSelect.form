@@ -34,11 +34,13 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="option3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="17" max="32767" attributes="0"/>
                       <Component id="ask3" min="-2" pref="40" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="39" max="-2" attributes="0"/>
                       <Component id="setupNow" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jSeparator6" alignment="1" max="32767" attributes="0"/>
@@ -83,7 +85,7 @@
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="option6" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="48" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="ask6" min="-2" pref="40" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -161,7 +163,10 @@
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="jSeparator6" min="-2" pref="10" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
-              <Component id="setupNow" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="setupNow" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
               <EmptySpace pref="15" max="32767" attributes="0"/>
           </Group>
           <Group type="103" rootIndex="1" groupAlignment="0" attributes="0">
@@ -243,7 +248,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="option1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Pack1: I want to use all options: Sikuli IDE, running scripts from commandline (and optionally Java developement)"/>
+        <Property name="text" type="java.lang.String" value="1 - Pack1: I want to use all options: Sikuli IDE, running scripts from commandline (and optionally Java developement)"/>
       </Properties>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="4"/>
@@ -251,7 +256,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="option4">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Pack3: I only want to develop in Java or Jython using NetBeans, Eclipse or other IDE&apos;s (I do not need Pack1 nor Pack2)"/>
+        <Property name="text" type="java.lang.String" value="4 - Pack3: I only want to develop in Java or Jython using NetBeans, Eclipse or other IDE&apos;s (I do not need Pack1 nor Pack2)"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="option4ActionPerformed"/>
@@ -262,7 +267,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="option3">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Pack3: Additionally I want to develop and run scripts in Jython language using Eclipse or any other IDE or script editor"/>
+        <Property name="text" type="java.lang.String" value="3 - Pack3: Additionally I want to develop and run scripts in Jython language using Eclipse or any other IDE or other methods"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="option3ActionPerformed"/>
@@ -273,7 +278,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="option2">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Pack2: I want to run Sikuli scripts from command line (usage as Pack 1, but I do not need the Sikuli IDE)"/>
+        <Property name="text" type="java.lang.String" value="2 - Pack2: I want to run Sikuli scripts from command line (usage as Pack 1, but I do not need the Sikuli IDE)"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="option2ActionPerformed"/>
@@ -338,7 +343,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="option5">
       <Properties>
-        <Property name="text" type="java.lang.String" value="I want to use Tesseract based OCR features (You should know what you are doing and be experienced!)"/>
+        <Property name="text" type="java.lang.String" value="5 - I want to use Tesseract based OCR features (You should know what you are doing and be experienced!)"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="option5ActionPerformed"/>
@@ -360,7 +365,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="option6">
       <Properties>
-        <Property name="text" type="java.lang.String" value="I want the packages to be useable on Windows, Mac and Linux (they contain the stuff for all systems - one pack for all)"/>
+        <Property name="text" type="java.lang.String" value="6 - I want the packages to be useable on Windows, Mac and Linux (they contain the stuff for all systems - one pack for all)"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="option6ActionPerformed"/>
@@ -379,6 +384,14 @@
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="1"/>
       </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="jButton1">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Cancel"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

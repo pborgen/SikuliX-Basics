@@ -54,6 +54,7 @@ public class SetUpSelect extends javax.swing.JPanel {
     ask5 = new javax.swing.JButton();
     option6 = new javax.swing.JCheckBox();
     ask6 = new javax.swing.JButton();
+    jButton1 = new javax.swing.JButton();
 
     jLabel1.setText("SikuliX 1.0.1 SetUp");
     jLabel1.setAlignmentX(0.5F);
@@ -74,23 +75,23 @@ public class SetUpSelect extends javax.swing.JPanel {
 
     jLabel5.setText("Please check the appropriate options below:   (click the [ ? ] buttons to get more specific information about the option)");
 
-    option1.setText("Pack1: I want to use all options: Sikuli IDE, running scripts from commandline (and optionally Java developement)");
+    option1.setText("1 - Pack1: I want to use all options: Sikuli IDE, running scripts from commandline (and optionally Java developement)");
 
-    option4.setText("Pack3: I only want to develop in Java or Jython using NetBeans, Eclipse or other IDE's (I do not need Pack1 nor Pack2)");
+    option4.setText("4 - Pack3: I only want to develop in Java or Jython using NetBeans, Eclipse or other IDE's (I do not need Pack1 nor Pack2)");
     option4.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option4ActionPerformed(evt);
       }
     });
 
-    option3.setText("Pack3: Additionally I want to develop and run scripts in Jython language using Eclipse or any other IDE or script editor");
+    option3.setText("3 - Pack3: Additionally I want to develop and run scripts in Jython language using Eclipse or any other IDE or other methods");
     option3.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option3ActionPerformed(evt);
       }
     });
 
-    option2.setText("Pack2: I want to run Sikuli scripts from command line (usage as Pack 1, but I do not need the Sikuli IDE)");
+    option2.setText("2 - Pack2: I want to run Sikuli scripts from command line (usage as Pack 1, but I do not need the Sikuli IDE)");
     option2.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option2ActionPerformed(evt);
@@ -132,7 +133,7 @@ public class SetUpSelect extends javax.swing.JPanel {
       }
     });
 
-    option5.setText("I want to use Tesseract based OCR features (You should know what you are doing and be experienced!)");
+    option5.setText("5 - I want to use Tesseract based OCR features (You should know what you are doing and be experienced!)");
     option5.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option5ActionPerformed(evt);
@@ -146,7 +147,7 @@ public class SetUpSelect extends javax.swing.JPanel {
       }
     });
 
-    option6.setText("I want the packages to be useable on Windows, Mac and Linux (they contain the stuff for all systems - one pack for all)");
+    option6.setText("6 - I want the packages to be useable on Windows, Mac and Linux (they contain the stuff for all systems - one pack for all)");
     option6.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option6ActionPerformed(evt);
@@ -157,6 +158,13 @@ public class SetUpSelect extends javax.swing.JPanel {
     ask6.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         ask6ActionPerformed(evt);
+      }
+    });
+
+    jButton1.setText("Cancel");
+    jButton1.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButton1ActionPerformed(evt);
       }
     });
 
@@ -180,10 +188,12 @@ public class SetUpSelect extends javax.swing.JPanel {
             .add(ask2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
           .add(layout.createSequentialGroup()
             .add(option3)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 17, Short.MAX_VALUE)
             .add(ask3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
           .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
             .add(0, 0, Short.MAX_VALUE)
+            .add(jButton1)
+            .add(39, 39, 39)
             .add(setupNow))
           .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator6)
           .add(layout.createSequentialGroup()
@@ -217,7 +227,7 @@ public class SetUpSelect extends javax.swing.JPanel {
             .add(0, 0, Short.MAX_VALUE))
           .add(layout.createSequentialGroup()
             .add(option6)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 48, Short.MAX_VALUE)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(ask6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         .addContainerGap())
       .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -280,7 +290,9 @@ public class SetUpSelect extends javax.swing.JPanel {
         .add(18, 18, 18)
         .add(jSeparator6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         .add(18, 18, 18)
-        .add(setupNow)
+        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+          .add(setupNow)
+          .add(jButton1))
         .addContainerGap(15, Short.MAX_VALUE))
       .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
         .add(layout.createSequentialGroup()
@@ -303,23 +315,22 @@ public class SetUpSelect extends javax.swing.JPanel {
   }//GEN-LAST:event_option2ActionPerformed
 
   private void ask1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ask1ActionPerformed
-    // TODO add your handling code here:
+    RunSetup.helpOption(1);
   }//GEN-LAST:event_ask1ActionPerformed
 
   private void ask2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ask2ActionPerformed
-    // TODO add your handling code here:
+    RunSetup.helpOption(2);
   }//GEN-LAST:event_ask2ActionPerformed
 
   private void ask3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ask3ActionPerformed
-    // TODO add your handling code here:
+    RunSetup.helpOption(3);
   }//GEN-LAST:event_ask3ActionPerformed
 
   private void ask4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ask4ActionPerformed
-    // TODO add your handling code here:
+    RunSetup.helpOption(4);
   }//GEN-LAST:event_ask4ActionPerformed
 
   private void setupNowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_setupNowActionPerformed
-    //RunSetup.popError("setup now was clicked");
     setBackground(Color.YELLOW);
   }//GEN-LAST:event_setupNowActionPerformed
 
@@ -328,7 +339,7 @@ public class SetUpSelect extends javax.swing.JPanel {
   }//GEN-LAST:event_option5ActionPerformed
 
   private void ask5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ask5ActionPerformed
-    // TODO add your handling code here:
+    RunSetup.helpOption(5);
   }//GEN-LAST:event_ask5ActionPerformed
 
   private void option6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_option6ActionPerformed
@@ -336,8 +347,12 @@ public class SetUpSelect extends javax.swing.JPanel {
   }//GEN-LAST:event_option6ActionPerformed
 
   private void ask6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ask6ActionPerformed
-    // TODO add your handling code here:
+    RunSetup.helpOption(6);
   }//GEN-LAST:event_ask6ActionPerformed
+
+  private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    System.exit(0);
+  }//GEN-LAST:event_jButton1ActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   public javax.swing.JButton ask1;
@@ -346,6 +361,7 @@ public class SetUpSelect extends javax.swing.JPanel {
   public javax.swing.JButton ask4;
   public javax.swing.JButton ask5;
   public javax.swing.JButton ask6;
+  private javax.swing.JButton jButton1;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
