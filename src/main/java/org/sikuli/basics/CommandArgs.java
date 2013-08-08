@@ -164,20 +164,29 @@ public class CommandArgs {
         "-----\n<foobar.sikuli>\n"
       + "path relative to current working directory or absolute path\n"
       + "though deprecated: so called executables .skl can be used too\n"
-      + "------\n anything after --\nor after something beginning with --\n"
+      + "------\nanything after --\nor after something beginning with --\n"
       + "go to script as user parameters (respecting enclosing \")\n"
+      + "------\n-d use this option if you encounter any weird problems"
+      + "DebugLevel=3 and all output goes to <workingFolder>/SikuliLog.text"
       + "----------------------------------------------------------------",
       true);
   }
   
   public static String[] scanArgs(String[] args) {
+//TODO detect leading and/or trailing blanks
     String cmdOrg = System.getenv("SIKULI_COMMAND");
+    if (cmdOrg == null) {
+      cmdOrg = System.getProperty("sikuli.SIKULI_COMMAND");
+    }
     String sep = "\"";
     String temp = null;
     Pattern pat;
     Matcher m;
     List<String> nargs = new ArrayList<String>();
     for (String arg : args) {
+      if (arg.startsWith("asApp")) {
+        continue;
+      }
       if (arg.startsWith(sep)) {
         if (!arg.endsWith(sep)) {
           temp = arg.substring(1);

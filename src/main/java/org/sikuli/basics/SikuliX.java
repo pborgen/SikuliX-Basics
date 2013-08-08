@@ -12,10 +12,14 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ServiceLoader;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -215,5 +219,52 @@ public class SikuliX {
       log0(lvl, "%d: %s", i, urls[i]);
     }
     return true;
+  }
+  
+  public static String[] collectOptions(String type, String[] args) {
+    List<String> resArgs = new ArrayList<String>();
+    if (args != null) {
+      resArgs.addAll(Arrays.asList(args));
+    } 
+    
+    String msg = "-----------------------   You might set some options    -----------------------";
+    msg += "\n\n";
+    msg += "-r name       ---   Run script name: foo[.sikuli] or foo.skl (no IDE window)";
+    msg += "\n";
+    msg += "-u [file]        ---   Write user log messages to file (default: <WorkingFolder>/UserLog.txt )";
+    msg += "\n";
+    msg += "-f [file]         ---   Write Sikuli log messages to file (default: <WorkingFolder>/SikuliLog.txt)";
+    msg += "\n";
+    msg += "-d n             ---   Set a higher level n for Sikuli's debug messages (default: 0)";
+    msg += "\n";
+    msg += "-c                ---   (for IDE only) all output goes to command line window";
+    msg += "\n";
+    msg += "-- …more…         All space delimited entries after -- go to sys.argv";
+    msg += "\n                           \"<some text>\" makes one parameter (may contain intermediate blanks)";
+    msg += "\n\n";
+    msg += "-------------------------------------------------------------------------";
+    msg += "\n";
+    msg += "-d                Special debugging option in case of mysterious errors:";
+    msg += "\n";
+    msg += "                    Debug level is set to 3 and all output goes to <WorkingFolder>/SikuliLog.txt";
+    msg += "\n";
+    msg += "                    Content might be used to ask questions or report bugs";
+    msg += "\n";
+    msg += "-------------------------------------------------------------------------";
+    msg += "\n";
+    msg += "                    Just click OK to start IDE with no options - defaults will be used";
+    
+    String ret = JOptionPane.showInputDialog(null, msg, "SikuliX: collect runtime options", 
+                    JOptionPane.QUESTION_MESSAGE);
+    
+    if (ret == null) {
+      return null;
+    }    
+    log0(0, "[" + ret + "]");
+    if (!ret.isEmpty()) {
+      System.setProperty("sikuli.SIKULI_COMMAND", ret);
+      resArgs.addAll(Arrays.asList(ret.split(" +")));
+    }
+    return resArgs.toArray(new String[0]);
   }
 }
