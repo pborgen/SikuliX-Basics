@@ -1,0 +1,47 @@
+#!/bin/sh
+JAVA=X
+PROPS='-Xmx512M -Dapple.laf.useScreenMenuBar -Dfile.encoding=UTF-8'
+
+if [ "$1" == "asApp" ]; then
+  shift
+  cd ~
+  echo `pwd`
+else
+  PROPS=$PROPS' -Dsikuli.FromCommandLine' 
+fi
+
+if [ "$1" == "-j" ]; then
+  shift
+  JAVA=$1
+  shift
+fi
+
+if [ "$JAVA" != "X" ]; then
+  echo "being asked to switch to Java "$JAVA
+  if [ "$JAVA" = "6" ]; then
+    export JAVA_HOME=`/usr/libexec/java_home -v 1.6`
+    echo trying Java 6 at $JAVA_HOME
+  elif [ "$JAVA" = "o" ]; then
+    if [ -e /Library/Java/JavaVirtualMachines/1.7.0u.jdk/Contents/Home ]; then
+      export JAVA_HOME=/Library/Java/JavaVirtualMachines/1.7.0u.jdk/Contents/Home
+      echo trying OpenJDK 7 at $JAVA_HOME
+    fi
+  elif [ "$JAVA" = "7" ]; then
+    export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
+    echo trying Java 7 at $JAVA_HOME
+  fi
+  java -version
+fi
+
+if [ "$SIKULIX_HOME" != "" ]; then
+  echo "SIKULIX_HOME in environment specified as "$SIKULIX_HOME
+  shome=$SIKULI_HOME
+else
+  shome=`dirname $0`
+fi
+
+export SIKULI_COMMAND=$*
+echo "running SikuliX-IDE: $PROPS"
+echo "-jar $shome/sikuli-ide.jar $SIKULI_COMMAND"
+java $PROPS -jar "$shome/sikuli-ide.jar" $SIKULI_COMMAND
+

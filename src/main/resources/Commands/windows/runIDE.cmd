@@ -2,7 +2,7 @@
 SETLOCAL
 
 set SIKULIX_HOME=%~dp0
-set PARMS=-Xms64M -Xmx512M -Dfile.encoding=UTF-8
+set PARMS=-Xms64M -Xmx512M -Dfile.encoding=UTF-8 -Dsikuli.FromCommandLine
 
 if not defined JAVA_HOME goto CHECKJAVA
 IF EXIST "%JAVA_HOME%\bin\java.exe" goto JAVAOK
@@ -34,7 +34,6 @@ IF not EXIST "%PROGRAMS32%\Java\jre6" goto JAVANO32
 set JAVA_HOME=%PROGRAMS32%\Java\jre6
 goto JAVA_OK
 
-
 :JAVANO32
 echo +++ Java not found in standard places %PROGRAMS% or %PROGRAMS32%
 echo +++ JAVA_HOME not specified
@@ -42,10 +41,12 @@ goto STOPIT
 
 :JAVA_OK 
 echo +++ running this Java
+set SIKULI_COMMAND=%*
 "%JAVA_HOME%\bin\java.exe" -version
 PATH=%SIKULIX_HOME%libs;%PATH%
-echo +++ trying to start Sikuli IDE in %SIKULIX_HOME%
-"%JAVA_HOME%\bin\java.exe" %PARMS% -jar "%SIKULIX_HOME%sikuli-ide.jar" %*
+echo +++ trying to start Sikuli IDE 
+echo +++ using: %PARMS% -jar %SIKULIX_HOME%sikuli-ide.jar %SIKULI_COMMAND%
+"%JAVA_HOME%\bin\java.exe" %PARMS% -jar "%SIKULIX_HOME%sikuli-ide.jar" %SIKULI_COMMAND%
 
 GOTO FINALLY
 :STOPIT

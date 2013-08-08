@@ -2,7 +2,7 @@
 SETLOCAL
 
 set SIKULIX_HOME=%~dp0
-set PARMS=-Xms64M -Xmx512M -Dfile.encoding=UTF-8
+set PARMS=-Xms64M -Xmx512M -Dfile.encoding=UTF-8 -Dsikuli.FromCommandLine
 
 if not defined JAVA_HOME goto CHECKJAVA
 IF EXIST "%JAVA_HOME%\bin\java.exe" goto JAVAOK
@@ -42,10 +42,12 @@ goto STOPIT
 
 :JAVA_OK 
 echo +++ running this Java
+set SIKULI_COMMAND=%*
 "%JAVA_HOME%\bin\java.exe" -version
 PATH=%SIKULIX_HOME%libs;%PATH%
-echo +++ trying to start Sikuli Script in %SIKULIX_HOME%
-"%JAVA_HOME%\bin\java.exe" %PARMS% -jar "%SIKULIX_HOME%sikuli-script.jar" %*
+echo +++ trying to start Sikuli Script
+echo +++ using: %PARMS% -jar %SIKULIX_HOME%sikuli-script.jar %SIKULI_COMMAND%
+"%JAVA_HOME%\bin\java.exe" %PARMS% -jar "%SIKULIX_HOME%sikuli-script.jar" %SIKULI_COMMAND%
 
 GOTO FINALLY
 :STOPIT
