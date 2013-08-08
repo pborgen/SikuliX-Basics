@@ -45,6 +45,7 @@ public class RunSetup {
   private static String localMacApp = "sikuli-macapp.jar";
   private static String localMacAppIDE = "SikuliX-IDE.app/Contents/sikuli-ide.jar";
   private static String folderMacApp = "SikuliX-IDE.app";
+  private static String folderMacAppContent = folderMacApp + "/Contents";
   private static String localSetup = "sikuli-setup.jar";
   private static String localTess = "sikuli-tessdata.jar";
   private static String localLogfile = "SikuliX-" + version + "-SetupLog.txt";
@@ -91,7 +92,7 @@ public class RunSetup {
 
   public static void main(String[] args) {
     mem = "main";
-    
+        
     Settings.runningSetup = true;
     IResourceLoader loader = FileManager.getNativeLoader("basic", args);
     
@@ -245,7 +246,7 @@ public class RunSetup {
           popError(msg);
           System.exit(2);
         }
-        popInfo("Now open a command window, go to the folder\n" + workDir +
+        popInfo("Now open a command window,\n go to the folder\n" + workDir +
                 "\n and run sikuli-setup.cmd to finalize the setup process.");
         System.exit(0);
       }
@@ -260,7 +261,8 @@ public class RunSetup {
       if (!popAsk(workDir + "\n... folder we are running in already has SikuliX packages! \n"
               + "Pls. click YES to run an update ...\n" 
               + "... or click NO to exit and use another folder\n\n"
-              + "When selecting Update: \nexisting jars will be renamed to <existing name>.jar.backup\n\n"
+              + "When selecting Update: \nexisting jars will be renamed to <existing name>.jar.backup\n"
+              + "Be aware: <existing name>.jar.backup will be overwritten. So in doubt: click NO\n\n"
               + "If the stuff is from any previous version of SikuliX: selecting NO is recommended!")) {
         System.exit(1);
       }
@@ -270,8 +272,11 @@ public class RunSetup {
     
     log1(lvl, "user home: %s", uhome);
     
+    if (!isUpdate) {
+      popInfo("Pls. read carefully before proceeding!!");
+    }
+    
     winSetup = new JFrame("SikuliX-Setup");
-    winSetup.setUndecorated(true);
     Border rpb = new LineBorder(Color.YELLOW, 8);
     winSetup.getRootPane().setBorder(rpb);
     Container winCP = winSetup.getContentPane();
@@ -280,7 +285,7 @@ public class RunSetup {
     winCP.add(winSU, BorderLayout.CENTER);
     winSetup.pack();
     winSetup.setLocationRelativeTo(null);
-    winSetup.setAlwaysOnTop(true);
+    winSetup.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     winSetup.setVisible(true);
     
     // running system
@@ -379,6 +384,7 @@ public class RunSetup {
         localJar = new File(workDir, localIDE).getAbsolutePath();
         if (!test) {
           if (isUpdate && localJarIDE.exists()) {
+            FileManager.deleteFileOrFolder(new File(workDir, localIDE + ".backup").getAbsolutePath());
             localJarIDE.renameTo(new File(workDir, localIDE + ".backup"));
           }        
           dlOK = download(downloadBaseDir, workDir, downloadIDE, localJar);
@@ -388,6 +394,7 @@ public class RunSetup {
           targetJar = new File(workDir, localMacApp).getAbsolutePath();
           if (!test) {
             if (isUpdate && localJarApp.exists()) {
+              FileManager.deleteFileOrFolder(new File(workDir, localMacApp + ".backup").getAbsolutePath());
               localJarApp.renameTo(new File(workDir, localMacApp + ".backup"));
             }        
             dlOK = download(downloadBaseDir, workDir, downloadMacApp, targetJar);
@@ -402,6 +409,7 @@ public class RunSetup {
         localJar = new File(workDir, localScript).getAbsolutePath();
         if (!test) {
           if (isUpdate && localJarScript.exists()) {
+            FileManager.deleteFileOrFolder(new File(workDir, localScript + ".backup").getAbsolutePath());
             localJarScript.renameTo(new File(workDir, localScript + ".backup"));
           }        
           downloadOK = download(downloadBaseDir, workDir, downloadScript, localJar);
@@ -412,6 +420,7 @@ public class RunSetup {
         targetJar = new File(workDir, localJava).getAbsolutePath();
         if (!test) {
           if (isUpdate && localJarJava.exists()) {
+            FileManager.deleteFileOrFolder(new File(workDir, localJava + ".backup").getAbsolutePath());
             localJarJava.renameTo(new File(workDir, localJava + ".backup"));
           }        
           downloadOK = download(downloadBaseDir, workDir, downloadJava, targetJar);
@@ -422,6 +431,7 @@ public class RunSetup {
         targetJar = new File(workDir, localTess).getAbsolutePath();
         if (!test) {
           if (isUpdate && localJarTess.exists()) {
+            FileManager.deleteFileOrFolder(new File(workDir, localTess + ".backup").getAbsolutePath());
             localJarTess.renameTo(new File(workDir, localTess + ".backup"));
           }        
           downloadOK = download(downloadBaseDir, workDir, downloadTess, targetJar);
@@ -433,7 +443,9 @@ public class RunSetup {
         terminate("download not completed successfully");
       }
     } else {
-      popError("Nothing selected! Sikuli not useable!\nYou might try again ;-)");
+      if (!isUpdate) {
+        popError("Nothing selected! Sikuli not useable!\nYou might try again ;-)");
+      }
       System.exit(0);
     }
     //</editor-fold>
@@ -520,6 +532,28 @@ public class RunSetup {
       }
       else if (getScript) {
         loader.export("Commands/windows#runScript.cmd", workDir);
+      }
+    } else if (Settings.isMac()){
+      if (getIDE) {
+        String fmac = new File(workDir, folderMacAppContent).getAbsolutePath();
+        loader.export("Commands/mac#runIDE", fmac);
+        loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", new File(fmac, "runIDE").getAbsolutePath()});
+        FileManager.deleteFileOrFolder(new File(workDir, localIDE).getAbsolutePath());
+        FileManager.deleteFileOrFolder(new File(workDir, localMacApp).getAbsolutePath());
+        localTestJar = new File(fmac, localIDE).getAbsolutePath();
+      }
+      else if (getScript) {
+        loader.export("Commands/mac#runScript", workDir);
+        loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", new File(workDir, "runScript").getAbsolutePath()});
+      }
+    } else if (Settings.isLinux()){
+      if (getIDE) {
+        loader.export("Commands/linux#runIDE", workDir);
+        loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", new File(workDir, "runIDE").getAbsolutePath()});
+      }
+      else if (getScript) {
+        loader.export("Commands/linux#runScript", workDir);
+        loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", new File(workDir, "runScript").getAbsolutePath()});
       }
     }
     closeSplash(splash);
@@ -631,7 +665,7 @@ public class RunSetup {
         m += "\n- use it to run scripts from commandline";
         m += "\n- develop Java programs with Sikuli features in IDE's like Eclipse, NetBeans, ...";
         m += "\n- develop in any Java aware scripting language adding Sikuli features in IDE's like Eclipse, NetBeans, ...";
-        m += "\n\nython developement: special info:";
+        m += "\n\nJython developement: special info:";
         m += "\n If you want to use standalone Jython in parallel, you should select Pack 3 additionally (Option 3)";
         m += "\n\nTo understand the differences, it might be helpful to read the other informations too (Pack 2 and Pack 3)";
         if (Settings.isWindows()) {
@@ -639,11 +673,20 @@ public class RunSetup {
           m += "\nThe generated jars can be used out of the box with Java 32-Bit and Java 64-Bit as well.";
           m += "\nThe Java version is detected at runtime and the native support is switched accordingly.";
         }
+        if (Settings.isMac()) {
+          m += "\n\nSpecial info for Mac systems:";
+          m += "\nFinally you will have a Sikuli-IDE.app in the setup working folder.";
+          m += "\nTo use it, just move it into the Applications folder.";
+          m += "\nIf you need to run stuff from commandline or want to use Sikuli with Java,";
+          m += "\nyou will find the needed stuff in /Applications/Sikuli-IDE.app/Contents:";
+          m += "\nrunIDE: the shellscript to run scripts and";
+          m += "\nsikuli-ide.jar: everything you need for integration with Java developement";        
+        }
         break;
       case(2):
         om = "Package 2: To allow to run Sikuli scripts from command line (no IDE)" 
                 + "\n\n( ... make sure Option 1 (IDE) is not selected, if you really want this now!"
-                + "\nIf you want it in addition to the IDE, run setup again after getting the IDE)\n";
+                + "\nIf you want it in addition to the IDE, run setup again after getting the IDE)";
 //              -------------------------------------------------------------
         m += "\nThe primary pupose of this package: run Sikuli scripts from command line ;-)";
         m += "\nIt should be used on machines, that only run scripts and where is no need"
@@ -651,7 +694,7 @@ public class RunSetup {
         m += "\n\nFor those who know ;-) additionally you can ...";
         m += "\n- develop Java programs with Sikuli features in IDE's like Eclipse, NetBeans, ...";
         m += "\n- develop in any Java aware scripting language adding Sikuli features in IDE's like Eclipse, NetBeans, ...";
-        m += "\n\n Jython developement: special info:";
+        m += "\n\nJython developement: special info:";
         m += "\n If you want to use standalone Jython in parallel, you should select Pack 3 additionally (Option 3)";
         if (Settings.isWindows()) {
           m += "\n\nSpecial info for Windows systems:";
@@ -678,7 +721,7 @@ public class RunSetup {
       case(5):
         om = "Package 3: To support developement in Java or any Java aware scripting language"
                 + "\n\n( ... make sure neither Option 1 (IDE) nor Option 2 (Script) is selected!"
-                + "\nIf you want it additionally to IDE or Script, use the previous Option 3!)\n";
+                + "\nIf you want it additionally to IDE or Script, use the previous Option 3!)";
 //              -------------------------------------------------------------
         m += "\nThe content of this package is stripped down to what is needed to develop in Java"
              + " or any Java aware scripting language \n(no IDE, no bundled script run support for Jython)";
@@ -718,6 +761,9 @@ public class RunSetup {
         m += "\n- use the jars from a stick or similar mobile medium";
         m += "\n- deploying Sikuli apps to be used all over the place";
         break;        
+    }
+    if (option == 4 || option == 5) {
+      option = option == 4 ? 5 : 4;
     }
     popInfo("asking for option " + option + ": " + om +"\n" + m);
   }
@@ -788,6 +834,6 @@ public class RunSetup {
     log1(-1, "... terminated abnormally :-(");
     popError("Something serious happened! Sikuli not useable!\n"
             + "Check the error log at " + logfile);
-    System.exit(0);
+    System.exit(1);
   }
 }
