@@ -1,9 +1,10 @@
-#!/bin/sh
+#!/bin/bash
 JAVA=X
+JAVABIN=java
 PROPS='-Xmx512M -Dapple.laf.useScreenMenuBar -Dfile.encoding=UTF-8 -Dsikuli.FromCommandLine'
 
 if [ "$JAVA_HOME" != "" ]; then
-  JAVABIN=$JAVA_HOME/bin
+  JAVABIN=$JAVA_HOME/bin/java
 fi
 
 if [ "$SIKULIX_HOME" != "" ]; then
@@ -16,5 +17,5 @@ fi
 export SIKULI_COMMAND=$*
 echo "running SikuliX-IDE: $PROPS"
 echo "-jar $shome/sikuli-ide.jar $SIKULI_COMMAND"
-"$JAVABIN/java" $PROPS -jar "$shome/sikuli-ide.jar" $SIKULI_COMMAND
+"$JAVABIN" $PROPS -jar "$shome/sikuli-ide.jar" $SIKULI_COMMAND
 

@@ -550,6 +550,7 @@ public class RunSetup {
       if (getIDE) {
         loader.export("Commands/linux#runIDE", workDir);
         loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", new File(workDir, "runIDE").getAbsolutePath()});
+        loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", new File(workDir, localIDE).getAbsolutePath()});
       }
       else if (getScript) {
         loader.export("Commands/linux#runScript", workDir);
@@ -559,7 +560,7 @@ public class RunSetup {
     closeSplash(splash);
     if (!success) {
       popError("Bad things happened trying to add native stuff to selected jars --- terminating!");
-      System.exit(1);
+      terminate("Adding stuff to jars did not work");
     }
     //</editor-fold>
     
@@ -580,7 +581,7 @@ public class RunSetup {
       closeSplash(splash);
       popError("Something serious happened! Sikuli not useable!\n"
               + "Check the error log at " + logfile);
-      System.exit(0);
+      terminate("Setting up environment did not work");
     }
     
     if (getJava) {
@@ -590,7 +591,7 @@ public class RunSetup {
         closeSplash(splash);
         popError("Something serious happened! Sikuli not useable!\n"
                 + "Check the error log at " + logfile);
-        System.exit(0);
+        terminate("Functional test JAVA-API did not work");
       }
       try {
         log0(lvl, "trying to run org.sikuli.script.SikuliX.testSetup()");
@@ -611,7 +612,7 @@ public class RunSetup {
         log0(-1, ex.getMessage());
         popError("Something serious happened! Sikuli not useable!\n"
                 + "Check the error log at " + logfile);
-        System.exit(0);
+        terminate("Functional test JAVA-API did not work");
       }
     }
     if (getIDE || getScript) {
@@ -621,7 +622,7 @@ public class RunSetup {
         closeSplash(splash);
         popError("Something serious happened! Sikuli not useable!\n"
                 + "Check the error log at " + logfile);
-        System.exit(0);
+        terminate("Functional test Jython did not work");
       }
       String testSetupSuccess = "Setup: Sikuli seems to work! Have fun!";
       log0(lvl, "trying to run testSetup.sikuli using SikuliScript");
@@ -637,7 +638,7 @@ public class RunSetup {
         log0(-1, ex.getMessage());
         popError("Something serious happened! Sikuli not useable!\n"
                 + "Check the error log at " + logfile);
-        System.exit(0);
+        terminate("Functional test Jython did not work");
       }
     }
     //</editor-fold>
@@ -801,7 +802,8 @@ public class RunSetup {
   
   private static String checkSikuli() {
     String msg1 = "... it seems SikuliX-1.0rc3 or SikuliX-1.x.x has been used before on this system";
-    String msg0 = "... it seems that Sikuli is used the first time on this system";
+    String msg2 = "... it seems that Sikuli is used the first time on this system";
+    String msg0 = "... could not detect wether Sikuli is used the first time on this system";
     String msg = msg0;
     File props;
     if (Settings.isMac()) {
@@ -809,6 +811,9 @@ public class RunSetup {
       if (props.exists()) {
         msg = msg1;
         sikuliUsed = true;
+      }
+      else {
+        msg = msg2;
       }
     }
     return msg;

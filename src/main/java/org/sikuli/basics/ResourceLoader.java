@@ -197,7 +197,7 @@ public class ResourceLoader implements IResourceLoader {
 
       // Linux specific
       if (Settings.isLinux()) {
-        if (!osarch.contains("64")) {
+        if (osarch.contains("64")) {
           libSource = String.format(libSource64, "linux");
           checkFileName = checkFileNameL64;
         } else {
