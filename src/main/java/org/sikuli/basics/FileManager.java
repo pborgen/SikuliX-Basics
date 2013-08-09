@@ -551,7 +551,12 @@ public class FileManager {
           log0(-1, "Script folder %s does not contain a script file named %s.xxx", scriptName, script);
           SikuliX.terminate(0);
         }
-        scriptFile = content[0];
+        for (File f : content) {
+//TODO should be possible,to have more than one script type in one .sikuli
+          if (f.getName().endsWith(".html")) continue;
+          scriptFile = f;
+          break;
+        }
         scriptType = scriptFile.getName().substring(scriptFile.getName().lastIndexOf(".") + 1);
         runner = SikuliX.getScriptRunner(null, scriptType, args);
       }
