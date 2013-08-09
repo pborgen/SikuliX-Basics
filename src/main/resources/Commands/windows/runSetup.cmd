@@ -5,7 +5,7 @@ set SIKULIX_HOME=%~dp0
 set PARMS=-Xms64M -Xmx512M -Dfile.encoding=UTF-8
 
 if not defined JAVA_HOME goto CHECKJAVA
-IF EXIST "%JAVA_HOME%\bin\java.exe" goto JAVAOK
+IF EXIST "%JAVA_HOME%\bin\java.exe" goto JAVA_OK
 echo +++ JAVA_HOME specified but not useable %JAVA_HOME%
 echo +++ looking for Java in standard places
 
