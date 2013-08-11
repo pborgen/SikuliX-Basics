@@ -241,13 +241,13 @@ public class RunSetup {
         log1(lvl, "Not on syspath: " + pLibs + " --- Extracting runSetup.cmd.");
         loader.export("Commands/windows#runSetup.cmd", workDir);
         if (!new File(workDir, "runSetup.cmd").exists()) {
-          String msg = "Fatal error 002: sikuli-setup.cmd could not be exported to " + workDir;
+          String msg = "Fatal error 002: runSetup.cmd could not be exported to " + workDir;
           log0(-1, msg);
           popError(msg);
           System.exit(2);
         }
         popInfo("Now open a command window,\n go to the folder\n" + workDir +
-                "\n and run sikuli-setup.cmd to finalize the setup process.");
+                "\n and run runSetup.cmd to finalize the setup process.");
         System.exit(0);
       }
     }
@@ -803,7 +803,7 @@ public class RunSetup {
   private static String checkSikuli() {
     String msg1 = "... it seems SikuliX-1.0rc3 or SikuliX-1.x.x has been used before on this system";
     String msg2 = "... it seems that Sikuli is used the first time on this system";
-    String msg0 = "... could not detect wether Sikuli is used the first time on this system";
+    String msg0 = "... could not detect whether Sikuli is used the first time on this system";
     String msg = msg0;
     File props;
     if (Settings.isMac()) {
