@@ -1,10 +1,8 @@
-Sikuli Basics 1.0.1
-=============
+Sikuli Basics 1.1<br />branch develop
+===========
 
-Supporting stuff for SikuliX <br />
-(e.g. setup, update and extensions support, native modules and interfaces, system dependent features, ...)
+[to download the current setup-sikuli.jar version 1.0.1 start here](http://www.sikuli.org/download.html)
 
-It is contained in all downloadable packages and is **not intended for any usages outside these packages**.
+If you want to get information about how and why, you have to switch to the branch master.
 
-Forking only makes sense, if you want to contribute features or patches.
-<br />Use *mvn install* in the project folder to get it in your local repo.
+Specific information about what is going on here in branch develop: look into the wiki
