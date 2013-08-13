@@ -1,0 +1,26 @@
+#!/bin/sh
+#################################
+# DO NOT EDIT THIS COMMAND SCRIPT
+#################################
+
+shome=`dirname $0`
+
+if [ -e $shome/sikuli-update.jar ]; then
+  update=update
+
+  if [ -e $shome/sikuli-ide.jar ]; then
+    theJar=sikuli-ide.jar
+  fi
+  if [ -e $shome/sikuli-script.jar ]; then
+    theJar=sikuli-script.jar
+  fi
+  if [ -e $shome/sikuli-java.jar ]; then
+    theJar=sikuli-java.jar
+  fi
+
+  java -jar $shome/$theJar org.sikuli.basics.RunSetup switchupdate
+fi
+
+echo "running SikuliX-Setup $update $*"
+java -jar "$shome/sikuli-setup.jar" $update $*
+

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+shome=`dirname $0`
+
+echo "running SikuliX-Setup $*" 
+java $PROPS -jar "$shome/sikuli-setup.jar" $*
+

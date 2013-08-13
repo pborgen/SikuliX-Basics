@@ -31,6 +31,7 @@ public class AutoUpdater {
   private static int FINAL = 6;
   private int available = 0;
   private boolean notAvailable = false;
+  public String whatUpdate;
 
   public String getServer() {
     return server;
@@ -39,6 +40,13 @@ public class AutoUpdater {
   public String getVersion() {
     if (available > 0) {
       return String.format("%s-%d.%d.%d", name, major, minor, sub);
+    }
+    return "";
+  }
+
+  public String getVersionNumber() {
+    if (available > 0) {
+      return String.format("%d.%d.%d", major, minor, sub);
     }
     return "";
   }
@@ -69,26 +77,32 @@ public class AutoUpdater {
           if (sbeta > 0) {
             if (smajor == major && sminor == minor) {
               available = FINAL;
-              Debug.info("The final version is available: " + getVersion());
+              whatUpdate = "The final version is available: " + getVersion();
+              Debug.info(whatUpdate);
             } else if (smajor == bmajor && sminor == bminor && beta > sbeta) {
               available = BETA;
-              Debug.info("A new beta version is available: " + getBeta());
+              whatUpdate = "A new beta version is available: " + getVersion();
+              Debug.info(whatUpdate);
             }
           } else {
             if (major > smajor) {
               available = MAJOR;
-              Debug.info("A new major version is available: " + getVersion());
+              whatUpdate = "A new major version is available: " + getVersion();
+              Debug.info(whatUpdate);
             } else if (minor > sminor) {
               available = MINOR;
-              Debug.info("A new minor version is available: " + getVersion());
+              whatUpdate = "A new minor version is available: " + getVersion();
+              Debug.info(whatUpdate);
             } else if (sub > ssub) {
               available = SUB;
-              Debug.info("A new service update is available: " + getVersion());
+              whatUpdate = "A new service update is available: " + getVersion();
+              Debug.info(whatUpdate);
             }
           }
           if (bmajor > smajor || (bmajor == smajor && bminor > sminor)) {
             available += SOMEBETA;
-            Debug.info("A beta version is available: " + getBeta());
+            whatUpdate = "A beta version is available: " + getVersion();
+            Debug.info(whatUpdate);
           }
         }
       } catch (Exception e) {

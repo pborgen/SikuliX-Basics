@@ -259,6 +259,15 @@ public class Settings {
     return SikuliVersion;
   }
 
+  public static String getVersionShort() {
+    if (SikuliVersionBetaN > 0) {
+      return bversion;
+    }
+    else {
+      return sversion;
+    }
+  }
+
   public static void setArgs(String[] args, String[] sargs) {
     Settings.args = args;
     Settings.sargs = sargs;

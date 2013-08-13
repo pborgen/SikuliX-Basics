@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
@@ -32,16 +31,19 @@ public class RunSetup {
   private static String workDir;
   private static String uhome;
   private static String logfile;
-  private static String version = "1.0.1";
-  private static String downloadBaseDir = "https://dl.dropboxusercontent.com/u/42895525/SikuliX-" + version + "/";
+  private static String version = Settings.getVersionShort();
+  private static String downloadBaseDirBase = "https://dl.dropboxusercontent.com/u/42895525/SikuliX-";
+  private static String downloadBaseDir = downloadBaseDirBase + version + "/";
   private static String downloadIDE = "sikuli-ide-" + version + ".jar";
   private static String downloadMacApp = "sikuli-macapp-" + version + ".jar";
   private static String downloadScript = "sikuli-script-" + version + ".jar";
   private static String downloadJava = "sikuli-java-" + version + ".jar";
   private static String downloadTess = "sikuli-tessdata-" + version + ".jar";
+  private static String downloadUpdate;
   private static String localJava = "sikuli-java.jar";
   private static String localScript = "sikuli-script.jar";
   private static String localIDE = "sikuli-ide.jar";
+  private static String localUpdate = "sikuli-update.jar";
   private static String localMacApp = "sikuli-macapp.jar";
   private static String localMacAppIDE = "SikuliX-IDE.app/Contents/sikuli-ide.jar";
   private static String folderMacApp = "SikuliX-IDE.app";
@@ -56,7 +58,9 @@ public class RunSetup {
   private static String localJar;
   private static boolean test = false;
   private static boolean isUpdate = false;
+  private static boolean runningUpdate = false;
   private static List<String> options = new ArrayList<String>();
+  private static JFrame splash = null;
 
   //<editor-fold defaultstate="collapsed" desc="new logging concept">
   private static String me = "RunSetup";
@@ -93,6 +97,8 @@ public class RunSetup {
   public static void main(String[] args) {
     mem = "main";
         
+    System.out.println(me + " version " + version);
+    
     Settings.runningSetup = true;
     IResourceLoader loader = FileManager.getNativeLoader("basic", args);
     
@@ -114,7 +120,7 @@ public class RunSetup {
     } else {
       workDir = (new File(uhome, "SikuliX")).getAbsolutePath();
       (new File(workDir)).mkdirs();
-      logfile = (new File(uhome, "SikuliX/SikuliXSetupLog.txt")).getAbsolutePath();
+      logfile = (new File(workDir, localLogfile)).getAbsolutePath();
       popInfo("\n... not running from sikuli-setup.jar - using as download folder\n" + workDir);
     }
 
@@ -127,11 +133,19 @@ public class RunSetup {
     Debug.setDebugLevel(3);
 
     if (args.length > 0) {
-      log1(lvl, "... starting with " + args[0]);
+      log1(lvl, "... starting with " + SikuliX.arrayToString(args));
     } else {
       log1(lvl, "... starting with no args given");
     }
 
+    File localJarIDE = new File(workDir, localIDE);
+    File localJarApp = new File(workDir, localMacApp);
+    File localJarScript = new File(workDir, localScript);
+    File localJarJava = new File(workDir, localJava);
+    File localJarTess = new File(workDir, localTess);
+    File localJarUpdate = new File(workDir, localUpdate);
+    File localJarSetup = new File(workDir, localSetup);
+    
     //<editor-fold defaultstate="collapsed" desc="option reset">
     if (options.size() > 0 && options.get(0).equals("reset")) {
       log1(3, "requested to reset: " + workDir);
@@ -157,12 +171,22 @@ public class RunSetup {
 
     //<editor-fold defaultstate="collapsed" desc="option update">
     if (options.size() > 0 && options.get(0).equals("update")) {
-      log1(3, "requested to check update");
-      // check for updates and optionally download and build
-      log1(3, "completed!");
-      System.exit(0);
+      runningUpdate = true;      
     }
-    //</editor-fold>
+    
+    if (options.size() > 0 && options.get(0).equals("switchupdate")) {
+      FileManager.deleteFileOrFolder(new File(workDir, localJarSetup + ".backup").getAbsolutePath());
+      localJarSetup.renameTo(new File(workDir, localJarSetup + ".backup")); 
+      localJarUpdate.renameTo(localJarSetup); 
+      System.exit(0);
+    }    
+
+    if (options.size() > 0 && options.get(0).equals("updatetessdata")) {
+      FileManager.deleteFileOrFolder(new File(workDir, localJarTess + ".backup").getAbsolutePath());
+      localJarTess.renameTo(new File(workDir, localJarSetup + ".backup")); 
+//TODO download and export tessdata
+    }    
+//</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="option makeJar">
     if (options.size() > 0 && options.get(0).equals("makeJar")) {
@@ -246,115 +270,204 @@ public class RunSetup {
           popError(msg);
           System.exit(2);
         }
-        popInfo("Now open a command window,\n go to the folder\n" + workDir +
-                "\n and run runSetup.cmd to finalize the setup process.");
+        popInfo("Now open a command window,\n go to the folder\n" + workDir
+                + "\n and run runSetup.cmd to finalize the setup process.");
         System.exit(0);
       }
     }
-    
-    File localJarIDE = new File(workDir, localIDE);
-    File localJarApp = new File(workDir, localMacApp);
-    File localJarScript = new File(workDir, localScript);
-    File localJarJava = new File(workDir, localJava);
-    File localJarTess = new File(workDir, localTess);
-    if (localJarIDE.exists() || localJarScript.exists() || localJarJava.exists()) {
+
+    if (localJarUpdate.exists()) {
+      if (!popAsk("A previous Update was not run to the end!"
+              + "\nClick NO, to cancel this prepared Update session ..."
+              + "\n... or Click YES, to finish the Update session.")) {
+        FileManager.deleteFileOrFolder(localJarUpdate.getAbsolutePath());
+        log1(lvl, "Deleted sikuli-update.jar");
+      } else {
+        popInfo("Now open a command window,\n go to the folder\n" + workDir
+                + "\n and run runSetup(.cmd) to finalize the update process.");
+        log1(lvl, "User should run update now");
+        System.exit(0);
+      }
+    }
+
+    if (!runningUpdate
+            && (localJarIDE.exists() || localJarScript.exists() || localJarJava.exists())) {
       if (!popAsk(workDir + "\n... folder we are running in already has SikuliX packages! \n"
-              + "Pls. click YES to run an update ...\n" 
+              + "Pls. click YES to run an update ...\n"
               + "... or click NO to exit and use another folder\n\n"
-              + "When selecting Update: \nexisting jars will be renamed to <existing name>.jar.backup\n"
+              + "When selecting Update:"
+              + "\nSikuli first checks for newer versions, that you might install now"
+              + "\nIf no newer versions are available, you might download again or get additional stuff."
+              + "\nIn any case: existing jars will be renamed to <existing name>.jar.backup\n"
               + "Be aware: <existing name>.jar.backup will be overwritten. So in doubt: click NO\n\n"
-              + "If the stuff is from any previous version of SikuliX: selecting NO is recommended!")) {
+              + "If the existing stuff is from a Sikuli(X) version prior 1.0.1: selecting NO is recommended!"
+              + "\nIn this case you should empty the folder or use another one, before installing again!")) {
+        log1(lvl, "Update cancelled");
         System.exit(1);
       }
       isUpdate = true;
       log1(lvl, "Option UPDATE selected");
     }
-    
+
+    if (isUpdate) {
+      log1(lvl, "checking for newer versions");
+      splash = showSplash("Checking for newer (beta) versions! (you have " + version + ")", "pls. wait - may take some seconds ...");
+      AutoUpdater au = new AutoUpdater();
+      int available = au.checkUpdate();
+      closeSplash(splash);
+      if (available > 0) {
+        log1(lvl, au.whatUpdate);
+        if (!popAsk(au.whatUpdate)) {
+          log1(3, "Update to new version was cancelled!");
+        } else {
+          if (!popAsk("Do you really want to start the update process?")) {
+            log1(lvl, "Update to new version was cancelled!");
+          } else {
+            if (!test) {
+              downloadUpdate = "sikuli-update-" + au.getVersionNumber() + ".jar";
+              FileManager.deleteFileOrFolder(localJarUpdate.getAbsolutePath());
+              if (!download(downloadBaseDirBase + au.getVersionNumber() + "/", workDir, 
+                      downloadUpdate, localJarUpdate.getAbsolutePath())) {
+                terminate("Could not download setup-update.jar for version " + au.getVersionNumber());
+              }
+            }
+            String setupCommand = "runSetup";
+            if (Settings.isMac()) {
+              loader.export("Commands/mac#runSetup", workDir);
+              loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", new File(workDir, "runSetup").getAbsolutePath()});
+            } else if (Settings.isLinux()) {
+              loader.export("Commands/linux#runSetup", workDir);
+              loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", new File(workDir, "runSetup").getAbsolutePath()});
+            } else if (Settings.isWindows()) {
+              setupCommand = "runSetup.cmd";
+              loader.export("Commands/windows#runSetup.cmd", workDir);
+            }
+            if (!new File(workDir, setupCommand).exists()) {
+              String msg = "Fatal error 002: runSetup[.cmd] could not be exported to " + workDir;
+              log0(-1, msg);
+              popError(msg);
+              System.exit(1);
+            }
+            log1(lvl, "User should run update now");
+            popInfo("Now open a command window,\n go to the folder\n" + workDir
+                    + "\n and run " + setupCommand + " to finalize the update process.");
+            System.exit(0);
+          }
+        }
+      } else {
+        popInfo("You already have the latest version!");
+        log1(lvl, "You already have the latest version!");
+      }
+      log1(lvl, "completed!");
+    }
+
     log1(lvl, "user home: %s", uhome);
-    
-    if (!isUpdate) {
+
+    if (!isUpdate && !runningUpdate) {
       popInfo("Pls. read carefully before proceeding!!");
     }
-    
-    winSetup = new JFrame("SikuliX-Setup");
-    Border rpb = new LineBorder(Color.YELLOW, 8);
-    winSetup.getRootPane().setBorder(rpb);
-    Container winCP = winSetup.getContentPane();
-    winCP.setLayout(new BorderLayout());
-    winSU = new SetUpSelect();
-    winCP.add(winSU, BorderLayout.CENTER);
-    winSetup.pack();
-    winSetup.setLocationRelativeTo(null);
-    winSetup.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    winSetup.setVisible(true);
-    
-    // running system
-    Settings.getOS();
-    msg = Settings.osName + " " + Settings.getOSVersion();
-    winSU.suSystem.setText(msg);
-    log0(lvl, "RunningSystem: " + msg);
-    
-    // folder running in
-    winSU.suFolder.setText(workDir);
-    log0(lvl, "parent of jar/classes: %s", workDir);
-    
-    // running Java
-    String osarch = System.getProperty("os.arch");
-    msg = "Java " + Settings.JavaVersion + " (" + osarch + ") " + Settings.JREVersion;
-    winSU.suJava.setText(msg);
-    log0(lvl, "RunningJava: " + msg);
-    
-    // Sikuli used before
-    msg = checkSikuli();
-    winSU.suRC3.setText(msg);
-    log0(lvl, msg);
-    
-    if (sikuliUsed) {
-    }
-    
-    getIDE = false;
-    getScript = false;
-    getJava = false;
-    getTess = false;
-    
-    winSU.addPropertyChangeListener("background", new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent pce) {
-        winSetup.setVisible(false);
+
+    if (!runningUpdate) {
+      winSetup = new JFrame("SikuliX-Setup");
+      Border rpb = new LineBorder(Color.YELLOW, 8);
+      winSetup.getRootPane().setBorder(rpb);
+      Container winCP = winSetup.getContentPane();
+      winCP.setLayout(new BorderLayout());
+      winSU = new SetUpSelect();
+      winCP.add(winSU, BorderLayout.CENTER);
+      winSetup.pack();
+      winSetup.setLocationRelativeTo(null);
+      winSetup.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      winSetup.setVisible(true);
+
+      // running system
+      Settings.getOS();
+      msg = Settings.osName + " " + Settings.getOSVersion();
+      winSU.suSystem.setText(msg);
+      log0(lvl, "RunningSystem: " + msg);
+
+      // folder running in
+      winSU.suFolder.setText(workDir);
+      log0(lvl, "parent of jar/classes: %s", workDir);
+
+      // running Java
+      String osarch = System.getProperty("os.arch");
+      msg = "Java " + Settings.JavaVersion + " (" + osarch + ") " + Settings.JREVersion;
+      winSU.suJava.setText(msg);
+      log0(lvl, "RunningJava: " + msg);
+
+      // Sikuli used before
+      msg = checkSikuli();
+      winSU.suRC3.setText(msg);
+      log0(lvl, msg);
+
+      if (sikuliUsed) {
       }
-    });
-    
-    while (true) {
-      if (winSU.getBackground() == Color.YELLOW) {
-        break;
+
+      getIDE = false;
+      getScript = false;
+      getJava = false;
+      getTess = false;
+
+      winSU.addPropertyChangeListener("background", new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent pce) {
+          winSetup.setVisible(false);
+        }
+      });
+
+      while (true) {
+        if (winSU.getBackground() == Color.YELLOW) {
+          break;
+        }
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+        }
       }
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException ex) {
+    } else {
+      log1(lvl, "starting update to version " + version);
+      popInfo("Pls. read carefully before proceeding!! \n... with the update to version " + version);
+      if (!(localJarIDE.exists() || localJarScript.exists() || localJarJava.exists())) {
+        popInfo("No jars found - don't know what to update!"
+                + "\nOpen a command window,\n go to the folder\n" + workDir
+                + "\n and run runSetup(.cmd) to download any Sikuli stuff.");
+        log1(lvl, "User should run setup now");
+        System.exit(0);
       }
+      if (localJarIDE.exists()) {
+        getIDE = true;
+      } else if (localJarScript.exists()) {
+        getScript = true;
+      } else if (localJarJava.exists()) {
+        getJava = true;
+      }
+      isUpdate = true;
     }
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="option setup: download">
-    if (winSU.option1.isSelected()) {
-      getIDE = true;
+    if (!runningUpdate) {
+      if (winSU.option1.isSelected()) {
+        getIDE = true;
+      }
+      if (winSU.option2.isSelected() && !getIDE) {
+        getScript = true;
+      }
+      if (winSU.option3.isSelected()) {
+        getJava = true;
+      }
+      if (winSU.option4.isSelected() && !getIDE && !getScript) {
+        getJava = true;
+      }
+      if (winSU.option5.isSelected()) {
+        getTess = true;
+      }
+      if (winSU.option6.isSelected()) {
+        forAllSystems = true;
+      }
     }
-    if (winSU.option2.isSelected() && !getIDE) {
-      getScript = true;
-    }
-    if (winSU.option3.isSelected()) {
-      getJava = true;
-    }
-    if (winSU.option4.isSelected() && !getIDE && !getScript) {
-      getJava = true;
-    }
-    if (winSU.option5.isSelected()) {
-      getTess = true;
-    }
-    if (winSU.option6.isSelected()) {
-      forAllSystems = true;
-    }
-    
+   
     if (getIDE || getScript || getJava) {
       msg = "The following file(s) will be downloaded to\n"
               + workDir + "\n";
@@ -373,7 +486,9 @@ public class RunSetup {
       if (getTess) {
         msg += "\n--- Additions ---\n" + downloadTess;
       }
-      if (!popAsk(msg)) System.exit(1);
+      if (!popAsk(msg)) {
+        System.exit(1);
+      }
       
       // downloading
       localJar = null;
@@ -454,7 +569,16 @@ public class RunSetup {
     if (test && !popAsk("add native stuff --- proceed?")) {
       System.exit(1);
     }
-    JFrame splash = showSplash("Now adding native stuff to selected jars.", "pls. wait - may take some seconds ...");
+    
+    if (runningUpdate) {
+      if (popAsk("Currently I cannot detect, wether you selected the option"
+               + "Jars should run on all systems (native stuff for all)"
+               + "when setting up the last time."
+               + "Click YES, if you want that option now - otherwise No")) {
+        forAllSystems = true;
+      }
+    }
+    splash = showSplash("Now adding native stuff to selected jars.", "pls. wait - may take some seconds ...");
     
     // ide or script
     String[] jarsList = new String[3];

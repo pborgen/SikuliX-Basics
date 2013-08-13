@@ -267,4 +267,15 @@ public class SikuliX {
     }
     return resArgs.toArray(new String[0]);
   }
+
+  public static String arrayToString(String[] args) {
+    String ret = "";
+    for (String s : args) {
+      if (s.contains(" ")) {
+        s = "\"" + s + "\"";
+      }
+      ret += s + " ";
+    }
+    return ret;
+  }
 }

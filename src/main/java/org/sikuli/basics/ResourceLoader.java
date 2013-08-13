@@ -600,8 +600,8 @@ public class ResourceLoader implements IResourceLoader {
     String result = "";
     String error = "*** error ***" + NL;
     try {
-      log(lvl, arrayToString(args));
-      Debug.info("runcmd: " + arrayToString(args));
+      log(lvl, SikuliX.arrayToString(args));
+      Debug.info("runcmd: " + SikuliX.arrayToString(args));
       Process process = Runtime.getRuntime().exec(args);
       BufferedReader stdInput = new BufferedReader(new InputStreamReader(process.getInputStream()));
       BufferedReader stdError = new BufferedReader(new InputStreamReader(process.getErrorStream()));
@@ -621,17 +621,6 @@ public class ResourceLoader implements IResourceLoader {
     }
     mem = memx;
     return result;
-  }
-
-  private String arrayToString(String[] args) {
-    String ret = "";
-    for (String s : args) {
-      if (s.contains(" ")) {
-        s = "\"" + s + "\"";
-      }
-      ret += s + " ";
-    }
-    return ret;
   }
 
   /**
@@ -777,6 +766,11 @@ public class ResourceLoader implements IResourceLoader {
       }
     } else {
       File folder = new File(jar.getPath(), path);
+      if (folder.isFile()) {
+        fList.add(new String[]{FileManager.slashify(folder.getAbsolutePath(), false),
+          String.format("%d", folder.lastModified())});
+        log(lvl, "Found 1 file in %s", path);
+      }
       log(lvl, "accessing folder: " + folder.getAbsolutePath());
       for (File f : getDeepFileList(folder, deep)) {
         log(lvl + 2, "file: " + f.getAbsolutePath());
@@ -784,7 +778,7 @@ public class ResourceLoader implements IResourceLoader {
           String.format("%d", f.lastModified())});
         iFile++;
       }
-      log(lvl, "Found %d Files in %s", iFile, path);
+      log(lvl, "Found %d file(s) in %s", iFile, path);
     }
     return fList;
   }
