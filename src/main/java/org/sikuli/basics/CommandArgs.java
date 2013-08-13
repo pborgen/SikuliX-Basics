@@ -166,8 +166,8 @@ public class CommandArgs {
       + "though deprecated: so called executables .skl can be used too\n"
       + "------\nanything after --\nor after something beginning with --\n"
       + "go to script as user parameters (respecting enclosing \")\n"
-      + "------\n-d use this option if you encounter any weird problems"
-      + "DebugLevel=3 and all output goes to <workingFolder>/SikuliLog.text"
+      + "------\n-d use this option if you encounter any weird problems\n"
+      + "DebugLevel=3 and all output goes to <workingFolder>/SikuliLog.text\n"
       + "----------------------------------------------------------------",
       true);
   }
