@@ -50,8 +50,8 @@ public class Settings {
   private static String[] sargs = new String[0];
   public static String[] ServerList = {"https://dl.dropbox.com/u/42895525/SikuliX"};
   public static final int SikuliVersionMajor = 1;
-  public static final int SikuliVersionMinor = 1;
-  public static final int SikuliVersionSub = 0;
+  public static final int SikuliVersionMinor = 0;
+  public static final int SikuliVersionSub = 1;
   public static final int SikuliVersionBetaN = 0;
   private static final String sversion = String.format("%d.%d.%d",
           SikuliVersionMajor, SikuliVersionMinor, SikuliVersionSub);
@@ -66,7 +66,7 @@ public class Settings {
   public static String SikuliVersion;
   public static String SikuliVersionIDE;
   public static String SikuliVersionScript;
-  public static final String versionMonth = "November 2013";
+  public static final String versionMonth = "August 2013";
   /**
    * Resource types to be used with IResourceLoader implementations
    */
