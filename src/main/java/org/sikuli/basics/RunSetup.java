@@ -13,6 +13,7 @@ import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ import javax.swing.border.LineBorder;
 
 public class RunSetup {
 
+  public static String timestampBuilt;
+  private static final String tsb = "##--##Do 15 Aug 2013 14:27:41 CEST##--##"; 
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
@@ -69,6 +72,13 @@ public class RunSetup {
   private static String msg;
   private static boolean forAllSystems = false;
   private static long start;
+  
+  static {
+    timestampBuilt = tsb.substring(6, tsb.length()-6);
+    timestampBuilt = timestampBuilt.substring(
+                     timestampBuilt.indexOf(" ")+1, timestampBuilt.lastIndexOf(" "));
+    timestampBuilt = timestampBuilt.replaceAll(" ", "").replaceAll(":", "").toUpperCase();
+  }
 
   private static void log(int level, String message, Object... args) {
     Debug.logx(level, level < 0 ? "error" : "debug",
@@ -96,9 +106,7 @@ public class RunSetup {
 
   public static void main(String[] args) {
     mem = "main";
-        
-    System.out.println(me + " version " + version);
-    
+            
     Settings.runningSetup = true;
     IResourceLoader loader = FileManager.getNativeLoader("basic", args);
     
@@ -131,6 +139,7 @@ public class RunSetup {
     }
     Settings.LogTime = true;
     Debug.setDebugLevel(3);
+    log1(lvl, "SikuliX Setup Build: %s %s", Settings.getVersionShort(), RunSetup.timestampBuilt);
 
     if (args.length > 0) {
       log1(lvl, "... starting with " + SikuliX.arrayToString(args));
@@ -486,6 +495,8 @@ public class RunSetup {
       if (getTess) {
         msg += "\n--- Additions ---\n" + downloadTess;
       }
+      msg += "\n\nOnly click NO, if you want to terminate setup now!\n" +
+             "Click YES even if you want local copies in Download to be used!";
       if (!popAsk(msg)) {
         System.exit(1);
       }
@@ -555,11 +566,20 @@ public class RunSetup {
       }
       log1(lvl, "Download ended");
       if (!test && !downloadOK) {
+        popError("Some of the downloads did not complete successfully.\n" +
+                 "Check the logfile for possible error causes.\n\n" + 
+                 "If you think, setup's inline download from Dropbox is blocked somehow on,\n" +
+                 "your system, you might download the appropriate raw packages manually and \n" + 
+                 "unzip them into a folder Downloads in the setup folder and run setup again.\n" + 
+                 "Be aware: The raw packages are not useable without being processed by setup!\n\n" +
+                 "For other reasons, you might simply try to run setup again.");
         terminate("download not completed successfully");
       }
     } else {
       if (!isUpdate) {
         popError("Nothing selected! Sikuli not useable!\nYou might try again ;-)");
+      } else {
+        popError("Nothing selected! Good bye ;-)");
       }
       System.exit(0);
     }
@@ -944,6 +964,26 @@ public class RunSetup {
   }
 
   private static boolean download(String sDir, String tDir, String item, String jar) {
+    boolean deleteDownloads = false;
+    File downloaded = new File(workDir, "Downloads/" + item);
+    if (downloaded.exists()) {
+      if (popAsk("You already have this in your Setup/Downloads folder:\n"
+                 + downloaded.getAbsolutePath()
+                 + "\nClick YES, if you want to use this for setup processing\n\n"
+                 + "... or click NO, to download a fresh copy\n"
+                 + "(folder Download will be deleted on success in this case)")) {
+        try {
+          FileManager.xcopy(downloaded.getAbsolutePath(), jar, null);
+        } catch (IOException ex) {
+          terminate("Unable to copy from local Downloads: " + 
+                    downloaded.getAbsolutePath() + "\n" + ex.getMessage());
+        }
+        log(lvl, "Copied form local Download: " + item);
+        return true;
+      } else {
+        deleteDownloads = true;
+      }
+    }
     JFrame progress = new MultiFrame("download");
     String fname = FileManager.downloadURL(sDir + item, tDir, progress);
     progress.dispose();
@@ -955,8 +995,12 @@ public class RunSetup {
       log1(-1, "rename to %s did not work", jar);
       return false;
     }
+    if (deleteDownloads) {
+      FileManager.deleteFileOrFolder(new File(workDir, "Downloads").getAbsolutePath());
+    }
     return true;
   }
+  
 
   private static void terminate(String msg) {
     log1(-1, msg);

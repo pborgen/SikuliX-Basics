@@ -19,6 +19,7 @@ public class Settings {
   public static int breakPoint = 0;
   public static boolean handlesMacBundles = true;
   public static boolean runningSetup = false;
+  public static String libSourcebase = "META-INF/libs/";  
   
   /**
    * location of folder Tessdata

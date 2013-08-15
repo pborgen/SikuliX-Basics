@@ -89,13 +89,15 @@ public class ResourceLoader implements IResourceLoader {
   /**
    * in-jar folder to load native libs from
    */
-  private static String libSource32 = "META-INF/libs/%s/libs32/";
-  private static String libSource64 = "META-INF/libs/%s/libs64/";
+  private static String libSourcebase = Settings.libSourcebase;
+  private static String libSource32 = libSourcebase + "%s/libs32/";
+  private static String libSource64 = libSourcebase + "%s/libs64/";
   private String libSource;
   private String osarch;
   private String javahome;
 
   public ResourceLoader() {
+    log0(lvl, "SikuliX Package Build: %s %s", Settings.getVersionShort(), RunSetup.timestampBuilt);
     cl = this.getClass().getClassLoader();
     codeSrc = this.getClass().getProtectionDomain().getCodeSource();
     if (codeSrc != null && codeSrc.getLocation() != null) {

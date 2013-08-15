@@ -73,6 +73,11 @@ public class FileManager {
    * @throws IOException
    */
   public static void loadLibrary(String libname) {
+    String jarPath = isFatJar();
+    if (jarPath != null) {
+      RunSetup.popError("Terminating: The jar in use was not built with setup!\n" + jarPath);
+      System.exit(1);
+    }
     if (nativeLoader == null) {
       nativeLoader = getNativeLoader("basic", null);
     }
@@ -591,6 +596,37 @@ public class FileManager {
       return scriptFile.getParentFile();
     }
     return scriptFile;
+  }
+
+  private static String isFatJar() {
+    boolean extractingFromJar = false;
+    String jarPath = null;
+    URL jarURL = null;
+    CodeSource codeSrc = FileManager.class.getProtectionDomain().getCodeSource();
+    if (codeSrc != null && codeSrc.getLocation() != null) {
+      jarURL = codeSrc.getLocation();
+      jarPath = jarURL.getPath();
+      if (jarPath.endsWith(".jar")) {
+        extractingFromJar = true;
+      }
+    }
+    if (extractingFromJar) {
+      try {
+        ZipInputStream zip = new ZipInputStream(jarURL.openStream());
+        ZipEntry ze;
+        while ((ze = zip.getNextEntry()) != null) {
+          String entryName = ze.getName();
+          if (entryName.startsWith(Settings.libSourcebase)) {
+            return null;
+          }
+        }
+      } catch (IOException e) {
+        return jarPath;
+      }
+    } else {
+      return null;
+    }
+    return jarPath;
   }
 
   private static class FileFilterScript implements FilenameFilter {
