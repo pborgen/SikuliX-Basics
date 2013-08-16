@@ -6,9 +6,6 @@
  */
 package org.sikuli.basics;
 
-import org.sikuli.basics.Settings;
-import org.sikuli.basics.FileManager;
-import org.sikuli.basics.Debug;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -74,7 +71,7 @@ public class ImageLocator {
 			} else {
 				pathName = new File(path);
 				if (pathName.exists()) {
-					pl[i] = pathName.getAbsolutePath() + File.separator;
+					pl[i] = FileManager.slashify(pathName.getAbsolutePath(), true);
 				} else {
 					pathList.remove(pl[i]);
 					pl[i] = null;
@@ -250,7 +247,13 @@ public class ImageLocator {
      */
     public static void resetImagePath(String path) {
         clearImagePath();
-        addImagePath(path);
+    		String pl[] = splitImagePath(path);
+        if (pl.length > 0) {
+          pathList.set(0, pl[0]);
+          Settings.BundlePath = pl[0].substring(0, pl[0].length()-1);
+          pl[0] = null;
+          addImagePath(pl);
+        }
     }
 
     /**
@@ -281,10 +284,10 @@ public class ImageLocator {
 
 	/**
 	 *
-	 * @return the current bundle path from Settings.BundlePath
+	 * @return the current bundle path 
 	 */
 	public static String getBundlePath() {
-		return Settings.BundlePath;
+    return pathList.get(0);
 	}
 
 	private static String searchFile(String filename) {
