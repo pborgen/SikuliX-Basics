@@ -29,7 +29,7 @@ import javax.swing.border.LineBorder;
 public class RunSetup {
 
   public static String timestampBuilt;
-  private static final String tsb = "##--##Fr 16 Aug 2013 14:51:22 CEST##--##"; 
+  private static final String tsb = "##--##Fr 16 Aug 2013 15:21:53 CEST##--##"; 
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
@@ -496,7 +496,7 @@ public class RunSetup {
         msg += "\n--- Additions ---\n" + downloadTess;
       }
       msg += "\n\nOnly click NO, if you want to terminate setup now!\n" +
-             "Click YES even if you want local copies in Download to be used!";
+             "Click YES even if you want to use local copies in Downloads!";
       if (!popAsk(msg)) {
         System.exit(1);
       }
