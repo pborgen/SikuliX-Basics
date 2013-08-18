@@ -29,7 +29,7 @@ import javax.swing.border.LineBorder;
 public class RunSetup {
 
   public static String timestampBuilt;
-  private static final String tsb = "##--##Fr 16 Aug 2013 15:21:53 CEST##--##"; 
+  private static final String tsb = "##--##Sa 17 Aug 2013 12:02:47 CEST##--##"; 
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;

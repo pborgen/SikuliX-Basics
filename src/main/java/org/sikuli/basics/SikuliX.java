@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -50,6 +51,33 @@ public class SikuliX {
   private static Class ScriptCl, KeyCl;
   private static Method endWhat, toJavaKeyCode;
   private static boolean runningSetup = false;
+  private static boolean runningFromJar;
+  private static String jarPath;
+  private static String jarParentPath;
+  
+  static {
+    CodeSource codeSrc = SikuliX.class.getProtectionDomain().getCodeSource();
+    if (codeSrc != null && codeSrc.getLocation() != null) {
+      URL jarURL = codeSrc.getLocation();
+      jarPath = new File(jarURL.getPath()).getAbsolutePath();
+      jarParentPath = FileManager.slashify((new File(jarPath)).getParent(), true);
+      if (jarPath.endsWith(".jar")) {
+        runningFromJar = true;
+      }
+    }
+  }
+  
+  public static boolean isRunningFromJar() {
+    return runningFromJar;
+  }
+  
+  public static String getJarPath() {
+    return jarPath;
+  }
+
+  public static String getJarParentPath() {
+    return jarParentPath;
+  }
 
   public static void setRunningSetup(boolean _runningSetup) {
     runningSetup = _runningSetup;
