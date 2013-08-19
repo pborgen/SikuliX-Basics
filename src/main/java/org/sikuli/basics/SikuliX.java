@@ -59,10 +59,12 @@ public class SikuliX {
     CodeSource codeSrc = SikuliX.class.getProtectionDomain().getCodeSource();
     if (codeSrc != null && codeSrc.getLocation() != null) {
       URL jarURL = codeSrc.getLocation();
-      jarPath = new File(jarURL.getPath()).getAbsolutePath();
-      jarParentPath = FileManager.slashify((new File(jarPath)).getParent(), true);
+      jarPath = FileManager.slashify(new File(jarURL.getPath()).getAbsolutePath(), false);
+      jarParentPath = (new File(jarPath)).getParent();
       if (jarPath.endsWith(".jar")) {
         runningFromJar = true;
+      } else {
+        jarPath += "/";
       }
     }
   }

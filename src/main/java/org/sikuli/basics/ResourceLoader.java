@@ -106,8 +106,9 @@ public class ResourceLoader implements IResourceLoader {
       jarParentPath = FileManager.slashify((new File(jarPath)).getParent(), true);
       if (jarPath.endsWith(".jar")) {
         extractingFromJar = true;
+      } else {
+        jarPath = FileManager.slashify((new File(jarPath)).getAbsolutePath(), true);
       }
-
       if (Settings.isMac()) {
         if (jarParentPath.startsWith(Settings.appPathMac)) {
           log0(lvl, "Sikuli-IDE is running from /Applications folder");
@@ -772,15 +773,17 @@ public class ResourceLoader implements IResourceLoader {
         fList.add(new String[]{FileManager.slashify(folder.getAbsolutePath(), false),
           String.format("%d", folder.lastModified())});
         log(lvl, "Found 1 file in %s", path);
+      } else {
+        folder = new File(FileManager.slashify(jar.getPath(), true), path);
+        log(lvl, "accessing folder: " + folder.getAbsolutePath());
+        for (File f : getDeepFileList(folder, deep)) {
+          log(lvl + 2, "file: " + f.getAbsolutePath());
+          fList.add(new String[]{FileManager.slashify(f.getAbsolutePath(), false),
+            String.format("%d", f.lastModified())});
+          iFile++;
+        }
+        log(lvl, "Found %d file(s) in %s", iFile, path);
       }
-      log(lvl, "accessing folder: " + folder.getAbsolutePath());
-      for (File f : getDeepFileList(folder, deep)) {
-        log(lvl + 2, "file: " + f.getAbsolutePath());
-        fList.add(new String[]{FileManager.slashify(f.getAbsolutePath(), false),
-          String.format("%d", f.lastModified())});
-        iFile++;
-      }
-      log(lvl, "Found %d file(s) in %s", iFile, path);
     }
     return fList;
   }
