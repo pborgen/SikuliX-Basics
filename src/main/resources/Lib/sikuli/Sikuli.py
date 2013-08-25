@@ -13,9 +13,10 @@ import sys
 import os
 
 Debug.log(3, "Jython: sikuli: Sikuli: constants")
+import org.sikuli.script.FindFailed as FindFailed
 from org.sikuli.script.FindFailedResponse import *
 from org.sikuli.script.Constants import *
-from org.sikuli.script.Button import *
+import org.sikuli.script.Button as Button
 from org.sikuli.basics import OS
 
 Debug.log(3, "Jython: sikuli: Sikuli: import Region")
