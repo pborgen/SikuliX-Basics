@@ -29,13 +29,13 @@ import javax.swing.border.LineBorder;
 public class RunSetup {
 
   public static String timestampBuilt;
-  private static final String tsb = "##--##Mo 19 Aug 2013 13:36:07 CEST##--##"; 
+  private static final String tsb = "##--##So 25 Aug 2013 19:06:16 CEST##--##"; 
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
   private static String logfile;
   private static String version = Settings.getVersionShort();
-  private static String downloadBaseDirBase = "https://dl.dropboxusercontent.com/u/42895525/SikuliX-";
+  private static String downloadBaseDirBase = "http://dl.dropboxusercontent.com/u/42895525/SikuliX-";
   private static String downloadBaseDir = downloadBaseDirBase + version + "/";
   private static String downloadIDE = "sikuli-ide-" + version + ".jar";
   private static String downloadMacApp = "sikuli-macapp-" + version + ".jar";
