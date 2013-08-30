@@ -17,6 +17,7 @@ import org.sikuli.script.FindFailed as FindFailed
 from org.sikuli.script.FindFailedResponse import *
 from org.sikuli.script.Constants import *
 import org.sikuli.script.Button as Button
+from org.sikuli.script.Button import WHEEL_UP, WHEEL_DOWN
 from org.sikuli.basics import OS
 
 Debug.log(3, "Jython: sikuli: Sikuli: import Region")
