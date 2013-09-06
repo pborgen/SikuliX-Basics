@@ -9,8 +9,6 @@ package org.sikuli.basics.proxies;
 import java.awt.*;
 import java.awt.color.*;
 import java.awt.image.*;
-import org.sikuli.basics.proxies.Mat;
-import org.sikuli.basics.proxies.Vision;
 
 public class OpenCV {
    public static BufferedImage createBufferedImage(int w, int h)

@@ -247,7 +247,7 @@ public class Settings {
   public static boolean isLinux() {
     return getOS() == ISLINUX;
   }
-
+  
   public static boolean isMac() {
     return getOS() == ISMAC;
   }
