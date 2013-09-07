@@ -1,4 +1,4 @@
-Sikuli Basics 1.0.1
+Sikuli Basics 1.1.0 developement branch
 =============
 
 Supporting stuff for SikuliX <br />
