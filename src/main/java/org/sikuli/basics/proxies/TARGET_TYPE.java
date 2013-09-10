@@ -9,7 +9,8 @@
 package org.sikuli.basics.proxies;
 
 public final class TARGET_TYPE {
-  public final static int IMAGE = 0;
+  public final static int MAT = 0;
+  public final static int IMAGE = MAT + 1;
   public final static int TEXT = IMAGE + 1;
   public final static int BUTTON = TEXT + 1;
 }
