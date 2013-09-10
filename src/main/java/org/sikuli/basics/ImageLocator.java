@@ -374,6 +374,20 @@ public class ImageLocator {
     }
 		throw new FileNotFoundException("ImageLocator.locate: " + filename + " does not exist or cannot be found on ImagePath");
 	}
+  
+  /**
+   * same as locate(), but returns null instead of throwing exception
+   * 
+   * @param filename
+   * @return absolute path
+   */
+  public static String getPath(String filename) {
+    try {
+      return locate(filename);
+    } catch (IOException ex) {
+      return null;
+    }
+  }
 
 	/**
 	 * tries to find the file using locate(filename) and loads it as image if
