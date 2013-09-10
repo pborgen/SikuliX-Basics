@@ -30,6 +30,7 @@ public class Debug {
   private static final int DEFAULT_LEVEL = 1;
   private static int DEBUG_LEVEL = DEFAULT_LEVEL;
   private long _beginTime;
+  private String _message;
   private static PrintStream printout = null;
   private static PrintStream printoutuser = null;
   private static final DateFormat df =
@@ -309,6 +310,12 @@ public class Debug {
       log(-1, "profile", message, args);
     }
   }
+  
+  public static Debug startTimer(String message, Object... args) {
+    Debug timer = new Debug();
+    timer.startTiming(message, args);
+    return timer;
+  }
 
   /**
    * start the timer<br /> usage: Debug timer = new Debug(); timer.startTiming(...)
@@ -317,9 +324,10 @@ public class Debug {
    * @param args to use with format string
    */
   public void startTiming(String message, Object... args) {
-    if ("".equals(message)) {
-      Debug.profile("TimerStart: " + message, args);
+    if (!"".equals(message)) {
+      Debug.profile("TStart: " + message, args);
     }
+    _message = message;
     _beginTime = (new Date()).getTime();
   }
 
@@ -340,7 +348,7 @@ public class Debug {
   public long endTiming(String message, Object... args) {
     long t = (new Date()).getTime();
     long dt = t - _beginTime;
-    Debug.profile(String.format("TimerEnd (%.3f sec): ", (float) dt / 1000) + message, args);
+    Debug.profile(String.format("TEnd (%.3f sec): ", (float) dt / 1000) + message, args);
     return dt;
   }
 
@@ -350,6 +358,6 @@ public class Debug {
    * @return the time in msec
    */
   public long end() {
-    return endTiming("");
+    return endTiming(_message);
   }
 }
