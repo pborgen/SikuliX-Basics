@@ -226,7 +226,7 @@ public class ImageLocator {
     String p;
 		while (ip.hasNext()) {
       p = ip.next();
-			if (!p.substring(0, p.length()-1).endsWith(".sikuli" + File.separator)) {
+			if (!p.substring(0, p.length()-1).endsWith(".sikuli")) {
 				ip.remove();
 			}
 		}
