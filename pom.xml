@@ -33,11 +33,11 @@
     </developer>
   </developers>
 
-  <scm>
+<!--  <scm>
     <connection>scm:git://github.com/RaiMan/SikuliX-Basics.git</connection>
     <developerConnection>scm:git:git://github.com/RaiMan/SikuliX-Basics.git</developerConnection>
     <url>git://github.com/RaiMan/SikuliX-Basics.git</url>
-  </scm>
+  </scm>-->
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
