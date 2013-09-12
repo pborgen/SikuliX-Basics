@@ -152,6 +152,7 @@ public class AutoUpdater {
           details += line;
         }
       }
+      bdetails = "";
       while ((line = in.readLine()) != null) {
         if (line.startsWith("BETA")) {
           bdetails = line;
