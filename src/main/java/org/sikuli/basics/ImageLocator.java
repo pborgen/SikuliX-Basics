@@ -223,10 +223,8 @@ public class ImageLocator {
 
 	private static void clearImagePath() {
 		Iterator<String> ip = pathList.listIterator(1);
-    String p;
 		while (ip.hasNext()) {
-      p = ip.next();
-			if (!p.substring(0, p.length()-1).endsWith(".sikuli" + File.separator)) {
+			if (!ip.next().endsWith(".sikuli" + File.separator)) {
 				ip.remove();
 			}
 		}
