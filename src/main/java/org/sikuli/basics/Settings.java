@@ -51,9 +51,9 @@ public class Settings {
   private static String[] sargs = new String[0];
   public static String[] ServerList = {"https://dl.dropbox.com/u/42895525/SikuliX"};
   public static final int SikuliVersionMajor = 1;
-  public static final int SikuliVersionMinor = 0;
-  public static final int SikuliVersionSub = 1;
-  public static final int SikuliVersionBetaN = 0;
+  public static final int SikuliVersionMinor = 1;
+  public static final int SikuliVersionSub = 0;
+  public static final int SikuliVersionBetaN = 1;
   private static final String sversion = String.format("%d.%d.%d",
           SikuliVersionMajor, SikuliVersionMinor, SikuliVersionSub);
   private static final String bversion = String.format("%d.%d-Beta%d",
@@ -267,6 +267,10 @@ public class Settings {
     else {
       return sversion;
     }
+  }
+
+  public static String getVersionShortBasic() {
+      return sversion;
   }
 
   public static void setArgs(String[] args, String[] sargs) {

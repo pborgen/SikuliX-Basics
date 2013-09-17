@@ -27,6 +27,7 @@ public class SetUpSelect extends javax.swing.JPanel {
   // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
   private void initComponents() {
 
+    textField1 = new java.awt.TextField();
     jLabel1 = new javax.swing.JLabel();
     jSeparator1 = new javax.swing.JSeparator();
     jLabel2 = new javax.swing.JLabel();
@@ -55,8 +56,11 @@ public class SetUpSelect extends javax.swing.JPanel {
     option6 = new javax.swing.JCheckBox();
     ask6 = new javax.swing.JButton();
     jButton1 = new javax.swing.JButton();
+    suVersion = new javax.swing.JLabel();
 
-    jLabel1.setText("SikuliX 1.0.1 SetUp");
+    textField1.setText("textField1");
+
+    jLabel1.setText("SikuliX SetUp ");
     jLabel1.setAlignmentX(0.5F);
 
     jLabel2.setText("We are running on: ");
@@ -168,6 +172,8 @@ public class SetUpSelect extends javax.swing.JPanel {
       }
     });
 
+    suVersion.setText("...");
+
     org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
@@ -206,7 +212,10 @@ public class SetUpSelect extends javax.swing.JPanel {
             .add(ask5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
           .add(layout.createSequentialGroup()
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-              .add(jLabel1)
+              .add(layout.createSequentialGroup()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(suVersion))
               .add(layout.createSequentialGroup()
                 .add(6, 6, 6)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -239,8 +248,10 @@ public class SetUpSelect extends javax.swing.JPanel {
     layout.setVerticalGroup(
       layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
       .add(layout.createSequentialGroup()
-        .addContainerGap()
-        .add(jLabel1)
+        .add(14, 14, 14)
+        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+          .add(jLabel1)
+          .add(suVersion))
         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
         .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -293,12 +304,12 @@ public class SetUpSelect extends javax.swing.JPanel {
         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
           .add(setupNow)
           .add(jButton1))
-        .addContainerGap(15, Short.MAX_VALUE))
+        .addContainerGap(10, Short.MAX_VALUE))
       .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
         .add(layout.createSequentialGroup()
           .add(172, 172, 172)
           .add(jSeparator4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-          .addContainerGap(424, Short.MAX_VALUE)))
+          .addContainerGap(427, Short.MAX_VALUE)))
     );
   }// </editor-fold>//GEN-END:initComponents
 
@@ -383,5 +394,7 @@ public class SetUpSelect extends javax.swing.JPanel {
   protected javax.swing.JLabel suJava;
   public javax.swing.JLabel suRC3;
   protected javax.swing.JLabel suSystem;
+  public javax.swing.JLabel suVersion;
+  private java.awt.TextField textField1;
   // End of variables declaration//GEN-END:variables
 }

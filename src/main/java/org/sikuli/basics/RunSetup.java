@@ -65,7 +65,6 @@ public class RunSetup {
   private static List<String> options = new ArrayList<String>();
   private static JFrame splash = null;
 
-  //<editor-fold defaultstate="collapsed" desc="new logging concept">
   private static String me = "RunSetup";
   private static String mem = "...";
   private static int lvl = 2;
@@ -80,6 +79,7 @@ public class RunSetup {
     timestampBuilt = timestampBuilt.replaceAll(" ", "").replaceAll(":", "").toUpperCase();
   }
 
+  //<editor-fold defaultstate="collapsed" desc="new logging concept">
   private static void log(int level, String message, Object... args) {
     Debug.logx(level, level < 0 ? "error" : "debug",
             me + ": " + mem + ": " + message, args);
@@ -126,7 +126,7 @@ public class RunSetup {
     if (runningfromJar) {
       logfile = (new File(workDir, localLogfile)).getAbsolutePath();
     } else {
-      workDir = (new File(uhome, "SikuliX")).getAbsolutePath();
+      workDir = (new File(uhome, "SikuliX/ZRun")).getAbsolutePath();
       (new File(workDir)).mkdirs();
       logfile = (new File(workDir, localLogfile)).getAbsolutePath();
       popInfo("\n... not running from sikuli-setup.jar - using as download folder\n" + workDir);
@@ -367,7 +367,7 @@ public class RunSetup {
         popInfo("You already have the latest version!");
         log1(lvl, "You already have the latest version!");
       }
-      log1(lvl, "completed!");
+      log1(lvl, "Completed: checking for newer versions");
     }
 
     log1(lvl, "user home: %s", uhome);
@@ -388,7 +388,10 @@ public class RunSetup {
       winSetup.setLocationRelativeTo(null);
       winSetup.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       winSetup.setVisible(true);
-
+      
+      //setup version basic
+      winSU.suVersion.setText(Settings.getVersionShortBasic() + "   (" + timestampBuilt + ")");
+      
       // running system
       Settings.getOS();
       msg = Settings.osName + " " + Settings.getOSVersion();
