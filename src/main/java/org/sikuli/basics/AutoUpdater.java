@@ -58,6 +58,14 @@ public class AutoUpdater {
     return "";
   }
 
+  public String getBetaVersion() {
+    if (beta > 0) {
+      return String.format("%d.%d-Beta%d", bmajor, bminor, beta);
+    } else {
+      return "";
+    }
+  }
+
   public String getDetails() {
     return details;
   }
