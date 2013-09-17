@@ -29,12 +29,13 @@ import javax.swing.border.LineBorder;
 public class RunSetup {
 
   public static String timestampBuilt;
-  private static final String tsb = "##--##Mi  4 Sep 2013 19:10:42 CEST##--##"; 
+  private static final String tsb = "##--##Di 17 Sep 2013 14:13:12 CEST##--##"; 
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
   private static String logfile;
   private static String version = Settings.getVersionShort();
+  private static String betaVersion;
   private static String downloadBaseDirBase = "http://dl.dropboxusercontent.com/u/42895525/SikuliX-";
   private static String downloadBaseDir = downloadBaseDirBase + version + "/";
   private static String downloadIDE = "sikuli-ide-" + version + ".jar";
@@ -61,11 +62,11 @@ public class RunSetup {
   private static String localJar;
   private static boolean test = false;
   private static boolean isUpdate = false;
+  private static boolean isBeta = false;
   private static boolean runningUpdate = false;
   private static List<String> options = new ArrayList<String>();
   private static JFrame splash = null;
 
-  //<editor-fold defaultstate="collapsed" desc="new logging concept">
   private static String me = "RunSetup";
   private static String mem = "...";
   private static int lvl = 2;
@@ -80,6 +81,7 @@ public class RunSetup {
     timestampBuilt = timestampBuilt.replaceAll(" ", "").replaceAll(":", "").toUpperCase();
   }
 
+  //<editor-fold defaultstate="collapsed" desc="new logging concept">
   private static void log(int level, String message, Object... args) {
     Debug.logx(level, level < 0 ? "error" : "debug",
             me + ": " + mem + ": " + message, args);
@@ -107,15 +109,21 @@ public class RunSetup {
   public static void main(String[] args) {
     mem = "main";
             
-    Settings.runningSetup = true;
-    IResourceLoader loader = FileManager.getNativeLoader("basic", args);
-    
     options.addAll(Arrays.asList(args));
+    
+    if (args.length > 0 && "version".equals(args[0])) {
+      System.out.println(Settings.getVersionShort());
+      System.exit(0);
+    }
+
     if (args.length > 0 && "test".equals(args[0])) {
       test = true;
       options.remove(0);
     }
 
+    Settings.runningSetup = true;
+    IResourceLoader loader = FileManager.getNativeLoader("basic", args);
+    
     uhome = System.getProperty("user.home");
     workDir = FileManager.getJarParentFolder();
     if (workDir.startsWith("N")) {
@@ -126,7 +134,7 @@ public class RunSetup {
     if (runningfromJar) {
       logfile = (new File(workDir, localLogfile)).getAbsolutePath();
     } else {
-      workDir = (new File(uhome, "SikuliX")).getAbsolutePath();
+      workDir = (new File(uhome, "SikuliX/ZRun")).getAbsolutePath();
       (new File(workDir)).mkdirs();
       logfile = (new File(workDir, localLogfile)).getAbsolutePath();
       popInfo("\n... not running from sikuli-setup.jar - using as download folder\n" + workDir);
@@ -155,6 +163,30 @@ public class RunSetup {
     File localJarUpdate = new File(workDir, localUpdate);
     File localJarSetup = new File(workDir, localSetup);
     
+    if (options.size() > 0 && options.get(0).equals("beta")) {
+      isBeta = true;
+      splash = showSplash("Checking for Beta versions! (you have " + version + ")", "pls. wait - may take some seconds ...");
+      AutoUpdater au = new AutoUpdater();
+      au.checkUpdate();
+      closeSplash(splash);
+      betaVersion = au.getBetaVersion();
+      if (!betaVersion.isEmpty()) {
+        log1(lvl, "Beta: %s available", betaVersion);
+        if (!popAsk("Version " + betaVersion + " available\nClick OK, if you want to install")) {
+          System.exit(1);
+        }
+        downloadBaseDir = downloadBaseDirBase + betaVersion + "/";
+        downloadIDE = "sikuli-ide-" + betaVersion + ".jar";
+        downloadMacApp = "sikuli-macapp-" + betaVersion + ".jar";
+        downloadScript = "sikuli-script-" + betaVersion + ".jar";
+        downloadJava = "sikuli-java-" + betaVersion + ".jar";
+        downloadTess = "sikuli-tessdata-" + betaVersion + ".jar";
+      } else {
+        popInfo("Beta: no suitable version available");
+        System.exit(1);
+      }
+    }
+        
     //<editor-fold defaultstate="collapsed" desc="option reset">
     if (options.size() > 0 && options.get(0).equals("reset")) {
       log1(3, "requested to reset: " + workDir);
@@ -301,21 +333,28 @@ public class RunSetup {
 
     if (!runningUpdate
             && (localJarIDE.exists() || localJarScript.exists() || localJarJava.exists())) {
-      if (!popAsk(workDir + "\n... folder we are running in already has SikuliX packages! \n"
-              + "Pls. click YES to run an update ...\n"
-              + "... or click NO to exit and use another folder\n\n"
-              + "When selecting Update:"
-              + "\nSikuli first checks for newer versions, that you might install now"
-              + "\nIf no newer versions are available, you might download again or get additional stuff."
-              + "\nIn any case: existing jars will be renamed to <existing name>.jar.backup\n"
-              + "Be aware: <existing name>.jar.backup will be overwritten. So in doubt: click NO\n\n"
-              + "If the existing stuff is from a Sikuli(X) version prior 1.0.1: selecting NO is recommended!"
-              + "\nIn this case you should empty the folder or use another one, before installing again!")) {
-        log1(lvl, "Update cancelled");
-        System.exit(1);
+      if (isBeta) {
+        popError("Beta setup must be done in an empty folder!\n" +
+                 "Pls. corect and run again");
+        log1(-1, "Beta: folder not empty");
+        System.exit(1);        
+      } else {
+        if (!popAsk(workDir + "\n... folder we are running in already has SikuliX packages! \n"
+                + "Pls. click YES to run an update ...\n"
+                + "... or click NO to exit and use another folder\n\n"
+                + "When selecting Update:"
+                + "\nSikuli first checks for newer versions, that you might install now"
+                + "\nIf no newer versions are available, you might download again or get additional stuff."
+                + "\nIn any case: existing jars will be renamed to <existing name>.jar.backup\n"
+                + "Be aware: <existing name>.jar.backup will be overwritten. So in doubt: click NO\n\n"
+                + "If the existing stuff is from a Sikuli(X) version prior 1.0.1: selecting NO is recommended!"
+                + "\nIn this case you should empty the folder or use another one, before installing again!")) {
+          log1(lvl, "Update cancelled");
+          System.exit(1);
+        }
+        isUpdate = true;
+        log1(lvl, "Option UPDATE selected");
       }
-      isUpdate = true;
-      log1(lvl, "Option UPDATE selected");
     }
 
     if (isUpdate) {
@@ -367,7 +406,7 @@ public class RunSetup {
         popInfo("You already have the latest version!");
         log1(lvl, "You already have the latest version!");
       }
-      log1(lvl, "completed!");
+      log1(lvl, "Completed: checking for newer versions");
     }
 
     log1(lvl, "user home: %s", uhome);
@@ -388,7 +427,14 @@ public class RunSetup {
       winSetup.setLocationRelativeTo(null);
       winSetup.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       winSetup.setVisible(true);
-
+      
+      //setup version basic
+      if (isBeta) {
+        winSU.suVersion.setText(betaVersion + "   (" + timestampBuilt + ")");
+      } else {
+        winSU.suVersion.setText(Settings.getVersionShortBasic() + "   (" + timestampBuilt + ")");        
+      }
+      
       // running system
       Settings.getOS();
       msg = Settings.osName + " " + Settings.getOSVersion();
