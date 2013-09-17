@@ -269,6 +269,10 @@ public class Settings {
     }
   }
 
+  public static String getVersionShortBasic() {
+      return sversion;
+  }
+
   public static void setArgs(String[] args, String[] sargs) {
     Settings.args = args;
     Settings.sargs = sargs;
