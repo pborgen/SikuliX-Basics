@@ -239,36 +239,34 @@ public class ImageLocator {
 		}
 	}
 
-    /**
-     * the current list is emptied <br />then add
-     * -DSIKULI_IMAGE_PATH=... and Env(SIKULI_IMAGE_PATH) <br /> then the given
-     * path(s) are added using addImagePath()
-     *
-     * @param path absolute or relative path(s) or url(s) might be a path list
-     * string with seperator : (or ; Windows)
-     */
-    public static void resetImagePath(String path) {
-        clearImagePath();
-    		String pl[] = splitImagePath(path);
-        if (pl.length > 0) {
-          pathList.set(0, pl[0]);
-          Settings.BundlePath = pl[0].substring(0, pl[0].length()-1);
-          pl[0] = null;
-          addImagePath(pl);
-        }
+  /**
+   * the current list is emptied <br />then add -DSIKULI_IMAGE_PATH=... and Env(SIKULI_IMAGE_PATH)
+   * <br /> then the given path(s) are added using addImagePath()
+   *
+   * @param path absolute or relative path(s) or url(s) might be a path list string with seperator :
+   * (or ; Windows)
+   */
+  public static void resetImagePath(String path) {
+    clearImagePath();
+    String pl[] = splitImagePath(path);
+    if (pl.length > 0) {
+      pathList.set(0, pl[0]);
+      Settings.BundlePath = pl[0].substring(0, pl[0].length() - 1);
+      pl[0] = null;
+      addImagePath(pl);
     }
+  }
 
-    /**
-     * the current list is emptied <br />then add
-     * -DSIKULI_IMAGE_PATH=... and Env(SIKULI_IMAGE_PATH) <br /> then the given
-     * path(s) are added using addImagePath()
-     *
-     * @param path absolute or relative path(s) or url(s) as string array
-     */
-    public static void resetImagePath(String[] pl) {
-        clearImagePath();
-        addImagePath(pl);
-    }
+  /**
+   * the current list is emptied <br />then add -DSIKULI_IMAGE_PATH=... and Env(SIKULI_IMAGE_PATH)
+   * <br /> then the given path(s) are added using addImagePath()
+   *
+   * @param path absolute or relative path(s) or url(s) as string array
+   */
+  public static void resetImagePath(String[] pl) {
+    clearImagePath();
+    addImagePath(pl);
+  }
 
 	/**
 	 * the given path is added to the list replacing the first entry and
@@ -350,7 +348,7 @@ public class ImageLocator {
 	 * @throws IOException if filename cannot be located <br />x) files behind
 	 * urls are loaded to local cash
 	 */
-	public static String locate(String filename) throws IOException {
+	private static String locate(String filename) throws IOException {
     if (filename != null) {
       String ret;
       URL url = getURL(filename);
@@ -377,20 +375,6 @@ public class ImageLocator {
 		throw new FileNotFoundException("ImageLocator.locate: " + filename + " does not exist or cannot be found on ImagePath");
 	}
   
-  /**
-   * same as locate(), but returns null instead of throwing exception
-   * 
-   * @param filename
-   * @return absolute path
-   */
-  public static String getPath(String filename) {
-    try {
-      return locate(filename);
-    } catch (IOException ex) {
-      return null;
-    }
-  }
-
 	/**
 	 * tries to find the file using locate(filename) and loads it as image if
 	 * possible
@@ -399,11 +383,6 @@ public class ImageLocator {
 	 * @return image
 	 */
 	public static BufferedImage getImage(String filename) {
-		try {
-			return ImageIO.read(new File(locate(filename)));
-		} catch (IOException iOException) {
-			Debug.log(2, "ImageLocator.getImage: " + filename + " does not exist or cannot be found on ImagePath");
-			return null;
-		}
+    return new Image(filename).getImage();
 	}
 }
