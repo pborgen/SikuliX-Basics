@@ -146,6 +146,12 @@ public class SikuliX {
       return null;
     }
   }
+  
+  public static void pause(int time) {
+    try {
+      Thread.sleep(time*1000);
+    } catch (InterruptedException ex) {    }
+  }
 
   public static void endNormal(int n) {
     callScriptEndMethod("endNormal", n);
