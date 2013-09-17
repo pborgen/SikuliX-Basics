@@ -42,7 +42,7 @@ from org.sikuli.script import ScreenUnion
 Debug.log(3, "Jython: sikuli: Sikuli: import Finder")
 from org.sikuli.script import Finder
 Debug.log(3, "Jython: sikuli: Sikuli: import Image")
-from org.sikuli.script import Image
+from org.sikuli.basics import Image
 Debug.log(3, "Jython: sikuli: Sikuli: import ImagePath")
 from org.sikuli.basics import ImagePath
 
