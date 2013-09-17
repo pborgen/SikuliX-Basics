@@ -629,6 +629,37 @@ public class FileManager {
     return jarPath;
   }
 
+  public static URL makeURL(String fName) {
+    return makeURL(fName, "file");
+  }
+
+  public static URL makeURL(String fName, String type) {
+    try {
+      return new URL(type, null, fName);
+    } catch (MalformedURLException ex) {
+      return null;
+    }
+  }
+
+  public static URL makeURL(URL path, String fName) {
+    try {
+      return new URL(path, fName);
+    } catch (MalformedURLException ex) {
+      return null;
+    }
+  }
+
+  public static URL getURLForContentFromURL(URL path, String fname) {
+    String type = path.getProtocol();
+    URL u = makeURL(path.getPath() + fname, path.getProtocol());
+    try {
+      u.getContent();
+      return u;
+    } catch (IOException ex) {
+      return null;
+    }
+  }
+
   private static class FileFilterScript implements FilenameFilter {
     private String _check;
     public FileFilterScript(String check) {
