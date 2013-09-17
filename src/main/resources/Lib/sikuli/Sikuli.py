@@ -41,6 +41,10 @@ Debug.log(3, "Jython: sikuli: Sikuli: import ScreenUnion")
 from org.sikuli.script import ScreenUnion
 Debug.log(3, "Jython: sikuli: Sikuli: import Finder")
 from org.sikuli.script import Finder
+Debug.log(3, "Jython: sikuli: Sikuli: import Image")
+from org.sikuli.script import Image
+Debug.log(3, "Jython: sikuli: Sikuli: import ImagePath")
+from org.sikuli.basics import ImagePath
 
 Debug.log(3, "Jython: sikuli: Sikuli: import App")
 from org.sikuli.script import App
@@ -135,10 +139,10 @@ def resetImagePath(path):
 # not call this method.
 #
 def setBundlePath(path):
-    ImageLocator.setBundlePath(path)
+    ImagePath.setBundlePath(path)
 
 def getBundlePath():
-    return ImageLocator.getBundlePath()
+    return ImagePath.getBundlePath()
 
 ##
 # Sikuli shows actions (click, dragDrop, ... etc.) if this flag is set to <i>True</i>.
