@@ -18,6 +18,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
@@ -35,15 +36,17 @@ public class Image {
   }
   
   private static List<Image> images = Collections.synchronizedList(new ArrayList<Image>());
-  private static Map<String, Image> imageFiles = Collections.synchronizedMap(new HashMap<String, Image>());
+  private static List<Image> purgeList = Collections.synchronizedList(new ArrayList<Image>());
+  private static Map<URL, Image> imageFiles = Collections.synchronizedMap(new HashMap<URL, Image>());
   private static int KB = 1024;
   private static int MB = KB * KB;
   private static int maxMemory = 64 * MB;
   private static int currentMemory;
   private static String imageFromJar = "__FROM_JAR__";
   public final static String isBImg = "__BufferedImage__";
-  private String imageName;
+  private String imageName = null;;
   private boolean imageIsText = false;
+  private boolean imageIsAbsolute = false;
   private String filepath = null;
   private URL fileURL = null;
   private BufferedImage bimg = null;
@@ -57,42 +60,84 @@ public class Image {
     return (imageName != null ? imageName : "__UNKNOWN__");
   }
 
-  /**
-   * Create Image from url, relative or absolute filename
-   *
-   * @param fname
-   */
-  public Image(String fname) {
-    init(fname);
-  }
-  
-  public Image(URL fURL) {
-    if ("file".equals(fURL.getProtocol())) {
-      init(fURL.getPath());
-    } else if ("jar".equals(fURL.getProtocol())) {
-      imageName = getNameFromURL(fURL);
-      fileURL = fURL;
-      filepath = imageFromJar;
-      loadImage();
-    } else if (fURL.getProtocol().startsWith("http")) {
-      log(-1, "FatalError: Image from http(s) not supported: " + fURL);
-      
-    } else {
-      log(-1, "FatalError: ImageURL not supported: " + fURL);
+  public static Image create(String imgName) {
+    Image img = get(imgName);
+    if (img == null) {
+      img = new Image(imgName);
     }
-    fileURL = fURL;
+    return createImageValidate(img);
+  }
+
+  public static Image create(URL url) {
+    Image img = get(url);
+    if (img == null) {
+      img = new Image(url);
+    }
+    return createImageValidate(img);
   }
   
-  private static String getNameFromURL(URL fURL) {
-//TODO add handling for http
-    if ("jar".equals(fURL.getProtocol())) {
-      int n = fURL.getPath().lastIndexOf(".jar!/");
-      int k = fURL.getPath().substring(0, n).lastIndexOf("/");
-      if (n > -1) {
-        return "JAR:" + fURL.getPath().substring(k+1, n) + fURL.getPath().substring(n+5);
+  private static Image createImageValidate(Image img) {
+    if (!img.isValid()) {
+      if (Settings.OcrTextSearch) {
+        img.setIsText(true);
+      } else {
+        log(-1, "Image not valid, but TextSearch is switched off!");
       }
     }
-    return null;
+    return img;
+  }
+
+  public static Image get(URL imgURL) {
+    return imageFiles.get(imgURL);
+  }
+  
+  public static Image get(String fname) {
+    URL fURL = null;
+    if (!fname.endsWith(".png")) {
+      fname += ".png";
+    }
+    fname = FileManager.slashify(fname, false);
+    if (new File(fname).isAbsolute()) {
+      if (new File(fname).exists()) {
+        fURL = FileManager.makeURL(fname);
+      } else {
+        log(-1, "FatalError: not locatable: " + fname);
+      }
+    } else {
+      for (ImagePath.PathEntry path : ImagePath.getPaths()) {
+        if (path == null) {
+          continue;
+        }
+        if ("file".equals(path.pathURL.getProtocol())) {
+          fURL = FileManager.makeURL(path.pathURL, fname);
+          if (new File(fURL.getPath()).exists()) {
+            break;
+          }
+        } else if ("jar".equals(path.pathURL.getProtocol())) {
+          fURL = FileManager.getURLForContentFromURL(path.pathURL, fname);
+          if (fURL != null) {
+            break;
+          }
+        }
+      }
+      if (fURL == null) {
+        log(-1, "not found on image path: " + fname);
+        ImagePath.printPaths();
+      }
+    }
+    if (fURL != null) {
+      return imageFiles.get(fURL);
+    } else {
+      return null;
+    }
+  }
+  
+  public Image() {
+    log(-1, "Use Image.create(String or URL) to get a new Image object. This instance is not useable!");
+  }
+  
+  private Image(String fname) {
+    init(fname);
   }
   
   private void init(String fname) {
@@ -102,10 +147,15 @@ public class Image {
     }
     fname = FileManager.slashify(fname, false);
     if (new File(fname).isAbsolute()) {
-      if(new File(fname).exists()) {
+      if (new File(fname).exists()) {
+        if (fname.startsWith(ImagePath.getBundlePath())) {
+          imageName = new File(fname).getName();
+        } else {
+          imageIsAbsolute = true;
+        }
         filepath = fname;
         fileURL = FileManager.makeURL(fname);
-      } else {
+       } else {
         log(-1, "FatalError: not locatable: " + fname);
       }
     } else {
@@ -136,17 +186,46 @@ public class Image {
     loadImage();
   }
   
+  private Image(URL fURL) {
+    if ("file".equals(fURL.getProtocol())) {
+      init(fURL.getPath());
+    } else if ("jar".equals(fURL.getProtocol())) {
+      imageName = getNameFromURL(fURL);
+      fileURL = fURL;
+      filepath = imageFromJar;
+      loadImage();
+    } else if (fURL.getProtocol().startsWith("http")) {
+      log(-1, "FatalError: Image from http(s) not supported: " + fURL);
+      
+    } else {
+      log(-1, "FatalError: ImageURL not supported: " + fURL);
+    }
+    fileURL = fURL;
+  }
+  
+  private static String getNameFromURL(URL fURL) {
+//TODO add handling for http
+    if ("jar".equals(fURL.getProtocol())) {
+      int n = fURL.getPath().lastIndexOf(".jar!/");
+      int k = fURL.getPath().substring(0, n).lastIndexOf("/");
+      if (n > -1) {
+        return "JAR:" + fURL.getPath().substring(k+1, n) + fURL.getPath().substring(n+5);
+      }
+    }
+    return null;
+  }
+  
   private BufferedImage loadImage() {
     if (filepath != null) {
       try {
-          bimg = ImageIO.read(this.fileURL);
+        bimg = ImageIO.read(this.fileURL);
       } catch (Exception e) {
         log(-1, "FatalError: image could not be loaded from " + filepath);
         return null;
       }
       if (imageName != null) {
-        imageFiles.put(imageName, this);
-        log(lvl, "added to image list: %s \nwith URL: %s", 
+        imageFiles.put(fileURL, this);
+        log(lvl, "added to image list: %s \nwith URL: %s",
                 imageName, fileURL);
         bwidth = bimg.getWidth();
         bheight = bimg.getHeight();
@@ -156,11 +235,11 @@ public class Image {
         while (images.size() > 0 && currentMemory > maxMemory) {
           first = images.remove(0);
           currentMemory -= first.bsize;
-          first.bimg = null;
         }
         images.add(this);
-        log(lvl, "loaded %s (%d KB of %d MB (%d / %d %%))", imageName, (int) (bsize / KB),
-                (int) (maxMemory / MB), images.size(), (int) (100 * currentMemory / maxMemory));
+        log(lvl, "loaded %s (%d KB of %d MB (%d / %d %%) (%d))", imageName, (int) (bsize / KB),
+                (int) (maxMemory / MB), images.size(), (int) (100 * currentMemory / maxMemory),
+                (int) (currentMemory / KB));
       } else {
         log(-1, "ImageName invalid! not cached!");
       }
@@ -168,41 +247,56 @@ public class Image {
     return bimg;
   }
   
-  public static Image getImageFromCache(URL imgURL) {
-    return imageFiles.get(getNameFromURL(imgURL));
-  }
-  
-  public static Image getImageFromCache(String imgName) {
-    return imageFiles.get(imgName);
-  }
-  
-  public static Image createImage(String imgName) {
-    Image img = Image.getImageFromCache(imgName);
-    if (img == null) {
-      img = new Image(imgName);
+  public static void purge(String bundlePath) {
+    URL pathURL = FileManager.makeURL(bundlePath);
+    if (!ImagePath.getPaths().get(0).pathURL.equals(pathURL)) {
+      log(-1, "purge: not current bundlepath: " + pathURL);
+      return;
     }
-    return createImageValidate(img);
-  }
-
-  public static Image createImage(URL url) {
-    Image img = Image.getImageFromCache(url);
-    if (img == null) {
-      img = new Image(url);
-    }
-    return createImageValidate(img);
-  }
-  
-  private static Image createImageValidate(Image img) {
-    if (!img.isValid()) {
-      if (Settings.OcrTextSearch) {
-        img.setIsText(true);
-      } else {
-        log(-1, "Image not valid, but TextSearch is switched off!");
+    int onPath = 0;
+    for (ImagePath.PathEntry e : ImagePath.getPaths()) {
+      if (e.pathURL.equals(pathURL)) {
+        onPath += 1;
       }
     }
-    return img;
-  }
+    if (onPath > 1 || imageFiles.size() == 0 ) {
+      // also added as path entry by import, so we do not purge
+      return;
+    }
+    String pathStr = pathURL.toString();
+    URL imgURL;
+    Image img;
+    Image buf;
+    log(lvl, "purge: " + pathStr);
+    Iterator<Map.Entry<URL, Image>> it = imageFiles.entrySet().iterator();
+    Map.Entry<URL, Image> entry;
+    Iterator<Image> bit;
+    purgeList.clear();
 
+    while (it.hasNext()) {
+      entry = it.next();
+      imgURL = entry.getKey();
+      if (imgURL.toString().startsWith(pathStr)) {
+        log(lvl, "purge: entry: " + imgURL.toString());
+        purgeList.add(entry.getValue());
+        it.remove();
+        
+      }
+    }
+    if (purgeList.size() > 0) {
+        bit  = images.iterator();
+        while (bit.hasNext()) {
+          buf = bit.next();
+          if (purgeList.contains(buf)) {
+            bit.remove();
+            log(lvl, "purge: bimg: " + buf);
+            currentMemory -= buf.bsize;
+          }
+        }
+        log(lvl, "Max %d MB (%d / %d %%) (%d))", (int) (maxMemory / MB), images.size(), 
+                (int) (100 * currentMemory / maxMemory), (int) (currentMemory / KB));
+    }
+  }
   public Image(BufferedImage img) {
     imageName = isBImg;
     filepath = isBImg;
@@ -216,6 +310,14 @@ public class Image {
    */
   public boolean isValid() {
     return filepath != null;
+  }
+  
+  /**
+   *
+   * @return true if image was given with absolute filepath
+   */
+  public boolean isAbsolute() {
+    return imageIsAbsolute;
   }
 
   public boolean isText() {
@@ -236,7 +338,7 @@ public class Image {
    * @return
    */
   public String getFilename() {
-    if (!"file".equals(fileURL) || isBImg.equals(imageName)) {
+    if (!"file".equals(fileURL.getProtocol()) || isBImg.equals(imageName)) {
       return null;
     }
     return filepath;
@@ -258,7 +360,7 @@ public class Image {
    */
   public BufferedImage getImage() {
     if (bimg != null) {
-      log(lvl, "getImage: %s taken from cache", imageName);
+      log(lvl, "getImage: %s taken from cache", fileURL);
       return bimg;
     } else {
       return loadImage();

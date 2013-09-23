@@ -383,6 +383,6 @@ public class ImageLocator {
 	 * @return image
 	 */
 	public static BufferedImage getImage(String filename) {
-    return new Image(filename).getImage();
+    return Image.create(filename).getImage();
 	}
 }

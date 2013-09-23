@@ -149,8 +149,7 @@ public class ImagePath {
    * @return true on success, false ozherwise
    */
   public static boolean reset(String path) {
-    imagePaths.clear();
-    imagePaths.add(null);
+    reset();
     return add(path);
   }
   
@@ -160,6 +159,7 @@ public class ImagePath {
    * @return true
    */
   public static boolean reset() {
+    log(lvl, "reset");
     imagePaths.clear();
     imagePaths.add(null);
     return true;
