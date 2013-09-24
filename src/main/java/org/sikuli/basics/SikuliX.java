@@ -106,7 +106,7 @@ public class SikuliX {
       splashArgs[3] += e + " ";
     }
     splashArgs[3] = splashArgs[3].trim();
-    splash = new MultiFrame(splashArgs);
+//    splash = new MultiFrame(splashArgs);
   }
   
   public static void displaySplashFirstTime(String [] args) {
