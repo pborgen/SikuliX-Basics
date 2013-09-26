@@ -35,7 +35,7 @@ fi
 
 if [ "$SIKULIX_HOME" != "" ]; then
   echo "SIKULIX_HOME in environment specified as "$SIKULIX_HOME
-  shome=$SIKULI_HOME
+  shome=$SIKULIX_HOME
 else
   shome=`dirname $0`
 fi
