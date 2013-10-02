@@ -29,7 +29,7 @@ import javax.swing.border.LineBorder;
 public class RunSetup {
 
   public static String timestampBuilt;
-  private static final String tsb = "##--##Di 17 Sep 2013 14:13:12 CEST##--##"; 
+  private static final String tsb = "##--##Mi  2 Okt 2013 08:59:27 CEST##--##"; 
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
@@ -110,17 +110,20 @@ public class RunSetup {
     mem = "main";
             
     options.addAll(Arrays.asList(args));
-    
+                
+    //<editor-fold defaultstate="collapsed" desc="options special">
     if (args.length > 0 && "version".equals(args[0])) {
       System.out.println(Settings.getVersionShort());
       System.exit(0);
     }
-
+    
     if (args.length > 0 && "test".equals(args[0])) {
       test = true;
       options.remove(0);
     }
-
+    //</editor-fold>
+    
+    //<editor-fold defaultstate="collapsed" desc="general preps">
     Settings.runningSetup = true;
     IResourceLoader loader = FileManager.getNativeLoader("basic", args);
     
@@ -130,7 +133,7 @@ public class RunSetup {
       runningfromJar = false;
     }
     workDir = workDir.substring(1);
-
+    
     if (runningfromJar) {
       logfile = (new File(workDir, localLogfile)).getAbsolutePath();
     } else {
@@ -139,7 +142,7 @@ public class RunSetup {
       logfile = (new File(workDir, localLogfile)).getAbsolutePath();
       popInfo("\n... not running from sikuli-setup.jar - using as download folder\n" + workDir);
     }
-
+    
     if (!Debug.setLogFile(logfile)) {
       popError(workDir + "\n... folder we are running in must be user writeable! \n"
               + "pls. correct the problem and start again.");
@@ -148,13 +151,13 @@ public class RunSetup {
     Settings.LogTime = true;
     Debug.setDebugLevel(3);
     log1(lvl, "SikuliX Setup Build: %s %s", Settings.getVersionShort(), RunSetup.timestampBuilt);
-
+    
     if (args.length > 0) {
       log1(lvl, "... starting with " + SikuliX.arrayToString(args));
     } else {
       log1(lvl, "... starting with no args given");
     }
-
+    
     File localJarIDE = new File(workDir, localIDE);
     File localJarApp = new File(workDir, localMacApp);
     File localJarScript = new File(workDir, localScript);
@@ -162,7 +165,9 @@ public class RunSetup {
     File localJarTess = new File(workDir, localTess);
     File localJarUpdate = new File(workDir, localUpdate);
     File localJarSetup = new File(workDir, localSetup);
-    
+    //</editor-fold>
+
+    //<editor-fold defaultstate="collapsed" desc="option beta">
     if (options.size() > 0 && options.get(0).equals("beta")) {
       isBeta = true;
       splash = showSplash("Checking for Beta versions! (you have " + version + ")", "pls. wait - may take some seconds ...");
@@ -186,6 +191,7 @@ public class RunSetup {
         System.exit(1);
       }
     }
+    //</editor-fold>
         
     //<editor-fold defaultstate="collapsed" desc="option reset">
     if (options.size() > 0 && options.get(0).equals("reset")) {
@@ -831,12 +837,13 @@ public class RunSetup {
         terminate("Functional test Jython did not work");
       }
     }
-    //</editor-fold>
     
     splash = showSplash("Setup seems to have ended successfully!", "Detailed information see: " + logfile);
     start += 2000;
     closeSplash(splash);
     log1(lvl, "... SikuliX Setup seems to have ended successfully ;-)");
+    //</editor-fold>
+
     System.exit(0);
   }
   
