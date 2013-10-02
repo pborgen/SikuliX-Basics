@@ -1,6 +1,8 @@
 package org.sikuli.basics;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
@@ -35,7 +37,7 @@ public class ImagePath {
   }
 
   /**
-   * get the liat of path entries
+   * get the list of path entries
    * @return
    */
   public static List<PathEntry> getPaths() {
@@ -43,7 +45,7 @@ public class ImagePath {
   }
   
   /**
-   * print the liat of path entries
+   * print the list of path entries
    * @return
    */
   public static void printPaths() {
@@ -57,6 +59,72 @@ public class ImagePath {
       }
     }
     log(lvl, "end of list ----------------------------");
+  }
+  
+  public static URL find(String fname) {
+    URL fURL = null;
+    fname = FileManager.slashify(fname, false);
+    if (new File(fname).isAbsolute()) {
+      if (new File(fname).exists()) {
+        fURL = FileManager.makeURL(fname);
+      } else {
+        log(-1, "FatalError: not locatable: " + fname);
+      }
+    } else {
+      for (PathEntry path : getPaths()) {
+        if (path == null) {
+          continue;
+        }
+        if ("file".equals(path.pathURL.getProtocol())) {
+          fURL = FileManager.makeURL(path.pathURL, fname);
+          if (new File(fURL.getPath()).exists()) {
+            break;
+          }
+        } else if ("jar".equals(path.pathURL.getProtocol())) {
+          fURL = FileManager.getURLForContentFromURL(path.pathURL, fname);
+          if (fURL != null) {
+            break;
+          }
+        }
+      }
+      if (fURL == null) {
+        log(-1, "not found on image path: " + fname);
+        printPaths();
+      }
+    }
+    return fURL;
+  }
+  
+  public static BufferedReader open(String fname) {
+    log(lvl, "open: " + fname);
+    BufferedReader br = null;
+    URL furl = find(fname);
+    if (furl != null) {
+      try {
+        br = new BufferedReader(new InputStreamReader(furl.openStream()));
+      } catch (Exception ex) {
+        log(-1, "open: %s", ex.getMessage());
+        return null;
+      } 
+      try {
+        br.mark(10);
+        if (br.read() < 0) {
+          br.close();
+          return null;
+        }
+        br.reset();
+      } catch (Exception ex) {
+        log(-1, "open: %s", ex.getMessage());
+        try {
+            br.close();
+        } catch (Exception ex1) {
+          log(-1, "open: %s", ex1.getMessage());
+          return null;
+        } 
+        return null;
+      } 
+    }
+    return br;
   }
   
   /**

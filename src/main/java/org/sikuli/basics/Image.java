@@ -92,39 +92,10 @@ public class Image {
   }
   
   public static Image get(String fname) {
-    URL fURL = null;
     if (!fname.endsWith(".png")) {
       fname += ".png";
     }
-    fname = FileManager.slashify(fname, false);
-    if (new File(fname).isAbsolute()) {
-      if (new File(fname).exists()) {
-        fURL = FileManager.makeURL(fname);
-      } else {
-        log(-1, "FatalError: not locatable: " + fname);
-      }
-    } else {
-      for (ImagePath.PathEntry path : ImagePath.getPaths()) {
-        if (path == null) {
-          continue;
-        }
-        if ("file".equals(path.pathURL.getProtocol())) {
-          fURL = FileManager.makeURL(path.pathURL, fname);
-          if (new File(fURL.getPath()).exists()) {
-            break;
-          }
-        } else if ("jar".equals(path.pathURL.getProtocol())) {
-          fURL = FileManager.getURLForContentFromURL(path.pathURL, fname);
-          if (fURL != null) {
-            break;
-          }
-        }
-      }
-      if (fURL == null) {
-        log(-1, "not found on image path: " + fname);
-        ImagePath.printPaths();
-      }
-    }
+    URL fURL = ImagePath.find(fname);
     if (fURL != null) {
       return imageFiles.get(fURL);
     } else {
