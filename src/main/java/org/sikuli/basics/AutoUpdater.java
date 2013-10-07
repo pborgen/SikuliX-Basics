@@ -23,12 +23,12 @@ public class AutoUpdater {
   private int bmajor, bminor, beta;
   private int smajor, sminor, ssub, sbeta;
   private String name;
-  private static int MAJOR = 1;
-  private static int MINOR = 2;
-  private static int SUB = 3;
+  public static int MAJOR = 1;
+  public static int MINOR = 2;
+  public static int SUB = 3;
   public static int SOMEBETA = 10;
   public static int BETA = 5;
-  private static int FINAL = 6;
+  public static int FINAL = 6;
   private int available = 0;
   private boolean notAvailable = false;
   public String whatUpdate;
@@ -97,20 +97,19 @@ public class AutoUpdater {
               available = MAJOR;
               whatUpdate = "A new major version is available: " + getVersion();
               Debug.info(whatUpdate);
-            } else if (minor > sminor) {
+            } else if (major == smajor && minor > sminor) {
               available = MINOR;
               whatUpdate = "A new minor version is available: " + getVersion();
               Debug.info(whatUpdate);
-            } else if (sub > ssub) {
+            } else if (major == smajor && minor == sminor && sub > ssub) {
               available = SUB;
               whatUpdate = "A new service update is available: " + getVersion();
               Debug.info(whatUpdate);
             }
           }
-          if (bmajor > smajor || (bmajor == smajor && bminor > sminor)) {
+          if (beta > 0 && (bmajor > smajor || (bmajor == smajor && bminor > sminor))) {
             available += SOMEBETA;
-            whatUpdate = "A beta version is available: " + getVersion();
-            Debug.info(whatUpdate);
+            Debug.info("A beta version is available: " + getVersion());
           }
         }
       } catch (Exception e) {
@@ -130,7 +129,7 @@ public class AutoUpdater {
     //DOWNLOAD https://launchpad.net/sikuli/+download
     //BETA https://dl.dropboxusercontent.com/u/42895525/SikuliX/index.html
     URL url = new URL(s + "/latestversion");
-    url.openConnection();
+    url.openConnection(); 
     URLConnection conn = url.openConnection();
     BufferedReader in = new BufferedReader(
             new InputStreamReader(conn.getInputStream()));
@@ -160,22 +159,26 @@ public class AutoUpdater {
           details += line;
         }
       }
+      bdetails = "";
       while ((line = in.readLine()) != null) {
         if (line.startsWith("BETA")) {
-          bdetails = line;
+          if (beta > 0) bdetails = line;
           break;
         }
         details += line;
       }
-      if (! "".equals(bdetails)) {
-        bserver = bdetails.split(" ")[1];
-        bdetails = "Pls. download at: " + bserver + "<br />";
-        bdetails += "-------------------------------------------------------------------------";
-        bdetails += "<br /><br />";
+      if (beta > 0) {
+        if (! "".equals(bdetails)) {
+          bserver = bdetails.split(" ")[1];
+          bdetails = "Pls. download at: " + bserver + "<br />";
+          bdetails += "-------------------------------------------------------------------------";
+          bdetails += "<br /><br />";
+        }
+        while ((line = in.readLine()) != null) {
+          bdetails += line;
+        }
       }
-      while ((line = in.readLine()) != null) {
-        bdetails += line;
-      }
+      in.close();
       return true;
     }
     return false;

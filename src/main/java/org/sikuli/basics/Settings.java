@@ -49,7 +49,7 @@ public class Settings {
   public static String SikuliRepo;
   private static String[] args = new String[0];
   private static String[] sargs = new String[0];
-  public static String[] ServerList = {"https://dl.dropbox.com/u/42895525/SikuliX"};
+  public static String[] ServerList = {"http://dl.dropboxusercontent.com/u/42895525/SikuliX"};
   public static final int SikuliVersionMajor = 1;
   public static final int SikuliVersionMinor = 1;
   public static final int SikuliVersionSub = 0;

@@ -407,6 +407,40 @@ public class FileManager {
     }
   }
 
+  public static void xcopyAll(String src, String dest) throws IOException {
+    File fSrc = new File(src);
+    File fDest = new File(dest);
+    if (fSrc.getAbsolutePath().equals(fDest.getAbsolutePath())) {
+      return;
+    }
+    if (fSrc.isDirectory()) {
+      if (!fDest.exists()) {
+        fDest.mkdirs();
+      }
+      String[] children = fSrc.list();
+      for (String child : children) {
+        if (child.equals(fDest.getName())) {
+          continue;
+        }
+        xcopyAll(src + File.separator + child, dest + File.separator + child);
+      }
+    } else {
+      if (fDest.isDirectory()) {
+        dest += File.separator + fSrc.getName();
+      }
+      InputStream in = new FileInputStream(src);
+      OutputStream out = new FileOutputStream(dest);
+      // Copy the bits from instream to outstream
+      byte[] buf = new byte[1024];
+      int len;
+      while ((len = in.read(buf)) > 0) {
+        out.write(buf, 0, len);
+      }
+      in.close();
+      out.close();
+    }
+  }
+
   /**
    * Copy a file *src* to the path *dest* and check if the file name conflicts. If a file with the
    * same name exists in that path, rename *src* to an alternative name.
