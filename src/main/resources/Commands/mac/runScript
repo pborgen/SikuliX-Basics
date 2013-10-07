@@ -31,8 +31,12 @@ else
   shome=`dirname $0`
 fi
 
-export SIKULI_COMMAND=$*
-echo "running SikuliX-Script: $PROPS $CONSOLE"
-echo "-jar $shome/sikuli-script.jar $SIKULI_COMMAND"
-java $PROPS -jar "$shome/sikuli-script.jar" $SIKULI_COMMAND
+if [ -e "$shome/sikuli-ide.jar" ]; then
+  export SIKULI_COMMAND=$*
+  echo "running SikuliX-Script: $PROPS $CONSOLE"
+  echo "-jar $shome/sikuli-script.jar $SIKULI_COMMAND"
+  java $PROPS -jar "$shome/sikuli-script.jar" $SIKULI_COMMAND
+else
+  echo "Error: terminating: sikuli-script.jar not found at: "$shome
+fi
 

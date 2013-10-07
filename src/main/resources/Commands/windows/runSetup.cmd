@@ -1,5 +1,5 @@
 @echo off
-SETLOCAL
+SETLOCAL ENABLEEXTENSIONS
 
 set SIKULIX_HOME=%~dp0
 set PARMS=-Xms64M -Xmx512M -Dfile.encoding=UTF-8
@@ -23,17 +23,16 @@ set JAVA_HOME=%PROGRAMS%\Java\jre6
 goto JAVA_OK
 
 :JAVANO
-if not defined %PROGRAMS32% goto JAVANO32
+if not defined PROGRAMS32 goto JAVANO32
 
-IF not EXIST "%PROGRAMS32%\Java\jre7" goto JAVA6
+IF not EXIST "%PROGRAMS32%\Java\jre7" goto JAVA632
 set JAVA_HOME=%PROGRAMS32%\Java\jre7
 goto JAVA_OK
 
-:JAVA6
+:JAVA632
 IF not EXIST "%PROGRAMS32%\Java\jre6" goto JAVANO32
 set JAVA_HOME=%PROGRAMS32%\Java\jre6
 goto JAVA_OK
-
 
 :JAVANO32
 echo +++ Java not found in standard places %PROGRAMS% or %PROGRAMS32%
