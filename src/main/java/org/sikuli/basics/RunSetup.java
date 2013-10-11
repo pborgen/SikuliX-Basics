@@ -225,7 +225,7 @@ public class RunSetup {
     
     if (!Debug.setLogFile(logfile)) {
       popError(workDir + "\n... folder we are running in must be user writeable! \n"
-              + "pls. correct the problem and start again.");
+              + "please correct the problem and start again.");
       System.exit(0);
     }
     
@@ -259,7 +259,7 @@ public class RunSetup {
             System.exit(0);
           } else {
             splash = showSplash("Checking for update or beta versions! (you have " + version + ")",
-                    "pls. wait - may take some seconds ...");
+                    "please wait - may take some seconds ...");
             AutoUpdater au = new AutoUpdater();
             avail = au.checkUpdate();
             closeSplash(splash);
@@ -375,7 +375,7 @@ public class RunSetup {
 
     log1(lvl, "user home: %s", uhome);
 
-    popInfo("Pls. read carefully before proceeding!!");
+    popInfo("Please read carefully before proceeding!!");
 
     //<editor-fold defaultstate="collapsed" desc="option setup preps display options">
     if (!runningUpdate && !isBeta && !isUpdate) {
@@ -631,7 +631,7 @@ public class RunSetup {
       }
     }
 
-    splash = showSplash("Now adding native stuff to selected jars.", "pls. wait - may take some seconds ...");
+    splash = showSplash("Now adding native stuff to selected jars.", "please wait - may take some seconds ...");
 
     String targetJar;
     for (String path : localJars) {
@@ -656,7 +656,7 @@ public class RunSetup {
     if (Settings.isMac() && getIDE) {
       closeSplash(splash);
       log1(lvl, "preparing Mac app as SikuliX-IDE.app");
-      splash = showSplash("Now preparing Mac app SikuliX-IDE.app.", "pls. wait - may take some seconds ...");
+      splash = showSplash("Now preparing Mac app SikuliX-IDE.app.", "please wait - may take some seconds ...");
       forAllSystems = false;
       targetJar = (new File(workDir, localMacAppIDE)).getAbsolutePath();
       jarsList = new String[] {(new File(workDir, localIDE)).getAbsolutePath()};
@@ -666,7 +666,7 @@ public class RunSetup {
     closeSplash(splash);
     if (success && (getIDE || getScript)) {
       log1(lvl, "exporting commandfiles");
-      splash = showSplash("Now exporting commandfiles.", "pls. wait - may take some seconds ...");
+      splash = showSplash("Now exporting commandfiles.", "please wait - may take some seconds ...");
 
       if (Settings.isWindows()) {
         if (getIDE) {
@@ -714,7 +714,7 @@ public class RunSetup {
     
     //<editor-fold defaultstate="collapsed" desc="option setup: environment setup and test">
     log1(lvl, "trying to set up the environment");
-    splash = showSplash("Now I will try to set up the environment!", "pls. wait - may take some seconds ...");
+    splash = showSplash("Now I will try to set up the environment!", "please wait - may take some seconds ...");
     File folderLibs = new File(workDir, "libs");
     if (folderLibs.exists()) {
       FileManager.deleteFileOrFolder(folderLibs.getAbsolutePath());
@@ -823,7 +823,7 @@ public class RunSetup {
         System.exit(0);
       }
     }
-    splash = showSplash("Now creating backup and cleaning setup folder", "pls. wait - may take some seconds ...");
+    splash = showSplash("Now creating backup and cleaning setup folder", "please wait - may take some seconds ...");
     String backup = fBackup.getAbsolutePath();
     FileManager.deleteFileOrFolder(backup, new FileManager.fileFilter() {
       @Override

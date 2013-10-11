@@ -101,7 +101,7 @@ public class SikuliX {
     }
     start = (new Date()).getTime();
     String[] splashArgs = new String[ ] { 
-      "splash", "#", "#" + Settings.SikuliVersionScript, "", "#", "#... starting - pls. wait ..." };
+      "splash", "#", "#" + Settings.SikuliVersionScript, "", "#", "#... starting - please wait ..." };
     for (String e : args) {
       splashArgs[3] += e + " ";
     }
@@ -122,7 +122,7 @@ public class SikuliX {
     }
     start = (new Date()).getTime();
     String[] splashArgs = new String[] { 
-      "splash", "#", "#" + Settings.SikuliVersionIDE, "", "#", "#... setting up environement - pls. wait ..." };
+      "splash", "#", "#" + Settings.SikuliVersionIDE, "", "#", "#... setting up environement - please wait ..." };
     splash = new MultiFrame(splashArgs);
   }
   
