@@ -23,9 +23,13 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.UnknownHostException;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Date;
@@ -58,7 +62,12 @@ public class FileManager {
   static IResourceLoader nativeLoader = null;
   private static MultiFrame _progress = null;
   private static final String EXECUTABLE = "#executable";
-
+  
+  private static String phost = null;
+  private static String padr = null;
+  private static String pport = null;
+  private static boolean proxyChecked = false;
+  private static Proxy proxy = null;
   /**
    * System.load() the given library module <br />
    * from standard places (folder libs or SikuliX/libs) in the following order<br />
@@ -88,11 +97,16 @@ public class FileManager {
   private static int tryGetFileSize(URL url) {
     HttpURLConnection conn = null;
     try {
-      conn = (HttpURLConnection) url.openConnection();
+      if (proxy != null) {
+        conn = (HttpURLConnection) url.openConnection(proxy);
+      } else {
+        conn = (HttpURLConnection) url.openConnection();
+      }
       conn.setRequestMethod("HEAD");
       conn.getInputStream();
       return conn.getContentLength();
-    } catch (IOException e) {
+    } catch (Exception ex) {
+      log0(-1, "Download: getFileSize: not accessible:\n" + ex.getMessage());
       return -1;
     } finally {
       conn.disconnect();
@@ -128,49 +142,77 @@ public class FileManager {
       }
     }
     if (fullpath != null) {
-      fullpath = new File(localPath, filename);
-      targetPath = fullpath.getAbsolutePath();
       srcLength = tryGetFileSize(url);
       if (srcLength > 0) {
         srcLengthKB = (int) (srcLength / 1024);
-      }
-      log0(lvl, "Downloading %s having %d KB", filename, srcLengthKB);
-      done = 0;
-      if (_progress != null) {
-        _progress.setProFile(filename);
-        _progress.setProSize(srcLengthKB);
-        _progress.setProDone(0);
-        _progress.setVisible(true);
-      }
-      try {
-        FileOutputStream writer = new FileOutputStream(fullpath);
-        InputStream reader = url.openStream();
-        byte[] buffer = new byte[DOWNLOAD_BUFFER_SIZE];
-        int bytesRead = 0;
-        long begin_t = (new Date()).getTime();
-        long chunk = (new Date()).getTime();
-        while ((bytesRead = reader.read(buffer)) > 0) {
-          writer.write(buffer, 0, bytesRead);
-          totalBytesRead += bytesRead;
-          if (srcLength > 0) {
-            done = (int) ((totalBytesRead / (double) srcLength) * 100);
-          } else {
-            done = (int) (totalBytesRead / 1024);
-          }
-          if (((new Date()).getTime() - chunk) > 1000) {
-            if (_progress != null) {
-              _progress.setProDone(done);
-            }
-            chunk = (new Date()).getTime();
-          }
+        fullpath = new File(localPath, filename);
+        targetPath = fullpath.getAbsolutePath();
+        log0(lvl, "Downloading %s having %d KB", filename, srcLengthKB);
+        done = 0;
+        if (_progress != null) {
+          _progress.setProFile(filename);
+          _progress.setProSize(srcLengthKB);
+          _progress.setProDone(0);
+          _progress.setVisible(true);
         }
-        reader.close();
-        writer.close();
-        log0(lvl, "downloaded %d KB to %s", (int) (totalBytesRead / 1024), targetPath);
-        log0(lvl, "download time: %d", (int) (((new Date()).getTime() - begin_t) / 1000));
-      } catch (IOException ex) {
-        log0(-1, "problems while downloading\n" + ex.getMessage());
-        targetPath = null;
+
+        if (!proxyChecked) {
+          phost = System.getenv("SIKULIPROXYHOST");
+          padr = System.getenv("SIKULIPROXYIP");
+          pport = System.getenv("SIKULIPROXYPORT");
+          InetAddress a = null;
+          int p = -1;
+          if (phost != null) {
+            a = getProxyAddress(phost);
+          } 
+          if (a == null && padr != null) {
+            a = getProxyAddress(padr);
+          }
+          if (a != null && pport != null) {
+            p = getProxyPort(pport);
+          }
+          if (a != null && p > 1024) {
+            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(a, p));
+            log0(lvl, "Proxy defined: %s : %d", a.getHostAddress(), p);
+          }
+          proxyChecked = true;
+        }
+
+        try {
+          FileOutputStream writer = new FileOutputStream(fullpath);
+          InputStream reader;
+          if (proxy != null) {
+            reader = url.openConnection(proxy).getInputStream();          
+          } else {
+            reader = url.openConnection().getInputStream();
+          }
+          byte[] buffer = new byte[DOWNLOAD_BUFFER_SIZE];
+          int bytesRead = 0;
+          long begin_t = (new Date()).getTime();
+          long chunk = (new Date()).getTime();
+          while ((bytesRead = reader.read(buffer)) > 0) {
+            writer.write(buffer, 0, bytesRead);
+            totalBytesRead += bytesRead;
+            if (srcLength > 0) {
+              done = (int) ((totalBytesRead / (double) srcLength) * 100);
+            } else {
+              done = (int) (totalBytesRead / 1024);
+            }
+            if (((new Date()).getTime() - chunk) > 1000) {
+              if (_progress != null) {
+                _progress.setProDone(done);
+              }
+              chunk = (new Date()).getTime();
+            }
+          }
+          reader.close();
+          writer.close();
+          log0(lvl, "downloaded %d KB to %s", (int) (totalBytesRead / 1024), targetPath);
+          log0(lvl, "download time: %d", (int) (((new Date()).getTime() - begin_t) / 1000));
+        } catch (Exception ex) {
+          log0(-1, "problems while downloading\n" + ex.getMessage());
+          targetPath = null;
+        }
       }
       if (_progress != null) {
         if (targetPath == null) {
@@ -291,8 +333,10 @@ public class FileManager {
             return false;
           }
         } else {
-          // return file entries
-          if (!f.delete()) {
+          try {
+            f.delete();
+          } catch (Exception ex) {
+            log0(-1, "deleteFileOrFolder: " + f.getAbsolutePath() + "\n" + ex.getMessage());
             return false;
           }
         }
@@ -300,7 +344,12 @@ public class FileManager {
     }
     // deletes intermediate empty directories and finally the top now empty dir
     if (!somethingLeft && entry.exists()) {
-      return entry.delete();
+      try {
+        entry.delete();
+      } catch (Exception ex) {
+        log0(-1, "deleteFileOrFolder: " + entry.getAbsolutePath() + "\n" + ex.getMessage());
+        return false;
+      }
     }
     return true;
   }
@@ -690,6 +739,58 @@ public class FileManager {
       u.getContent();
       return u;
     } catch (IOException ex) {
+      return null;
+    }
+  }
+
+  public static int getPort(String p) {
+    int port;
+    int pDefault = 50000;
+    if (p != null) {
+      try {
+        port = Integer.parseInt(p);
+      } catch (NumberFormatException ex) {
+        return -1;
+      }
+    } else {
+      return pDefault;
+    }
+    if (port < 1024) {
+      port += pDefault;
+    }
+    return port;
+  }
+
+  public static int getProxyPort(String p) {
+    int port;
+    int pDefault = 8080;
+    if (p != null) {
+      try {
+        port = Integer.parseInt(p);
+      } catch (NumberFormatException ex) {
+        return -1;
+      }
+    } else {
+      return pDefault;
+    }
+    return port;
+  }
+
+  public static String getAddress(String arg) {
+    try {
+      if (arg == null) {
+        return InetAddress.getLocalHost().getHostAddress();
+      }
+      return InetAddress.getByName(arg).getHostAddress();
+    } catch (UnknownHostException ex) {
+      return null;
+    }
+  }
+
+  public static InetAddress getProxyAddress(String arg) {
+    try {
+      return InetAddress.getByName(arg);
+    } catch (UnknownHostException ex) {
       return null;
     }
   }

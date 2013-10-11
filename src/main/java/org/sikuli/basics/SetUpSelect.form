@@ -346,7 +346,7 @@
     </Component>
     <Component class="javax.swing.JCheckBox" name="option5">
       <Properties>
-        <Property name="text" type="java.lang.String" value="5 - I want to use Tesseract based OCR features (You should know what you are doing and be experienced!)"/>
+        <Property name="text" type="java.lang.String" value="5 - For Mac and Windows only: I plan to use the Tesseract based OCR features (You should know what you are doing!)"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="option5ActionPerformed"/>

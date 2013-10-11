@@ -134,7 +134,7 @@ public class SetUpSelect extends javax.swing.JPanel {
       }
     });
 
-    option5.setText("5 - I want to use Tesseract based OCR features (You should know what you are doing and be experienced!)");
+    option5.setText("5 - For Mac and Windows only: I plan to use the Tesseract based OCR features (You should know what you are doing!)");
     option5.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option5ActionPerformed(evt);

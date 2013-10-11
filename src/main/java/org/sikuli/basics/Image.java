@@ -119,7 +119,8 @@ public class Image {
     fname = FileManager.slashify(fname, false);
     if (new File(fname).isAbsolute()) {
       if (new File(fname).exists()) {
-        if (fname.startsWith(ImagePath.getBundlePath())) {
+        String bundlePath = ImagePath.getBundlePath();
+        if (bundlePath != null && fname.startsWith(bundlePath)) {
           imageName = new File(fname).getName();
         } else {
           imageIsAbsolute = true;
@@ -268,6 +269,7 @@ public class Image {
                 (int) (100 * currentMemory / maxMemory), (int) (currentMemory / KB));
     }
   }
+  
   public Image(BufferedImage img) {
     imageName = isBImg;
     filepath = isBImg;
@@ -309,7 +311,10 @@ public class Image {
    * @return
    */
   public String getFilename() {
-    if (!"file".equals(fileURL.getProtocol()) || isBImg.equals(imageName)) {
+//    if (isBImg.equals(imageName)) {
+//      return null;
+//    }
+    if (fileURL != null && !"file".equals(fileURL.getProtocol())) {
       return null;
     }
     return filepath;
@@ -331,7 +336,7 @@ public class Image {
    */
   public BufferedImage getImage() {
     if (bimg != null) {
-      log(lvl, "getImage: %s taken from cache", fileURL);
+      log(lvl, "getImage: %s taken from cache", (fileURL == null ? filepath : fileURL));
       return bimg;
     } else {
       return loadImage();
