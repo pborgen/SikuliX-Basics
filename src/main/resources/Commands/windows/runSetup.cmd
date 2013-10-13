@@ -6,8 +6,7 @@ echo +++ trying to start Sikuli Setup in %SIKULIX_HOME%
 PATH=%SIKULIX_HOME%libs;%PATH%
 
 IF not EXIST "%SIKULIX_HOME%sikuli-update.jar" goto NOUPDATE
-  move /Y "%SIKULIX_HOME%sikuli-update.jar" "%SIKULIX_HOME%sikuli-setup.jar" >nul
-  java -jar "%SIKULIX_HOME%sikuli-setup.jar" update
+  java -jar "%SIKULIX_HOME%sikuli-update.jar" update
 goto FINALLY
 
 :NOUPDATE
@@ -16,3 +15,5 @@ java -jar "%SIKULIX_HOME%sikuli-setup.jar"
 :FINALLY
 
 ENDLOCAL
+pause
+exit

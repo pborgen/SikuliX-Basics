@@ -368,11 +368,13 @@ public class RunSetup {
           popError(msg);
           System.exit(2);
         }
-        loader.doSomethingSpecial("runcmd", new String[]{"start", "/i", fCmd.getAbsolutePath()});
+        String[] cmd = new String[]{"cmd", "/C", "start", "cmd", "/K", fCmd.getAbsolutePath()};
+//        String[] cmd = new String[]{"cmd", "/K", "start", "cmd"};
+        loader.doSomethingSpecial("runcmd", cmd);
         System.exit(0);
       }
     }
-    //</editor-fold>
+    //</editor-fold>s
 
     log1(lvl, "user home: %s", uhome);
 

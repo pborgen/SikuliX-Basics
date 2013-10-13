@@ -768,7 +768,7 @@ public class ResourceLoader implements IResourceLoader {
         return null;
       }
     } else {
-      File folder = new File(jar.getPath(), path);
+      File folder = new File(FileManager.slashify(jar.getPath(), false), path);
       if (folder.isFile()) {
         fList.add(new String[]{FileManager.slashify(folder.getAbsolutePath(), false),
           String.format("%d", folder.lastModified())});
