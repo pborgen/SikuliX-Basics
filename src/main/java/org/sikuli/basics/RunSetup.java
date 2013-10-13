@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -29,7 +30,7 @@ import javax.swing.border.LineBorder;
 public class RunSetup {
 
   public static String timestampBuilt;
-  private static final String tsb = "##--##Mi  9 Okt 2013 12:00:59 CEST##--##"; 
+  private static final String tsb = "##--##So 13 Okt 2013 12:52:25 CEST##--##"; 
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
@@ -435,6 +436,29 @@ public class RunSetup {
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="option setup: download">
+    // check for proxy settings
+    String pName = winSU.pName.getText();
+    if (!pName.isEmpty()) {
+      Pattern p = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
+      if (p.matcher(pName).matches()) {
+        Settings.proxyIP = pName;
+      } else {
+        Settings.proxyName = pName;
+      }
+      String pPort = winSU.pPort.getText();
+      String msgp = String.format("Requested to use this Proxy: %s (%s)", pName, pPort);
+      log1(lvl, msgp);
+      if (pPort.isEmpty()){
+        popError(String.format("Proxy specification invalid: %s (%s)", pName, pPort));
+        log1(-1, "Terminating --- Proxy invalid");
+        System.exit(1);
+      } else {
+        if (!popAsk(msgp)) {
+          log1(-1, "Terminating --- User did not accept Proxy: %s %s", pName, pPort);
+          System.exit(1);
+        }
+      }
+    }
     if (!runningUpdate) {
       if (!isBeta && !isUpdate) {
         if (winSU.option1.isSelected()) {

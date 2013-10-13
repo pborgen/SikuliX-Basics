@@ -68,6 +68,8 @@ public class Settings {
   public static String SikuliVersionIDE;
   public static String SikuliVersionScript;
   public static final String versionMonth = "November 2013";
+  
+  
   /**
    * Resource types to be used with IResourceLoader implementations
    */
@@ -75,9 +77,12 @@ public class Settings {
   public static String BaseTempPath;
   public static String UserName = "UnKnown";
   
+  public static String proxyName = null;
+  public static String proxyIP = null;
+  public static String proxyPort = null;
+  
   private static Preferences options = Preferences.userNodeForPackage(SikuliX.class);
 
-//TODO move libs check to ResourceLoader
   static {
     mem = "clinit";
 
@@ -103,6 +108,7 @@ public class Settings {
       SikuliVersionScript = SikuliVersionDefaultScript;
     }
   }
+  
   public static final int ISWINDOWS = 0;
   public static final int ISMAC = 1;
   public static final int ISLINUX = 2;

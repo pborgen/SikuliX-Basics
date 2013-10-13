@@ -56,6 +56,12 @@ public class SetUpSelect extends javax.swing.JPanel {
     ask6 = new javax.swing.JButton();
     jButton1 = new javax.swing.JButton();
     suVersion = new javax.swing.JLabel();
+    jSeparator7 = new javax.swing.JSeparator();
+    jLabel6 = new javax.swing.JLabel();
+    pName = new javax.swing.JTextField();
+    jLabel7 = new javax.swing.JLabel();
+    jLabel8 = new javax.swing.JLabel();
+    pPort = new javax.swing.JTextField();
 
     textField1.setText("textField1");
 
@@ -171,6 +177,12 @@ public class SetUpSelect extends javax.swing.JPanel {
 
     suVersion.setText("...");
 
+    jLabel6.setText("My system uses a proxy to access the internet:");
+
+    jLabel7.setText("Hostname or IP-Address:");
+
+    jLabel8.setText("Portnumber:");
+
     org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
@@ -178,6 +190,7 @@ public class SetUpSelect extends javax.swing.JPanel {
       .add(layout.createSequentialGroup()
         .addContainerGap()
         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+          .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator7)
           .add(jSeparator1)
           .add(jSeparator2)
           .add(jSeparator5)
@@ -191,13 +204,8 @@ public class SetUpSelect extends javax.swing.JPanel {
             .add(ask2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
           .add(layout.createSequentialGroup()
             .add(option3)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 19, Short.MAX_VALUE)
             .add(ask3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-          .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-            .add(0, 0, Short.MAX_VALUE)
-            .add(jButton1)
-            .add(39, 39, 39)
-            .add(setupNow))
           .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator6)
           .add(layout.createSequentialGroup()
             .add(option5)
@@ -207,6 +215,15 @@ public class SetUpSelect extends javax.swing.JPanel {
             .add(option4)
             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(ask5, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+          .add(layout.createSequentialGroup()
+            .add(option6)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(ask6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+          .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+            .add(0, 0, Short.MAX_VALUE)
+            .add(jButton1)
+            .add(18, 18, 18)
+            .add(setupNow))
           .add(layout.createSequentialGroup()
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
               .add(layout.createSequentialGroup()
@@ -228,17 +245,24 @@ public class SetUpSelect extends javax.swing.JPanel {
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                       .add(suFolder)
                       .add(suJava)))))
-              .add(jLabel5))
-            .add(0, 0, Short.MAX_VALUE))
-          .add(layout.createSequentialGroup()
-            .add(option6)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .add(ask6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+              .add(jLabel5)
+              .add(layout.createSequentialGroup()
+                .add(23, 23, 23)
+                .add(jLabel6)
+                .add(18, 18, 18)
+                .add(jLabel7)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(pName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 193, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(18, 18, 18)
+                .add(jLabel8)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(pPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+            .add(0, 0, Short.MAX_VALUE)))
         .addContainerGap())
       .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
         .add(layout.createSequentialGroup()
           .addContainerGap()
-          .add(jSeparator4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 860, Short.MAX_VALUE)
+          .add(jSeparator4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)
           .addContainerGap()))
     );
     layout.setVerticalGroup(
@@ -294,16 +318,25 @@ public class SetUpSelect extends javax.swing.JPanel {
           .add(option6))
         .add(18, 18, 18)
         .add(jSeparator6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+          .add(jLabel6)
+          .add(pName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+          .add(jLabel7)
+          .add(jLabel8)
+          .add(pPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+        .add(jSeparator7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         .add(18, 18, 18)
         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-          .add(setupNow)
-          .add(jButton1))
-        .addContainerGap(17, Short.MAX_VALUE))
+          .add(jButton1)
+          .add(setupNow))
+        .addContainerGap(15, Short.MAX_VALUE))
       .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
         .add(layout.createSequentialGroup()
           .add(172, 172, 172)
           .add(jSeparator4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-          .addContainerGap(406, Short.MAX_VALUE)))
+          .addContainerGap(454, Short.MAX_VALUE)))
     );
   }// </editor-fold>//GEN-END:initComponents
 
@@ -372,17 +405,23 @@ public class SetUpSelect extends javax.swing.JPanel {
   private javax.swing.JLabel jLabel3;
   private javax.swing.JLabel jLabel4;
   private javax.swing.JLabel jLabel5;
+  private javax.swing.JLabel jLabel6;
+  private javax.swing.JLabel jLabel7;
+  private javax.swing.JLabel jLabel8;
   private javax.swing.JSeparator jSeparator1;
   private javax.swing.JSeparator jSeparator2;
   private javax.swing.JSeparator jSeparator4;
   private javax.swing.JSeparator jSeparator5;
   private javax.swing.JSeparator jSeparator6;
+  private javax.swing.JSeparator jSeparator7;
   protected javax.swing.JCheckBox option1;
   protected javax.swing.JCheckBox option2;
   protected javax.swing.JCheckBox option3;
   protected javax.swing.JCheckBox option4;
   protected javax.swing.JCheckBox option5;
   protected javax.swing.JCheckBox option6;
+  public javax.swing.JTextField pName;
+  public javax.swing.JTextField pPort;
   private javax.swing.JButton setupNow;
   public javax.swing.JLabel suFolder;
   protected javax.swing.JLabel suJava;

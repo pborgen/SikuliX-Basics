@@ -157,9 +157,9 @@ public class FileManager {
         }
 
         if (!proxyChecked) {
-          phost = System.getenv("SIKULIPROXYHOST");
-          padr = System.getenv("SIKULIPROXYIP");
-          pport = System.getenv("SIKULIPROXYPORT");
+          phost = Settings.proxyName;
+          padr = Settings.proxyIP;
+          pport = Settings.proxyPort;
           InetAddress a = null;
           int p = -1;
           if (phost != null) {
