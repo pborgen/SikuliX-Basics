@@ -7,4 +7,4 @@ Supporting stuff for SikuliX <br />
 It is contained in all downloadable packages and is **not intended for any usages outside these packages**.
 
 Forking only makes sense, if you want to contribute features or patches.
-<br />Use *mvn install* in the project folder to get it in your local repo.
+<br /><br />Use *mvn install* in the project folder to get it in your local repo to use it as the needed dependency when producing the packages like sikuli-ide.jar, sikuli-script.jar or sikuli-java.jar.
