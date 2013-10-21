@@ -44,7 +44,7 @@ public class MultiFrame extends JFrame {
       txt = new JLabel("... waiting");
       txt.setAlignmentX(CENTER_ALIGNMENT);
       pane.add(txt);
-      fw = 250;
+      fw = 350;
       fh = 80;
     }
     

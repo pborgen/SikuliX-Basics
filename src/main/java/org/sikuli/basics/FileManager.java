@@ -63,11 +63,6 @@ public class FileManager {
   private static MultiFrame _progress = null;
   private static final String EXECUTABLE = "#executable";
   
-  private static String phost = null;
-  private static String padr = null;
-  private static String pport = null;
-  private static boolean proxyChecked = false;
-  private static Proxy proxy = null;
   /**
    * System.load() the given library module <br />
    * from standard places (folder libs or SikuliX/libs) in the following order<br />
@@ -97,11 +92,13 @@ public class FileManager {
   private static int tryGetFileSize(URL url) {
     HttpURLConnection conn = null;
     try {
-      if (proxy != null) {
-        conn = (HttpURLConnection) url.openConnection(proxy);
+      if (getProxy() != null) {
+        conn = (HttpURLConnection) url.openConnection(getProxy());
       } else {
         conn = (HttpURLConnection) url.openConnection();
       }
+      conn.setConnectTimeout(30000);
+      conn.setReadTimeout(30000);
       conn.setRequestMethod("HEAD");
       conn.getInputStream();
       return conn.getContentLength();
@@ -112,7 +109,68 @@ public class FileManager {
       conn.disconnect();
     }
   }
-
+  
+  public static Proxy getProxy() {
+    Proxy proxy = Settings.proxy;
+    if (!Settings.proxyChecked) {
+      String phost = Settings.proxyName;
+      String padr = Settings.proxyIP;
+      String pport = Settings.proxyPort;
+      InetAddress a = null;
+      int p = -1;
+      if (phost != null) {
+        a = getProxyAddress(phost);
+      }
+      if (a == null && padr != null) {
+        a = getProxyAddress(padr);
+      }
+      if (a != null && pport != null) {
+        p = getProxyPort(pport);
+      }
+      if (a != null && p > 1024) {
+        proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(a, p));
+        log0(lvl, "Proxy defined: %s : %d", a.getHostAddress(), p);
+      }
+      Settings.proxyChecked = true;
+      Settings.proxy = proxy;
+    }
+    return proxy;
+  }
+  
+  public static boolean setProxy(String pName, String pPort) {
+    InetAddress a = null;
+    String host = null;
+    String adr = null;
+    int p = -1;
+    if (pName != null) {
+      a = getProxyAddress(pName);
+      if (a == null) {
+        a = getProxyAddress(pName);
+        if (a != null) {
+          adr = pName;
+        }
+      } else {
+        host = pName;
+      }
+    }
+    if (a != null && pPort != null) {
+      p = getProxyPort(pPort);
+    }
+    if (a != null && p > 1024) {
+      log0(lvl, "Proxy stored: %s : %d", a.getHostAddress(), p);
+      Settings.proxyChecked = true;
+      Settings.proxyName = host;
+      Settings.proxyIP = adr;
+      Settings.proxyPort = pPort;
+      Settings.proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(a, p));
+      PreferencesUser prefs = PreferencesUser.getInstance();
+      prefs.put("ProxyName", (host == null ? "" : host));
+      prefs.put("ProxyIP", (adr == null ? "" : adr));
+      prefs.put("ProxyPort", ""+p);
+      return true;
+    }
+    return false;
+  }
   
   /**
    * download a file at the given url to a local folder
@@ -155,34 +213,11 @@ public class FileManager {
           _progress.setProDone(0);
           _progress.setVisible(true);
         }
-
-        if (!proxyChecked) {
-          phost = Settings.proxyName;
-          padr = Settings.proxyIP;
-          pport = Settings.proxyPort;
-          InetAddress a = null;
-          int p = -1;
-          if (phost != null) {
-            a = getProxyAddress(phost);
-          } 
-          if (a == null && padr != null) {
-            a = getProxyAddress(padr);
-          }
-          if (a != null && pport != null) {
-            p = getProxyPort(pport);
-          }
-          if (a != null && p > 1024) {
-            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(a, p));
-            log0(lvl, "Proxy defined: %s : %d", a.getHostAddress(), p);
-          }
-          proxyChecked = true;
-        }
-
         try {
           FileOutputStream writer = new FileOutputStream(fullpath);
           InputStream reader;
-          if (proxy != null) {
-            reader = url.openConnection(proxy).getInputStream();          
+          if (getProxy() != null) {
+            reader = url.openConnection(getProxy()).getInputStream();          
           } else {
             reader = url.openConnection().getInputStream();
           }
@@ -845,6 +880,14 @@ public class FileManager {
     return RunningFromJar + jarParentPath;
   }
   
+  public static String getJarName() {
+    CodeSource src = FileManager.class.getProtectionDomain().getCodeSource();
+    if (src.getLocation() != null) {
+      return new File(src.getLocation().getPath()).getName();
+    }
+    return "";
+  }
+    
   public static boolean writeStringToFile(String text, String path) {
     PrintStream out = null;
     try {

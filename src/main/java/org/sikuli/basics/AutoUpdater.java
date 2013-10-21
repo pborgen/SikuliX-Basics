@@ -129,8 +129,12 @@ public class AutoUpdater {
     //DOWNLOAD https://launchpad.net/sikuli/+download
     //BETA https://dl.dropboxusercontent.com/u/42895525/SikuliX/index.html
     URL url = new URL(s + "/latestversion");
-    url.openConnection(); 
-    URLConnection conn = url.openConnection();
+    URLConnection conn;
+    if (FileManager.getProxy() != null) {
+      conn = url.openConnection(FileManager.getProxy());
+    } else {
+      conn = url.openConnection();
+    } 
     BufferedReader in = new BufferedReader(
             new InputStreamReader(conn.getInputStream()));
     String line;
