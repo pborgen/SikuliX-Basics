@@ -7,11 +7,18 @@
 package org.sikuli.basics;
 
 import java.io.File;
+import java.net.InetAddress;
+import java.net.Proxy;
 import java.util.Date;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 
 public class Settings {
+
+  public static final int SikuliVersionMajor = 1;
+  public static final int SikuliVersionMinor = 1;
+  public static final int SikuliVersionSub = 0;
+  public static final int SikuliVersionBetaN = 1;
 
   private static String me = "Settings";
   private static String mem = "...";
@@ -19,7 +26,8 @@ public class Settings {
   public static int breakPoint = 0;
   public static boolean handlesMacBundles = true;
   public static boolean runningSetup = false;
-  public static String libSourcebase = "META-INF/libs/";  
+  public static String libSourcebase = "META-INF/sikulix-native-libs/";  
+  private static final PreferencesUser prefs = PreferencesUser.getInstance();
   
   /**
    * location of folder Tessdata
@@ -50,10 +58,6 @@ public class Settings {
   private static String[] args = new String[0];
   private static String[] sargs = new String[0];
   public static String[] ServerList = {"http://dl.dropboxusercontent.com/u/42895525/SikuliX"};
-  public static final int SikuliVersionMajor = 1;
-  public static final int SikuliVersionMinor = 1;
-  public static final int SikuliVersionSub = 0;
-  public static final int SikuliVersionBetaN = 1;
   private static final String sversion = String.format("%d.%d.%d",
           SikuliVersionMajor, SikuliVersionMinor, SikuliVersionSub);
   private static final String bversion = String.format("%d.%d-Beta%d",
@@ -77,9 +81,12 @@ public class Settings {
   public static String BaseTempPath;
   public static String UserName = "UnKnown";
   
-  public static String proxyName = null;
-  public static String proxyIP = null;
-  public static String proxyPort = null;
+  public static String proxyName = prefs.get("ProxyName", null);
+  public static String proxyIP = prefs.get("ProxyIP", null);
+  public static InetAddress proxyAddress = null;
+  public static String proxyPort = prefs.get("ProxyPort", null);
+  public static boolean proxyChecked = false;
+  public static Proxy proxy = null;
   
   private static Preferences options = Preferences.userNodeForPackage(SikuliX.class);
 
@@ -276,7 +283,7 @@ public class Settings {
   }
 
   public static String getVersionShortBasic() {
-      return sversion;
+      return sversion.substring(0, 3);
   }
 
   public static void setArgs(String[] args, String[] sargs) {
