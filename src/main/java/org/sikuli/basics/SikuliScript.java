@@ -176,7 +176,7 @@ public class SikuliScript {
       if (imagePath == null) {
         imagePath = FileManager.resolveImagePath(script);
       }
-      ImageLocator.setBundlePath(imagePath.getAbsolutePath());
+      SikuliX.callImagePathSetBundlePath(imagePath.getAbsolutePath());
       Debug.log(3, "Trying to run script: " + script.getAbsolutePath());
       int exitCode = runAsTest
               ? runner.runTest(script, imagePath, cmdArgs.getUserArgs(), null)

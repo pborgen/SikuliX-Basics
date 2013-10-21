@@ -49,7 +49,7 @@ public class SikuliX {
   private static final String ScriptSikuliXCL = "org.sikuli.script.SikuliX";
   private static final String ScriptKeyCL = "org.sikuli.script.Key";
   private static Class ScriptCl, KeyCl;
-  private static Method endWhat, toJavaKeyCode;
+  private static Method endWhat, toJavaKeyCode, setBundlePath;
   private static boolean runningSetup = false;
   private static boolean runningFromJar;
   private static String jarPath;
@@ -143,7 +143,19 @@ public class SikuliX {
       toJavaKeyCode = KeyCl.getMethod("toJavaKeyCode", new Class[]{String.class});
       return (int[]) toJavaKeyCode.invoke(KeyCl, new Object[]{key});
     } catch (Exception ex) {
+      Debug.error("Invoke KeyToJavaKeyCodeMethod: Fatal Error 999: could not be run!");
       return null;
+    }
+  }
+  
+  public static void callImagePathSetBundlePath(String path) {
+    try {
+      ScriptCl = Class.forName("ImagePath");
+      setBundlePath = ScriptCl.getMethod("setBundlePath", new Class[]{String.class});
+      setBundlePath.invoke(ScriptCl, new Object[]{path});
+    } catch (Exception ex) {
+      Debug.error("Invoke ImagePathSetBundlePath: Fatal Error 999: could not be run!");
+      System.exit(999);
     }
   }
   
@@ -273,8 +285,6 @@ public class SikuliX {
     msg += "\n";
     msg += "-d n             ---   Set a higher level n for Sikuli's debug messages (default: 0)";
     msg += "\n";
-    msg += "-c                ---   (for IDE only) all output goes to command line window";
-    msg += "\n";
     msg += "-- …more…         All space delimited entries after -- go to sys.argv";
     msg += "\n                           \"<some text>\" makes one parameter (may contain intermediate blanks)";
     msg += "\n\n";
@@ -282,7 +292,7 @@ public class SikuliX {
     msg += "\n";
     msg += "-d                Special debugging option in case of mysterious errors:";
     msg += "\n";
-    msg += "                    Debug level is set to 3 and all output goes to <WorkingFolder>/SikuliLog.txt";
+    msg += "                    Debug level is set to 3 and debug output goes to <WorkingFolder>/SikuliLog.txt";
     msg += "\n";
     msg += "                    Content might be used to ask questions or report bugs";
     msg += "\n";
@@ -313,5 +323,13 @@ public class SikuliX {
       ret += s + " ";
     }
     return ret;
+  }
+  
+  public static boolean exportPrefs(String path) {
+    return true;
+  }
+  
+  public static boolean importPrefs(String path) {
+    return true;
   }
 }
