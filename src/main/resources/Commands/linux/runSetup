@@ -5,10 +5,5 @@
 
 shome=`dirname $0`
 
-if [ -e $shome/sikuli-update.jar ]; then
-  mv -f $shome/sikuli-update.jar $shome/sikuli-setup.jar
-  java -jar "$shome/sikuli-setup.jar" update
-else
-  java -jar "$shome/sikuli-setup.jar"
-fi
+java -jar "$shome/sikuli-setup-1.1.jar"
 
