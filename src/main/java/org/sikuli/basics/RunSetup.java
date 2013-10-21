@@ -12,7 +12,9 @@ import java.awt.Color;
 import java.awt.Container;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URLClassLoader;
@@ -29,14 +31,16 @@ import javax.swing.border.LineBorder;
 
 public class RunSetup {
 
+  private static boolean runningUpdate = false;
+  
   public static String timestampBuilt;
-  private static final String tsb = "##--##So 13 Okt 2013 12:52:25 CEST##--##"; 
+  private static final String tsb = "##--##So 20 Okt 2013 18:40:36 CEST##--##"; 
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
   private static String logfile;
   private static String version = Settings.getVersionShort();
-  private static String betaVersion;
+  private static String majorversion = Settings.getVersionShortBasic();
   private static String updateVersion;
   private static String downloadBaseDirBase = "http://dl.dropboxusercontent.com/u/42895525/SikuliX-";
   private static String downloadBaseDir = downloadBaseDirBase + version.substring(0,3) + "/";
@@ -46,21 +50,17 @@ public class RunSetup {
   private static String downloadScript = "sikuli-script-" + version + ".jar";
   private static String downloadJava = "sikuli-java-" + version + ".jar";
   private static String downloadTess = "sikuli-tessdata-" + version + ".jar";
-  private static String downloadUpdate;
   private static String localJava = "sikuli-java.jar";
-  private static boolean updateJava = false;
   private static String localScript = "sikuli-script.jar";
-  private static boolean updateScript = false;
   private static String localIDE = "sikuli-ide.jar";
-  private static boolean updateIDE = false;
   private static String localMacApp = "sikuli-macapp.jar";
   private static String localMacAppIDE = "SikuliX-IDE.app/Contents/sikuli-ide.jar";
   private static String folderMacApp = "SikuliX-IDE.app";
   private static String folderMacAppContent = folderMacApp + "/Contents";
-  private static String localSetup = "sikuli-setup.jar";
+  private static String localSetup = "sikuli-setup-" + majorversion + ".jar";
+  private static String localUpdate = "sikuli-update";
   private static String localTess = "sikuli-tessdata.jar";
-  private static boolean updateTess = false;
-  private static String localLogfile = "SikuliX-" + version + "-SetupLog.txt";
+  private static String localLogfile;
   private static SetUpSelect winSU;
   private static JFrame winSetup;
   private static boolean getIDE, getScript, getJava, getTess;
@@ -68,7 +68,7 @@ public class RunSetup {
   private static boolean test = false;
   private static boolean isUpdate = false;
   private static boolean isBeta = false;
-  private static boolean runningUpdate = false;
+  private static String runningJar;
   private static List<String> options = new ArrayList<String>();
   private static JFrame splash = null;
 
@@ -113,6 +113,22 @@ public class RunSetup {
 
   public static void main(String[] args) {
     mem = "main";
+    
+    PreferencesUser prefs = PreferencesUser.getInstance();
+    boolean prefsHaveProxy = false;
+    
+    if (Settings.SikuliVersionBetaN > 0 && Settings.SikuliVersionBetaN < 999) {
+      updateVersion = String.format("%d.%d-Beta%d",
+          Settings.SikuliVersionMajor, Settings.SikuliVersionMinor, 
+          1+Settings.SikuliVersionBetaN);            
+    } else if (Settings.SikuliVersionSub > 0) {
+      updateVersion = String.format("%d.%d.%d",
+          Settings.SikuliVersionMajor, Settings.SikuliVersionMinor, 
+          1+Settings.SikuliVersionSub);      
+    } else {
+      updateVersion = String.format("%d.%d.%d",
+          Settings.SikuliVersionMajor, Settings.SikuliVersionMinor, 0);      
+    }
             
     options.addAll(Arrays.asList(args));
                 
@@ -122,20 +138,35 @@ public class RunSetup {
       System.exit(0);
     }
     
-    if (args.length > 0 && "update".equals(args[0])) {
-      runningUpdate = true;
-      if (version.contains("Beta")) {
-        isBeta = true;
-      }
-      else {
-        isUpdate = true;
-      }
-      options.remove(0);
+    if (args.length > 0 && "majorversion".equals(args[0])) {
+      System.out.println(version.substring(0, 3));
+      System.exit(0);
+    }
+
+    if (args.length > 0 && "updateversion".equals(args[0])) {
+      System.out.println(updateVersion);
+      System.exit(0);
     }
 
     if (args.length > 0 && "test".equals(args[0])) {
       test = true;
       options.remove(0);
+    }
+    
+    if (args.length > 0 && "update".equals(args[0])) {
+      runningUpdate = true;
+      options.remove(0);
+    }
+    
+    runningJar = FileManager.getJarName();
+    if (runningJar.startsWith("sikuli-update")) {
+      runningUpdate = true;
+    }
+    
+    if (runningUpdate) {
+      localLogfile  = "SikuliX-" + version + "-UpdateLog.txt";
+    } else {
+      localLogfile = "SikuliX-" + version + "-SetupLog.txt";
     }
     //</editor-fold>
     
@@ -232,6 +263,7 @@ public class RunSetup {
     
     Settings.LogTime = true;
     Debug.setDebugLevel(3);
+    log0(lvl,"running from: " + runningJar);
     log1(lvl, "SikuliX Setup Build: %s %s", Settings.getVersionShort(), RunSetup.timestampBuilt);
     
     if (args.length > 0) {
@@ -239,7 +271,7 @@ public class RunSetup {
     } else {
       log1(lvl, "... starting with no args given");
     }
-    
+      
     File localJarSetup = new File(workDir, localSetup);
     File localJarIDE = new File(workDir, localIDE);
     File localJarScript = new File(workDir, localScript);
@@ -249,131 +281,137 @@ public class RunSetup {
     
     //<editor-fold defaultstate="collapsed" desc="checking update/beta">
     if (!runningUpdate) {
+      String uVersion = "";
+      String msgFooter = "You have " + Settings.getVersion()
+                      + "\nClick YES, if you want to install ..."
+                      + "\ncurrent stuff will be saved to BackUp."
+                      + "\n... Click NO to skip ...";
       if (localJarIDE.exists() || localJarScript.exists()
               || localJarJava.exists() || localMacFolder.exists()) {
         int avail = -1;
+        boolean someUpdate = false;
         if (!popAsk("You have " + Settings.getVersion()
                 + "\nClick YES if you want to run setup again\n"
-                + "or NO for more options.")) {
-          if (!popAsk("Click YES if you want to look for updates and/or betas\n"
-                  + "or NO to leave setup now")) {
+                + "or NO to get info on updates/betas.")) {
+          splash = showSplash("Checking for update or beta versions! (you have " + version + ")",
+                  "please wait - may take some seconds ...");
+          AutoUpdater au = new AutoUpdater();
+          avail = au.checkUpdate();
+          closeSplash(splash);
+          if (avail > 0) {
+            if (avail == AutoUpdater.BETA || avail == AutoUpdater.SOMEBETA) {
+              someUpdate = true;
+              uVersion = au.getBetaVersion();
+              if (popAsk("Version " + uVersion + " is available\n" + msgFooter)) {
+                isBeta = true;
+              }
+            }
+            if (avail > AutoUpdater.FINAL) {
+              avail -= AutoUpdater.SOMEBETA;
+            }
+            if (avail > 0 && avail != AutoUpdater.BETA) {
+              someUpdate = true;
+              if (popAsk(au.whatUpdate + "\n" + msgFooter)) {
+                isUpdate = true;
+                uVersion = au.getVersionNumber();
+             }
+            }
+          }
+          if (!someUpdate) {
+            popInfo("No suitable update or beta available");
+          }
+        }
+        if (!isBeta && !isUpdate) {
+          reset(-1);
+        } else {
+          log1(lvl, "%s is available", uVersion);
+          if (uVersion.equals(updateVersion)) {
+            reset(avail);
+            downloadBaseDir = downloadBaseDirBase + uVersion.substring(0, 3) + "/";
+            downloadSetup = "sikuli-update-" + uVersion + ".jar";
+            if (!download(downloadBaseDir, workDir, downloadSetup,
+                    new File(workDir, downloadSetup).getAbsolutePath())) {
+              popError("Download did not complete successfully.\n"
+                      + "Check the logfile for possible error causes.\n\n"
+                      + "If you think, setup's inline download from Dropbox is blocked somehow on,\n"
+                      + "your system, you might download manually (see respective FAQ)\n"
+                      + "For other reasons, you might simply try to run setup again.");
+              terminate("download not completed successfully");
+            }
+            popInfo("Now you can run the update process:\n"
+                    + "DoubleClick " + "sikuli-update-" + uVersion + ".jar" 
+                    + "\nin folder " + workDir + "\n\nPlease click OK before proceeding!");
             System.exit(0);
           } else {
-            splash = showSplash("Checking for update or beta versions! (you have " + version + ")",
-                    "please wait - may take some seconds ...");
-            AutoUpdater au = new AutoUpdater();
-            avail = au.checkUpdate();
-            closeSplash(splash);
-            if (avail > 0) {
-              if (avail == AutoUpdater.BETA || avail == AutoUpdater.SOMEBETA) {
-                betaVersion = au.getBetaVersion();
-                log1(lvl, "%s is available", betaVersion);
-                if (popAsk("Version " + betaVersion + " is available\n"
-                        + "You have " + Settings.getVersion()
-                        + "\nClick YES, if you want to install ..."
-                        + "\ncurrent stuff will be saved to BackUp."
-                        + "\n... Click NO to continue ...")) {
-                  isBeta = true;
-                  reset(avail);
-                  downloadBaseDir = downloadBaseDirBase + betaVersion + "/";
-                  downloadSetup = "sikuli-update-" + betaVersion + ".jar";
-                  if (!download(downloadBaseDir, workDir, downloadSetup,
-                          new File(workDir, downloadSetup).getAbsolutePath())) {
-                    popError("Download did not complete successfully.\n"
-                            + "Check the logfile for possible error causes.\n\n"
-                            + "If you think, setup's inline download from Dropbox is blocked somehow on,\n"
-                            + "your system, you might download manually (see respective FAQ)\n"
-                            + "For other reasons, you might simply try to run setup again.");
-                    terminate("download not completed successfully");
-                  }
-                }
-              }
-              if (avail > AutoUpdater.FINAL) {
-                avail -= AutoUpdater.SOMEBETA;
-              }
-              if (avail > 0 && avail != AutoUpdater.BETA) {
-                if (popAsk(au.whatUpdate + "\n"
-                        + "You have " + Settings.getVersion()
-                        + "\nClick YES, if you want to install ..."
-                        + "\ncurrent stuff will be saved to BackUp."
-                        + "\n... Click NO to terminate.")) {
-                  isUpdate = true;
-                  reset(avail);
-                  updateVersion = au.getVersionNumber();
-                  downloadBaseDir = downloadBaseDirBase + updateVersion + "/";
-                  downloadSetup = "sikuli-update-" + updateVersion + ".jar";
-                  if (!download(downloadBaseDir, workDir, downloadSetup,
-                          new File(workDir, downloadSetup).getAbsolutePath())) {
-                    popError("Download did not complete successfully.\n"
-                            + "Check the logfile for possible error causes.\n\n"
-                            + "If you think, setup's inline download from Dropbox is blocked somehow on,\n"
-                            + "your system, you might download manually (see respective FAQ)\n"
-                            + "For other reasons, you might simply try to run setup again.");
-                    terminate("download not completed successfully");
-                  }
-                } else {
-                  avail = 0;
-                }
-              }
-            }
-            if (avail == 0) {
-              popInfo("No suitable update or beta available");
-            }
+            popError("downloadable update: " + uVersion + "\nexpected update: " + updateVersion
+                    + "\n do not match --- terminating --- pls. report");
+            terminate("update versions do not match");
           }
         }
-        if (avail <= 0) {
-          reset(avail);
-        } else {
-          String cmdSetup = "runSetup";
-          if (Settings.isWindows()) {
-            loader.export("Commands/windows#runSetup.cmd", workDir);
-            cmdSetup = "runSetup.cmd";
-          } else if (Settings.isMac()) {
-            loader.export("Commands/mac#runSetup", workDir);
-            loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", 
-              new File(workDir, "runSetup").getAbsolutePath()});
-          } else if (Settings.isLinux()) {
-            loader.export("Commands/linux#runSetup", workDir);
-            loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", 
-              new File(workDir, "runSetup").getAbsolutePath()});
-          } else {
-            terminate("unknown system");
-          }
-          if (!new File(workDir, cmdSetup).exists()) {
-            String msg = "Fatal error 002: runSetup.cmd could not be exported to " + workDir;
-            log0(-1, msg);
-            popError(msg);
-            System.exit(2);
-          }
-        }
+      }
+    } else {
+      log0(lvl, "Update started");
+      if (!popAsk("You requested to run an Update now" +
+              "\nYES to continue\nNO to terminate")) {
+        userTerminated("");
       }
     }
     //</editor-fold>
         
-    //<editor-fold defaultstate="collapsed" desc="option setup preps Windows">
-    if (!runningUpdate && !isBeta && !isUpdate && Settings.isWindows()) {
+    //<editor-fold defaultstate="collapsed" desc="dispatching external setup run">
+    String[] cmd = null;
+    File fCmd = null;
+    if (Settings.isWindows()) {
+      log1(lvl, "Extracting runSetup.cmd");
       String syspath = System.getenv("PATH");
       for (String p : syspath.split(";")) {
         log1(lvl, "syspath: " + p);
       }
-      File fLibs = new File(workDir, "libs");
-      String pLibs = fLibs.getAbsolutePath().replaceAll("/", "\\");
-      if (!syspath.contains(pLibs)) {
-        log1(lvl, "Not on syspath: " + pLibs + " --- Extracting runSetup.cmd.");
-        loader.export("Commands/windows#runSetup.cmd", workDir);
-        File fCmd = new File(workDir, "runSetup.cmd");
-        if (!fCmd.exists()) {
-          String msg = "Fatal error 002: runSetup.cmd could not be exported to " + workDir;
-          log0(-1, msg);
-          popError(msg);
-          System.exit(2);
-        }
-        String[] cmd = new String[]{"cmd", "/C", "start", "cmd", "/K", fCmd.getAbsolutePath()};
-//        String[] cmd = new String[]{"cmd", "/K", "start", "cmd"};
-        loader.doSomethingSpecial("runcmd", cmd);
-        System.exit(0);
+      loader.export("Commands/windows#runSetup.cmd", workDir);
+      fCmd = new File(workDir, "runSetup.cmd");
+      cmd = new String[]{"cmd", "/C", "start", "cmd", "/K", fCmd.getAbsolutePath()};
+    } else if (runningUpdate) {
+      log1(lvl, "Extracting runSetup");
+      fCmd = new File(workDir, "runSetup");
+      loader.export("Commands/"+ 
+              (Settings.isMac() ? "mac#runSetup" : "linux#runSetup"), workDir);
+      if (Settings.isMac()) {
+        cmd = new String[]{"/bin/sh", fCmd.getAbsolutePath()};          
+      } else {
+//        cmd = new String[]{"cmd", "/C", "start", "cmd", "/K", fCmd.getAbsolutePath()};          
       }
     }
+    if ((Settings.isWindows() || runningUpdate) && (fCmd == null || !fCmd.exists())) {
+      String msg = "Fatal error 002: runSetup(.cmd) could not be exported to " + workDir;
+      log0(-1, msg);
+      popError(msg);
+      System.exit(2);
+    }
+    if (runningUpdate) {
+      localSetup = "sikuli-setup-" + updateVersion.substring(0, 3) + ".jar";
+      FileManager.deleteFileOrFolder(new File(workDir, localSetup).getAbsolutePath());
+      log1(lvl, "Update: trying to dowload the new sikuli-setup.jar version " + updateVersion.substring(0, 3));
+      downloadSetup = "sikuli-setup-" + updateVersion + ".jar";
+      downloadBaseDir = downloadBaseDirBase + updateVersion.substring(0, 3) + "/";
+      if (!download(downloadBaseDir, workDir, downloadSetup,
+              new File(workDir, localSetup).getAbsolutePath())) {
+        popError("Download did not complete successfully.\n"
+                + "Check the logfile for possible error causes.\n\n"
+                + "If you think, setup's inline download from Dropbox is blocked somehow on,\n"
+                + "your system, you might download manually (see respective FAQ)\n"
+                + "For other reasons, you might simply try to run setup again.");
+        terminate("download not completed successfully");
+      }
+    }
+    if (cmd != null) {
+      if (runningUpdate && !popAsk("Continue Update after download success?" +
+              "\nYES to continue\nNO to terminate")) {
+        userTerminated("after download success");
+      }
+      log0(lvl, "dispatching external setup run");
+      loader.doSomethingSpecial("runcmd", cmd);
+      System.exit(0);
+    } 
     //</editor-fold>s
 
     log1(lvl, "user home: %s", uhome);
@@ -381,6 +419,7 @@ public class RunSetup {
     popInfo("Please read carefully before proceeding!!");
 
     //<editor-fold defaultstate="collapsed" desc="option setup preps display options">
+    String proxyMsg = "";
     if (!runningUpdate && !isBeta && !isUpdate) {
       winSetup = new JFrame("SikuliX-Setup");
       Border rpb = new LineBorder(Color.YELLOW, 8);
@@ -412,6 +451,14 @@ public class RunSetup {
       msg = "Java " + Settings.JavaVersion + " (" + osarch + ") " + Settings.JREVersion;
       winSU.suJava.setText(msg);
       log0(lvl, "RunningJava: " + msg);
+      
+      String pName = prefs.get("ProxyName", "");
+      String pPort = prefs.get("ProxyPort", "");
+      if (!pName.isEmpty() && !pPort.isEmpty()) {
+        prefsHaveProxy = true;
+        winSU.pName.setText(pName);
+        winSU.pPort.setText(pPort);
+      }
 
       getIDE = false;
       getScript = false;
@@ -434,63 +481,62 @@ public class RunSetup {
         } catch (InterruptedException ex) {
         }
       }
+      pName = winSU.pName.getText();
+      pPort = winSU.pPort.getText();
+      if (!pName.isEmpty() && !pPort.isEmpty()) {
+        if (FileManager.setProxy(pName, pPort)) {
+          log1(lvl, "Requested to run with proxy: %s ", Settings.proxy);
+          proxyMsg = "... using proxy: " + Settings.proxy;
+        }
+      } else if (prefsHaveProxy) {
+        prefs.put("ProxyName", "");
+        prefs.put("ProxyPort", "");        
+      }
+      Settings.proxyChecked = true;
     }
+
+    File fPrefs = new File(workDir, "SikuliPrefs.txt");
+    prefs.exportPrefs(fPrefs.getAbsolutePath());
+    try {
+      BufferedReader pInp = new BufferedReader(new FileReader(fPrefs));
+      String line;
+      while (null != (line = pInp.readLine())) {
+        if (!line.contains("entry")) continue;
+        log0(lvl, "Prefs: " + line.trim());
+      }
+      pInp.close();
+    } catch (Exception ex) {
+    }
+    FileManager.deleteFileOrFolder(fPrefs.getAbsolutePath());
     //</editor-fold>
     
-    //<editor-fold defaultstate="collapsed" desc="option setup: download">
-    // check for proxy settings
-    String pName = winSU.pName.getText();
-    if (!pName.isEmpty()) {
-      Pattern p = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
-      if (p.matcher(pName).matches()) {
-        Settings.proxyIP = pName;
-      } else {
-        Settings.proxyName = pName;
-      }
-      String pPort = winSU.pPort.getText();
-      String msgp = String.format("Requested to use this Proxy: %s (%s)", pName, pPort);
-      log1(lvl, msgp);
-      if (pPort.isEmpty()){
-        popError(String.format("Proxy specification invalid: %s (%s)", pName, pPort));
-        log1(-1, "Terminating --- Proxy invalid");
-        System.exit(1);
-      } else {
-        if (!popAsk(msgp)) {
-          log1(-1, "Terminating --- User did not accept Proxy: %s %s", pName, pPort);
-          System.exit(1);
-        }
-      }
-    }
+    //<editor-fold defaultstate="collapsed" desc="option setup: download">    
     if (!runningUpdate) {
-      if (!isBeta && !isUpdate) {
-        if (winSU.option1.isSelected()) {
-          getIDE = true;
-        }
-        if (winSU.option2.isSelected() && !getIDE) {
-          getScript = true;
-        }
-        if (winSU.option3.isSelected()) {
-          getJava = true;
-        }
-        if (winSU.option4.isSelected() && !getIDE && !getScript) {
-          getJava = true;
-        }
-        if (winSU.option5.isSelected() && !Settings.isLinux()) {
-          getTess = true;
-        }
-        if (winSU.option6.isSelected()) {
-          forAllSystems = true;
-        }
-      } else {
-        getIDE = updateIDE;
-        getScript = updateScript;
-        getJava = updateJava;
-        getTess = updateTess;
+      if (winSU.option1.isSelected()) {
+        getIDE = true;
+      }
+      if (winSU.option2.isSelected() && !getIDE) {
+        getScript = true;
+      }
+      if (winSU.option3.isSelected()) {
+        getJava = true;
+      }
+      if (winSU.option4.isSelected() && !getIDE && !getScript) {
+        getJava = true;
+      }
+      if (winSU.option5.isSelected() && !Settings.isLinux()) {
+        getTess = true;
+      }
+      if (winSU.option6.isSelected()) {
+        forAllSystems = true;
       }
 
       if (getIDE || getScript || getJava) {
         msg = "The following file(s) will be downloaded to\n"
                 + workDir + "\n";
+        if (!proxyMsg.isEmpty()) {
+          msg += proxyMsg + "\n";
+        }
         if (getIDE) {
           msg += "\n--- Package 1 ---\n" + downloadIDE;
           if (Settings.isMac()) {
@@ -565,16 +611,7 @@ public class RunSetup {
                   + "Be aware: The raw packages are not useable without being processed by setup!\n\n"
                   + "For other reasons, you might simply try to run setup again.");
           terminate("download not completed successfully");
-        } else if (isBeta || isUpdate) {
-          if (Settings.isWindows()) {
-            popInfo("Now open a command window,\n go to the folder\n" + workDir
-                    + "\n and run runSetup.cmd to finalize the update process.");
-          } else {
-            popInfo("Now open a terminal window,\n go to the folder\n" + workDir
-                    + "\n and run runSetup to finalize the update process.");
-          }
-          System.exit(0);
-        }
+        } 
       } else {
         popError("Nothing selected! Sikuli not useable!\nYou might try again ;-)");
         System.exit(1);
@@ -831,6 +868,32 @@ public class RunSetup {
     System.exit(0);
   }
   
+  private static boolean getProxy(String pn, String pp) {
+    if (!pn.isEmpty()) {
+      Pattern p = Pattern.compile("\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}");
+      if (p.matcher(pn).matches()) {
+        Settings.proxyIP = pn;
+      } else {
+        Settings.proxyName = pn;
+      }
+      String msgp = String.format("Requested to use this Proxy: %s (%s)", pn, pp);
+      log1(lvl, msgp);
+      if (pp.isEmpty()) {
+        popError(String.format("Proxy specification invalid: %s (%s)", pn, pp));
+        log1(-1, "Terminating --- Proxy invalid");
+        return false;
+      } else {
+        if (!popAsk(msgp)) {
+          log1(-1, "Terminating --- User did not accept Proxy: %s %s", pn, pp);
+          return false;
+        }
+      }
+      Settings.proxyPort = pp;
+      return true;
+    }
+    return false;
+  }
+  
   private static void reset(int type) {
     log1(3, "requested to reset: " + workDir);
     String message = "";
@@ -878,18 +941,8 @@ public class RunSetup {
           return false;
         } else if (entry.getName().contains("SetupLog")) {
           return false;
-        } else if (entry.getName().equals(localIDE)) {
-          updateIDE = true;
-          return true;
-        } else if (entry.getName().equals(localScript)) {
-          updateScript = true;
-          return true;
-        } else if (entry.getName().equals(localJava)) {
-          updateJava = true;
-          return true;
-        } else if (entry.getName().equals(localTess)) {
-          updateTess = true;
-          return true;
+        } else if (entry.getName().startsWith(localUpdate)) {
+          return false;
         }
         return true;
       }
@@ -1020,6 +1073,7 @@ public class RunSetup {
   }
 
   public static void popError(String msg) {
+    log0(-1, msg);
     JOptionPane.showMessageDialog(null, msg, "SikuliX-Setup: having problems ...", JOptionPane.ERROR_MESSAGE);
   }
 
@@ -1051,14 +1105,12 @@ public class RunSetup {
   }
   
   private static boolean download(String sDir, String tDir, String item, String jar) {
-    boolean deleteDownloads = false;
     File downloaded = new File(workDir, "Downloads/" + item);
     if (downloaded.exists()) {
       if (popAsk("You already have this in your Setup/Downloads folder:\n"
                  + downloaded.getAbsolutePath()
                  + "\nClick YES, if you want to use this for setup processing\n\n"
-                 + "... or click NO, to download a fresh copy\n"
-                 + "(folder Download will be deleted on success in this case)")) {
+                 + "... or click NO, to download a fresh copy")) {
         try {
           FileManager.xcopy(downloaded.getAbsolutePath(), jar, null);
         } catch (IOException ex) {
@@ -1067,8 +1119,6 @@ public class RunSetup {
         }
         log(lvl, "Copied form local Download: " + item);
         return true;
-      } else {
-        deleteDownloads = true;
       }
     }
     JFrame progress = new MultiFrame("download");
@@ -1082,12 +1132,17 @@ public class RunSetup {
       log1(-1, "rename to %s did not work", jar);
       return false;
     }
-    if (deleteDownloads) {
-      FileManager.deleteFileOrFolder(new File(workDir, "Downloads").getAbsolutePath());
-    }
     return true;
   }
   
+  private static void userTerminated(String msg) {
+    if (!msg.isEmpty()) {
+      log0(lvl, msg);
+    }
+    log1(lvl, "User requested termination.");
+    System.exit(0);
+  }
+
   private static void terminate(String msg) {
     log1(-1, msg);
     log1(-1, "... terminated abnormally :-(");
