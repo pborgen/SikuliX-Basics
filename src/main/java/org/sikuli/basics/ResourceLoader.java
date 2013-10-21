@@ -59,7 +59,7 @@ public class ResourceLoader implements IResourceLoader {
   private String libPath = null;
   private String libPathFallBack = null;
   private File libsDir = null;
-  private static final String checkFileNameAll = "MadeForSikuliX";
+  private static final String checkFileNameAll = Settings.getVersionShortBasic() + "-MadeForSikuliX";
   private String checkFileNameMac = checkFileNameAll + "64M.txt";
   private String checkFileNameW32 = checkFileNameAll + "32W.txt";
   private String checkFileNameW64 = checkFileNameAll + "64W.txt";
