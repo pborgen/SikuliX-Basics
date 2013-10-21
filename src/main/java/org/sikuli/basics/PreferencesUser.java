@@ -9,6 +9,9 @@ package org.sikuli.basics;
 import java.awt.Dimension;
 import java.awt.Event;
 import java.awt.Point;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
@@ -48,6 +51,26 @@ public class PreferencesUser {
 	private PreferencesUser() {
 		Debug.log(2, "init user preferences");
 	}
+  
+  public boolean exportPrefs(String path) {
+    try {
+      pref.exportSubtree(new FileOutputStream(new File(path))); 
+    } catch (Exception ex) {
+      Debug.error("UserPrefs: export: did not work\n" + ex.getMessage());
+      return false;
+    }
+    return true;
+  }
+
+  public boolean importPrefs(String path) {
+    try {
+      Preferences.importPreferences(new FileInputStream(new File(path))); 
+    } catch (Exception ex) {
+      Debug.error("UserPrefs: import: did not work\n" + ex.getMessage());
+      return false;
+    }
+    return true;
+  }
 
 	public void addPreferenceChangeListener(PreferenceChangeListener pcl) {
 		pref.addPreferenceChangeListener(pcl);
