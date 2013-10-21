@@ -57,6 +57,12 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.sikuli</groupId>
+      <artifactId>SikuliX-Natives</artifactId>
+      <version>1.1.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>commons-cli</groupId>
       <artifactId>commons-cli</artifactId>
       <version>1.2</version>
@@ -94,10 +100,6 @@
 
     <!-- copy native resources -->
     <resources>
-      <resource> 
-        <directory>src/main/resources-libs</directory>
-        <targetPath>META-INF</targetPath>
-      </resource>
       <resource>
         <directory>src/main/resources</directory>
       </resource>
@@ -112,6 +114,17 @@
           <target>1.6</target>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>org.sikuli.basics.RunSetup</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>   
 
       <!-- Plugin to create an additional jar containing all stuff (sikuli-setup.jar)-->
       <plugin>

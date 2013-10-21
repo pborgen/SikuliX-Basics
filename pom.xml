@@ -91,10 +91,6 @@
     <finalName>sikulix-basics</finalName>
 
     <resources>
-      <resource> 
-        <directory>src/main/resources-libs</directory>
-        <targetPath>META-INF</targetPath>
-      </resource>
       <resource>
         <directory>src/main/resources</directory>
       </resource>
@@ -109,6 +105,17 @@
           <target>1.6</target>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.4</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>org.sikuli.basics.RunSetup</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>   
     </plugins>
   </build>
 </project>
