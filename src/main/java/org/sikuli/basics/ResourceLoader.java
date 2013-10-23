@@ -318,7 +318,9 @@ public class ResourceLoader implements IResourceLoader {
     //<editor-fold defaultstate="collapsed" desc="libs dir finally invalid">
     if (libPath == null) {
       log(-1, "No valid libs path available until now!");
-      if (libPath == null && jarParentPath != null && jarPath.endsWith(".jar")) {
+      if (libPath == null && jarParentPath != null && jarPath.endsWith(".jar") &&
+              // hack to avoid libs dir in Maven local repo
+              !jarPath.contains("SikuliX-Natives")) {
         log(-2, "Please wait! Trying to extract libs to jar parent folder: " + jarParentPath);
         File jarPathLibs = extractLibs((new File(jarParentPath)).getAbsolutePath(), libSource);
         if (jarPathLibs == null) {
