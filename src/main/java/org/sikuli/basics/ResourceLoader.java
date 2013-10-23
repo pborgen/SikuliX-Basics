@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.sikuli.natives.RunNatives;
 
 public class ResourceLoader implements IResourceLoader {
 
@@ -102,7 +103,7 @@ public class ResourceLoader implements IResourceLoader {
   public ResourceLoader() {
     log0(lvl, "SikuliX Package Build: %s %s", Settings.getVersionShort(), RunSetup.timestampBuilt);
     cl = this.getClass().getClassLoader();
-    codeSrc = this.getClass().getProtectionDomain().getCodeSource();
+    codeSrc = RunNatives.class.getProtectionDomain().getCodeSource();
     if (codeSrc != null && codeSrc.getLocation() != null) {
       jarURL = codeSrc.getLocation();
       jarPath = jarURL.getPath();
