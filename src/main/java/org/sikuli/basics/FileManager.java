@@ -41,6 +41,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+import org.sikuli.natives.RunNatives;
 
 public class FileManager {
 
@@ -720,7 +721,7 @@ public class FileManager {
     boolean extractingFromJar = false;
     String jarPath = null;
     URL jarURL = null;
-    CodeSource codeSrc = FileManager.class.getProtectionDomain().getCodeSource();
+    CodeSource codeSrc = RunNatives.class.getProtectionDomain().getCodeSource();
     if (codeSrc != null && codeSrc.getLocation() != null) {
       jarURL = codeSrc.getLocation();
       jarPath = jarURL.getPath();
