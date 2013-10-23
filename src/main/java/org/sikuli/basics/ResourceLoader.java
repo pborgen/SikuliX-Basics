@@ -177,9 +177,10 @@ public class ResourceLoader implements IResourceLoader {
         libSource = String.format(libSource64, "mac");
         checkFileName = checkFileNameMac;
         checkLib = "MacUtil";
-        if ((new File(libPathMac)).exists()) {
-          libPathFallBack = libPathMac;
-        }
+//TODO libs dir fallback
+//        if ((new File(libPathMac)).exists()) {
+//          libPathFallBack = libPathMac;
+//        }
       }
 
       // Windows specific 
@@ -187,17 +188,19 @@ public class ResourceLoader implements IResourceLoader {
         if (osarch.contains("64")) {
           libSource = String.format(libSource64, "windows");
           checkFileName = checkFileNameW64;
-          if ((new File(libPathWin)).exists()) {
-            libPathFallBack = libPathWin;
-          }
+//TODO libs dir fallback
+//          if ((new File(libPathWin)).exists()) {
+//            libPathFallBack = libPathWin;
+//          }
         } else {
           libSource = String.format(libSource32, "windows");
           checkFileName = checkFileNameW32;
-          if ((new File(libPathWin)).exists()) {
-            libPathFallBack = libPathWin;
-          } else if ((new File(libPathWin32)).exists()) {
-            libPathFallBack = libPathWin32;
-          }
+//TODO libs dir fallback
+//          if ((new File(libPathWin)).exists()) {
+//            libPathFallBack = libPathWin;
+//          } else if ((new File(libPathWin32)).exists()) {
+//            libPathFallBack = libPathWin32;
+//          }
         }
         checkLib = "WinUtil";
       }
