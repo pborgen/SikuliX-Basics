@@ -7,7 +7,7 @@ import sys
 
 import Sikuli
 from org.sikuli.basics import Debug
-from org.sikuli.basics import ImageLocator
+from org.sikuli.script import ImageLocator
 import os
 
 def _stripPackagePrefix(module_name):

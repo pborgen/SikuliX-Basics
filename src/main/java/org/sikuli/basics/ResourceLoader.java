@@ -72,6 +72,9 @@ public class ResourceLoader implements IResourceLoader {
   private static final String libSub = prefixSikuli + suffixLibs;
   private String userSikuli = null;
   private boolean extractingFromJar = false;
+  // when not running from jar to correct path to libs
+  private static final String ELFBfrom = "Basics";
+  private static final String ELFBto = "Natives";
   private boolean itIsJython = false;
   /**
    * Mac: standard place for native libs
@@ -768,13 +771,14 @@ public class ResourceLoader implements IResourceLoader {
         return null;
       }
     } else {
-      File folder = new File(FileManager.slashify(jar.getPath(), false), path);
+      String p = FileManager.slashify(jar.getPath(), false);
+      p = p.replace(ELFBfrom, ELFBto);
+      File folder = new File(p, path);
       if (folder.isFile()) {
         fList.add(new String[]{FileManager.slashify(folder.getAbsolutePath(), false),
           String.format("%d", folder.lastModified())});
         log(lvl, "Found 1 file in %s", path);
       } else {
-        folder = new File(FileManager.slashify(jar.getPath(), true), path);
         log(lvl, "accessing folder: " + folder.getAbsolutePath());
         for (File f : getDeepFileList(folder, deep)) {
           log(lvl + 2, "file: " + f.getAbsolutePath());
