@@ -16,9 +16,9 @@ import java.util.prefs.Preferences;
 public class Settings {
 
   public static final int SikuliVersionMajor = 1;
-  public static final int SikuliVersionMinor = 1;
-  public static final int SikuliVersionSub = 0;
-  public static final int SikuliVersionBetaN = 1;
+  public static final int SikuliVersionMinor = 0;
+  public static final int SikuliVersionSub = 1;
+  public static final int SikuliVersionBetaN = 0;
 
   private static String me = "Settings";
   private static String mem = "...";
