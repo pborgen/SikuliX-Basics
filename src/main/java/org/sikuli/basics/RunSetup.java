@@ -855,10 +855,6 @@ public class RunSetup {
       }
     }
 
-    if (!FileManager.deleteFileOrFolder(folderLibs.getAbsolutePath())) {
-      log0(-1, "Could not delete the libs folder");
-    }
-    
     splash = showSplash("Setup seems to have ended successfully!", "Detailed information see: " + logfile);
     start += 2000;
     closeSplash(splash);
