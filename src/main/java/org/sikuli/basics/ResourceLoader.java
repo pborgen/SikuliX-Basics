@@ -306,6 +306,7 @@ public class ResourceLoader implements IResourceLoader {
         }
       })) {
         log(-1, "Fatal Error 102: not possible to empty libs dir");
+        RunSetup.popError("Problem with SikuliX libs folder - see error log");
         SikuliX.terminate(102);
       }
       File dir = (new File(libPath));
@@ -316,7 +317,6 @@ public class ResourceLoader implements IResourceLoader {
       }
       libsDir = checkLibsDir(libPath);
     }
-
 
     //<editor-fold defaultstate="collapsed" desc="libs dir finally invalid">
     if (libPath == null) {
@@ -344,16 +344,52 @@ public class ResourceLoader implements IResourceLoader {
       libsDir = checkLibsDir(libPath);
       if (libPath == null || libsDir == null) {
         log(-1, "Fatal Error 103: No valid native libraries folder available - giving up!");
+        RunSetup.popError("Problem with SikuliX libs folder - see error log");
         SikuliX.terminate(103);
       }
+    }
+    
+    if (Settings.isLinux()) {
+      File libsLinux = new File(libsDir.getParent(), "libsLinux/libVisionProxy.so");
+      if (libsLinux.exists()) {
+        log(lvl, "Trying to use provided library at: " + libsLinux.getAbsolutePath());
+        try {
+          FileManager.xcopy(libsLinux.getAbsolutePath(), 
+                  new File(libPath, "libVisionProxy.so").getAbsolutePath(), null);
+        } catch (IOException ex) {
+          log(-1, "... did not work: " + ex.getMessage());
+          RunSetup.popError("Provided libVisionProxy not useable - see error log");
+          SikuliX.terminate(0);        
+        }
+      }
+    }
+    
+    //convenience: jawt.dll in libsdir avoids need for java/bin in system path
+    String lib = "jawt.dll";
+    try {
+      extractResource(javahome + "bin/" + lib, new File(libPath, lib), false);
+    } catch (IOException ex) {
+      log(-1, "Fatal error 107: problem copying " + lib + "\n" + ex.getMessage());
+      RunSetup.popError("Trying to add jawt.dll from Java at\n" +
+              javahome + " to SikuliX libs folder ..." +
+              "... but did not work - see error log");
+      SikuliX.terminate(107);
+    }
+
+    if (itIsJython) {
+      export("Lib/sikuli", libsDir.getParent());
     }
 
     if (Settings.OcrDataPath == null) {
       if (Settings.isWindows() || Settings.isMac()) {
-        log(lvl, "Using this as OCR directory (tessdata) too");
         Settings.OcrDataPath = libPath;
       } else {
         Settings.OcrDataPath = "/usr/local/share";
+      }
+      log(lvl, "If OCR/Text activated: Using as OCR directory (tessdata): " + Settings.OcrDataPath);
+      if (! new File(Settings.OcrDataPath, "tessdata").exists()) {
+        log(lvl, "Trying to extract tessdata folder since it does not exist yet.");
+        export("META-INF/libs#tessdata", libPath);
       }
     }
     //</editor-fold>
@@ -380,6 +416,8 @@ public class ResourceLoader implements IResourceLoader {
           log(-2, "Please wait! Trying to add it to user's path");
           if (runcmd(cmdRegCheck).startsWith(error)) {
             log(-1, "Fatal Error 104: Not possible to access registry!");
+            RunSetup.popError("Trying to add SikuliX libs to user path\n" + 
+                    "But registry not accessible - see error log");
             SikuliX.terminate(104);
           }
           String[] val = regMap.get("EnvPath");
@@ -411,6 +449,8 @@ public class ResourceLoader implements IResourceLoader {
           }
           if (step == 0) {
             log(-1, "Fatal Error 105: Not possible to get user's PATH from registry");
+            RunSetup.popError("Trying to add SikuliX libs to user path\n" + 
+                    "But registry not accessible - see error log");
             SikuliX.terminate(105);
           } else {
             if (!envPath.isEmpty()) {
@@ -418,6 +458,11 @@ public class ResourceLoader implements IResourceLoader {
               log(lvl, "current:(%s %s): %s", val[0], val[1], envPath);
               if (envPath.contains(path)) {
                 log(-1, "Logout and Login again! (Since libs folder is in user's path, but not activated)");
+                RunSetup.popInfo("Please Logout and Login again!\n\n" +
+                        "SikuliX libs path: " + path + "\n" +
+                        "is in System Path environment settings, \n" +
+                        "but not seen in current runtime environment.\n" +
+                        "Logout/Login should fix this problem.");
                 SikuliX.terminate(0);
               }
             }
@@ -429,6 +474,8 @@ public class ResourceLoader implements IResourceLoader {
             regResult = runcmd(cmdQ);
             log(lvl, "Changed to: " + regResult);
             if (!regResult.contains(path)) {
+              RunSetup.popError("Trying to add SikuliX libs to user path\n" + 
+                    "But registry not accessible - see error log");
               log(-1, "Fatal error 106: libs folder could not be added to PATH - giving up!");
               SikuliX.terminate(106);
             }
@@ -436,15 +483,11 @@ public class ResourceLoader implements IResourceLoader {
           log(-1, "Successfully added the libs folder to users PATH!\n" + ""
                   + "RESTART all processes/IDE's using Sikuli for new PATH to be used!/n"
                   + "For usages from command line logout/login might be necessary!");
+          RunSetup.popInfo("Please Logout and Login again!\n\n" +
+                  "SikuliX libs path: " + path + "\n" +
+                  "was added to user path. \n" +
+                  "Logout/Login should activate this setting.");
           SikuliX.terminate(0);
-        }
-        //convenience: jawt.dll in libsdir avoids need for java/bin in system path
-        String lib = "jawt.dll";
-        try {
-          extractResource(javahome + "bin/" + lib, new File(path, lib), false);
-        } catch (IOException ex) {
-          log(-1, "Fatal error 107: problem copying " + lib + "\n" + ex.getMessage());
-          SikuliX.terminate(107);
         }
       }
       File checkFile = (new File(FileManager.slashify(path, true) + checkFileName));
@@ -676,6 +719,7 @@ public class ResourceLoader implements IResourceLoader {
     log(lvl, libname);
     if (libPath == null) {
       log(-1, "Fatal Error 108: No libs directory available");
+      RunSetup.popError("Problem with SikuliX libs folder - see error log");
       SikuliX.terminate(108);
     }
     String mappedlib = System.mapLibraryName(libname);
@@ -687,6 +731,7 @@ public class ResourceLoader implements IResourceLoader {
     File lib = new File(libPath, mappedlib);
     if (!lib.exists()) {
       log(-1, "Fatal Error 109: not found: " + lib.getAbsolutePath());
+      RunSetup.popError("Problem with SikuliX libs folder - see error log");
       SikuliX.terminate(109);
     }
     log(lvl, "Found: " + libname);
@@ -704,6 +749,7 @@ public class ResourceLoader implements IResourceLoader {
           return;
         }
       }
+      RunSetup.popError("Problem with SikuliX libs folder - see error log");
       SikuliX.terminate(110);
     }
     log(lvl, "Now loaded: " + libname);
@@ -719,15 +765,16 @@ public class ResourceLoader implements IResourceLoader {
       mem = memx;
       return null;
     }
-    targetDir = FileManager.slashify(targetDir, true) + "libs";
-    (new File(targetDir)).mkdirs();
+    targetDir = FileManager.slashify(targetDir, true);
+    String targetDirLibs = targetDir + "libs";
+    (new File(targetDirLibs)).mkdirs();
     String targetName = null;
     File targetFile;
     long targetDate;
     for (String[] e : libsList) {
       try {
         targetName = e[0].substring(e[0].lastIndexOf("/") + 1);
-        targetFile = new File(targetDir, targetName);
+        targetFile = new File(targetDirLibs, targetName);
         if (targetFile.exists()) {
           targetDate = targetFile.lastModified();
         } else {
@@ -746,11 +793,7 @@ public class ResourceLoader implements IResourceLoader {
       }
     }
     mem = memx;
-    if (itIsJython) {
-      export("Lib/sikuli", targetDir);
-    }
-    export("META-INF/libs#tessdata", targetDir);
-    return new File(targetDir);
+    return new File(targetDirLibs);
   }
 
   private List<String[]> makePackageFileList(URL jar, String path, boolean deep) {
