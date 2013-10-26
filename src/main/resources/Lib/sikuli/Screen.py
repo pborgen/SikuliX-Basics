@@ -13,6 +13,7 @@ from Region import *
 class Screen(Region):
     def __init__(self, id=None):
         try:
+            # Debug.log(3, "Screen.py: init: %s", id)
             if id != None:
                 r = JScreen.getBounds(id)
                 s = JScreen.getScreen(id)
@@ -22,6 +23,7 @@ class Screen(Region):
                 s = JScreen.getScreen(id)
             (self.x, self.y, self.w, self.h) = (int(r.getX()), int(r.getY()), \
                             int(r.getWidth()), int(r.getHeight()))
+            # Debug.log(3, "Screen.py: before initScreen: %s", s)
             self.initScreen(s)
         except:
             Debug.log(3, "Jython: init: exception while initializing Screen\n%s", sys.exc_info(0))
@@ -32,6 +34,7 @@ class Screen(Region):
         return JScreen.getNumberScreens()
 
     def resetROI(self):
+        # Debug.log(3, "Screen.py: resetROI: %s", self.getScreen())
         self.setRect(self.getScreen().getBounds())
 
     def getBounds(self):
@@ -82,9 +85,11 @@ class Screen(Region):
                         'getClass', 'hashCode', 'notify', 'notifyAll',
                         'toGlobalCoord', 'toString', 'getLocationFromPSRML', 'getRegionFromPSRM',
                        'capture', 'selectRegion', 'create', 'observeInBackground', 'waitAll',
-                        'updateSelf', 'findNow', 'findAllNow', 'getEventManager']
+                        'updateSelf', 'findNow', 'findAllNow', 'getEventManager',
+                        'lastMatch', 'lastMatches', 'lastScreenImage', 'lastScreenImageFile']
         dict = sys.modules[mod].__dict__
         for name in dir(self):
+            # Debug.log(3, "Screen: _exposeAllMethods: " + name)
             if name in exclude_list: continue
             try:
                 if not inspect.ismethod(getattr(self,name)): continue
