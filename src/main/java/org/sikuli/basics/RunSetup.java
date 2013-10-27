@@ -34,7 +34,7 @@ public class RunSetup {
   private static boolean runningUpdate = false;
   
   public static String timestampBuilt;
-  private static final String tsb = "##--##So 20 Okt 2013 18:40:36 CEST##--##"; 
+  private static final String tsb = "##--##So 27 Okt 2013 14:48:31 CET##--##"; 
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
@@ -746,7 +746,7 @@ public class RunSetup {
           loader.export("Commands/mac#runIDE", workDir);
           loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", new File(fmac, "runIDE").getAbsolutePath()});
           loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", new File(workDir, "runIDE").getAbsolutePath()});
-          FileManager.deleteFileOrFolder(new File(workDir, localIDE).getAbsolutePath());
+//          FileManager.deleteFileOrFolder(new File(workDir, localIDE).getAbsolutePath());
           FileManager.deleteFileOrFolder(new File(workDir, localMacApp).getAbsolutePath());
           localTestJar = new File(fmac, localIDE).getAbsolutePath();
         }
