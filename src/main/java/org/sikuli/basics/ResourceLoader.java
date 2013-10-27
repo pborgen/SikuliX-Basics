@@ -365,15 +365,17 @@ public class ResourceLoader implements IResourceLoader {
     }
     
     //convenience: jawt.dll in libsdir avoids need for java/bin in system path
-    String lib = "jawt.dll";
-    try {
-      extractResource(javahome + "bin/" + lib, new File(libPath, lib), false);
-    } catch (IOException ex) {
-      log(-1, "Fatal error 107: problem copying " + lib + "\n" + ex.getMessage());
-      RunSetup.popError("Trying to add jawt.dll from Java at\n" +
-              javahome + " to SikuliX libs folder ..." +
-              "... but did not work - see error log");
-      SikuliX.terminate(107);
+    if (Settings.isWindows()) {
+      String lib = "jawt.dll";
+      try {
+        extractResource(javahome + "bin/" + lib, new File(libPath, lib), false);
+      } catch (IOException ex) {
+        log(-1, "Fatal error 107: problem copying " + lib + "\n" + ex.getMessage());
+        RunSetup.popError("Trying to add jawt.dll from Java at\n" +
+                javahome + " to SikuliX libs folder ..." +
+                "... but did not work - see error log");
+        SikuliX.terminate(107);
+      }
     }
 
     if (itIsJython) {
