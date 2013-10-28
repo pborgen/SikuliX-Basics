@@ -89,6 +89,9 @@ def uprint(*args):
 def unicd(s):
     return (unicode(s, "utf8"))
 
+def ucode(s):
+    return (unicode(s, "utf8"))
+
 ##
 # loads a Sikuli extension (.jar) from
 #  1. user's sikuli data path
@@ -119,18 +122,21 @@ def addModPath(path):
         path = path[:-1]
     if not path in sys.path:
         sys.path.append(path)
+        
+def addImportPath(path):
+    addModPath(path)
 
 def addImagePath(path):
-    ImageLocator.addImagePath(path)
+    ImagePath.addImagePath(path)
 
 def getImagePath():
-    return [e for e in ImageLocator.getImagePath() if e]
+    return [e for e in ImagePath.getImagePath() if e]
 
 def removeImagePath(path):
-    ImageLocator.removeImagePath(path)
+    ImagePath.removeImagePath(path)
    
 def resetImagePath(path):
-    ImageLocator.resetImagePath(path)
+    ImagePath.resetImagePath(path)
 
 ##
 # Sets the path for searching images in all Sikuli Script methods. <br/>
@@ -143,6 +149,13 @@ def setBundlePath(path):
 
 def getBundlePath():
     return ImagePath.getBundlePath()
+  
+def getParentPath():
+    return ImagePath.getBundleParentPath();
+  
+def makePath(path1, path2):
+# TODO path2 as list
+    pass 
 
 ##
 # Sikuli shows actions (click, dragDrop, ... etc.) if this flag is set to <i>True</i>.
