@@ -29,12 +29,25 @@ public class SikuliScript {
     SikuliX.displaySplash(null);
   }
   
+  public static boolean getRunningInteractive() {
+    return isRunningInteractive;
+  }
+  
+  private static boolean isRunningScript = false;
+  
   /**
    * Main method
    *
    * @param args passed arguments
    */
   public static void main(String[] args) {
+    
+    if (isRunningScript) {
+      System.out.println("[error] SikuliScript: can only run one at a time!");
+      return;
+    }
+    
+    isRunningScript = true;
 
     SikuliX.displaySplash(args);
 
@@ -42,19 +55,19 @@ public class SikuliScript {
       runner = SikuliX.getScriptRunner(args[1], null, args);
       if (runner == null) {
         args[0] = null;
-        return;
-      }
-      String[] stmts = new String[0];
-      if (args.length > 2) {
-        stmts = new String[args.length - 2];
-        for (int i = 0; i < stmts.length; i++) {
-          stmts[i] = args[i+2];
+      } else {
+        String[] stmts = new String[0];
+        if (args.length > 2) {
+          stmts = new String[args.length - 2];
+          for (int i = 0; i < stmts.length; i++) {
+            stmts[i] = args[i+2];
+          }
+        }
+        if (0 != runner.runScript(null, null, stmts, null)) {
+          args[0] = null;
         }
       }
-      if (0 != runner.runScript(null, null, stmts, null)) {
-        args[0] = null;
-        return;
-      }
+      isRunningScript = false;
       return;
     }
     
@@ -68,7 +81,6 @@ public class SikuliScript {
       System.exit(1);
     }
 
-    // print help
     if (cmdLine.hasOption(CommandArgsEnum.HELP.shortname())) {
       cmdArgs.printHelp();
       if (runner != null) {

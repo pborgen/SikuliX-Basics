@@ -99,14 +99,15 @@ public class SikuliX {
       }
       return;
     }
-    start = (new Date()).getTime();
-    String[] splashArgs = new String[ ] { 
-      "splash", "#", "#" + Settings.SikuliVersionScript, "", "#", "#... starting - please wait ..." };
-    for (String e : args) {
-      splashArgs[3] += e + " ";
+    if (args[0].contains("-testsetup") || args[0].startsWith("-i")) {
+      start = (new Date()).getTime();
+      String[] splashArgs = new String[ ] { 
+        "splash", "#", "#" + Settings.SikuliVersionScript, "", "#", "#... starting - please wait ..." };
+      for (String e : args) {
+        splashArgs[3] += e + " ";
+      }
+      splashArgs[3] = splashArgs[3].trim();
     }
-    splashArgs[3] = splashArgs[3].trim();
-//    splash = new MultiFrame(splashArgs);
   }
   
   public static void displaySplashFirstTime(String [] args) {
