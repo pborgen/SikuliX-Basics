@@ -277,6 +277,9 @@ public class RunSetup {
     File localJarScript = new File(workDir, localScript);
     File localJarJava = new File(workDir, localJava);
     File localMacFolder = new File(workDir, folderMacApp);
+    
+    //TODO Windows 8 HKLM/SOFTWARE/JavaSoft add Prefs ????
+    
     //</editor-fold>
     
     //<editor-fold defaultstate="collapsed" desc="checking update/beta">
