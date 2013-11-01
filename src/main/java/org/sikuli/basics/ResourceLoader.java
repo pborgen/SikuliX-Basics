@@ -381,7 +381,7 @@ public class ResourceLoader implements IResourceLoader {
     if (itIsJython) {
       export("Lib/sikuli", libsDir.getParent());
     }
-
+    
     if (Settings.OcrDataPath == null) {
       if (Settings.isWindows() || Settings.isMac()) {
         Settings.OcrDataPath = libPath;
@@ -406,8 +406,8 @@ public class ResourceLoader implements IResourceLoader {
       if (!Settings.runningSetup && Settings.isWindows()) {
         // is on system path?
         String syspath = System.getenv("PATH");
-        path = (new File(path).getAbsolutePath()).replaceAll("/", "\\").toUpperCase();
-        if (!syspath.contains(path.toUpperCase())) {
+        path = (new File(path).getAbsolutePath()).replaceAll("/", "\\");
+        if (!syspath.toUpperCase().contains(path.toUpperCase())) {
           String error = "*** error ***";
           log(-1, "libs dir is not on system path: " + path);
           if (Debug.getDebugLevel() >= lvl) {
@@ -456,9 +456,9 @@ public class ResourceLoader implements IResourceLoader {
             SikuliX.terminate(105);
           } else {
             if (!envPath.isEmpty()) {
-              envPath = envPath.substring(envPath.indexOf(val[2]) + val[2].length()).trim().toUpperCase();
+              envPath = envPath.substring(envPath.indexOf(val[2]) + val[2].length()).trim();
               log(lvl, "current:(%s %s): %s", val[0], val[1], envPath);
-              if (envPath.contains(path.toUpperCase())) {
+              if (envPath.toUpperCase().contains(path.toUpperCase())) {
                 log(-1, "Logout and Login again! (Since libs folder is in user's path, but not activated)");
                 RunSetup.popInfo("Please Logout and Login again!\n\n" +
                         "SikuliX libs path: " + path + "\n" +
