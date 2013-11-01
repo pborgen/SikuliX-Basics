@@ -15,7 +15,8 @@ import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
-import java.util.prefs.*;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 
 public class PreferencesUser {
 
