@@ -73,9 +73,6 @@ public class ResourceLoader implements IResourceLoader {
   private static final String libSub = prefixSikuli + suffixLibs;
   private String userSikuli = null;
   private boolean extractingFromJar = false;
-  // when not running from jar to correct path to libs
-  private static final String ELFBfrom = "Basics";
-  private static final String ELFBto = "Natives";
   private boolean itIsJython = false;
   /**
    * Mac: standard place for native libs
@@ -823,7 +820,10 @@ public class ResourceLoader implements IResourceLoader {
       }
     } else {
       String p = FileManager.slashify(jar.getPath(), false);
-      p = p.replace(ELFBfrom, ELFBto);
+      //TODO hack: to get folder Commands and Lib from Basics 
+      if (path.startsWith("Commands/") || path.startsWith("Lib/")) {
+        p = p.replace("Natives", "Basics");
+      }
       File folder = new File(p, path);
       if (folder.isFile()) {
         fList.add(new String[]{FileManager.slashify(folder.getAbsolutePath(), false),

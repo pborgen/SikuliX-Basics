@@ -411,9 +411,11 @@ public class RunSetup {
               "\nYES to continue\nNO to terminate")) {
         userTerminated("after download success");
       }
-      log0(lvl, "dispatching external setup run");
-      loader.doSomethingSpecial("runcmd", cmd);
-      System.exit(0);
+      log1(lvl, "dispatching external setup run");
+      if (runningfromJar) {
+        loader.doSomethingSpecial("runcmd", cmd);
+        System.exit(0);
+      }
     } 
     //</editor-fold>s
 
