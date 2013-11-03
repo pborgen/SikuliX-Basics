@@ -38,7 +38,6 @@ public class SetUpSelect extends javax.swing.JPanel {
     jLabel4 = new javax.swing.JLabel();
     suFolder = new javax.swing.JLabel();
     jLabel5 = new javax.swing.JLabel();
-    jSeparator4 = new javax.swing.JSeparator();
     jSeparator5 = new javax.swing.JSeparator();
     option1 = new javax.swing.JCheckBox();
     option4 = new javax.swing.JCheckBox();
@@ -62,6 +61,8 @@ public class SetUpSelect extends javax.swing.JPanel {
     jLabel7 = new javax.swing.JLabel();
     jLabel8 = new javax.swing.JLabel();
     pPort = new javax.swing.JTextField();
+    option7 = new javax.swing.JCheckBox();
+    ask7 = new javax.swing.JButton();
 
     textField1.setText("textField1");
 
@@ -183,6 +184,20 @@ public class SetUpSelect extends javax.swing.JPanel {
 
     jLabel8.setText("Portnumber:");
 
+    option7.setText("7 - I want to try the experimental Sikuli Remote feature (getting sikulix-remoteserver.jar - for info click H-button)");
+    option7.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        option7ActionPerformed(evt);
+      }
+    });
+
+    ask7.setText("H");
+    ask7.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        ask7ActionPerformed(evt);
+      }
+    });
+
     org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
@@ -190,7 +205,6 @@ public class SetUpSelect extends javax.swing.JPanel {
       .add(layout.createSequentialGroup()
         .addContainerGap()
         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-          .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator7)
           .add(jSeparator1)
           .add(jSeparator2)
           .add(jSeparator5)
@@ -206,7 +220,6 @@ public class SetUpSelect extends javax.swing.JPanel {
             .add(option3)
             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(ask3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-          .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator6)
           .add(layout.createSequentialGroup()
             .add(option5)
             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -219,6 +232,12 @@ public class SetUpSelect extends javax.swing.JPanel {
             .add(option6)
             .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(ask6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+          .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator6)
+          .add(layout.createSequentialGroup()
+            .add(option7)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 78, Short.MAX_VALUE)
+            .add(ask7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+          .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator7)
           .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
             .add(0, 0, Short.MAX_VALUE)
             .add(jButton1)
@@ -257,13 +276,8 @@ public class SetUpSelect extends javax.swing.JPanel {
                 .add(jLabel8)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-            .add(0, 9, Short.MAX_VALUE)))
+            .add(0, 0, Short.MAX_VALUE)))
         .addContainerGap())
-      .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-        .add(layout.createSequentialGroup()
-          .addContainerGap()
-          .add(jSeparator4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)
-          .addContainerGap()))
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -317,6 +331,10 @@ public class SetUpSelect extends javax.swing.JPanel {
           .add(ask6)
           .add(option6))
         .add(18, 18, 18)
+        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+          .add(ask7)
+          .add(option7))
+        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
         .add(jSeparator6, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -327,16 +345,11 @@ public class SetUpSelect extends javax.swing.JPanel {
           .add(pPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
         .add(jSeparator7, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-        .add(18, 18, 18)
+        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
           .add(jButton1)
           .add(setupNow))
-        .addContainerGap(15, Short.MAX_VALUE))
-      .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-        .add(layout.createSequentialGroup()
-          .add(172, 172, 172)
-          .add(jSeparator4, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-          .addContainerGap(454, Short.MAX_VALUE)))
+        .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
   }// </editor-fold>//GEN-END:initComponents
 
@@ -389,8 +402,17 @@ public class SetUpSelect extends javax.swing.JPanel {
   }//GEN-LAST:event_ask6ActionPerformed
 
   private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    RunSetup.restore();
     System.exit(0);
   }//GEN-LAST:event_jButton1ActionPerformed
+
+  private void option7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_option7ActionPerformed
+    // TODO add your handling code here:
+  }//GEN-LAST:event_option7ActionPerformed
+
+  private void ask7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ask7ActionPerformed
+    RunSetup.helpOption(7);
+  }//GEN-LAST:event_ask7ActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   public javax.swing.JButton ask1;
@@ -399,6 +421,7 @@ public class SetUpSelect extends javax.swing.JPanel {
   public javax.swing.JButton ask4;
   public javax.swing.JButton ask5;
   public javax.swing.JButton ask6;
+  public javax.swing.JButton ask7;
   private javax.swing.JButton jButton1;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
@@ -410,7 +433,6 @@ public class SetUpSelect extends javax.swing.JPanel {
   private javax.swing.JLabel jLabel8;
   private javax.swing.JSeparator jSeparator1;
   private javax.swing.JSeparator jSeparator2;
-  private javax.swing.JSeparator jSeparator4;
   private javax.swing.JSeparator jSeparator5;
   private javax.swing.JSeparator jSeparator6;
   private javax.swing.JSeparator jSeparator7;
@@ -420,6 +442,7 @@ public class SetUpSelect extends javax.swing.JPanel {
   protected javax.swing.JCheckBox option4;
   protected javax.swing.JCheckBox option5;
   protected javax.swing.JCheckBox option6;
+  protected javax.swing.JCheckBox option7;
   public javax.swing.JTextField pName;
   public javax.swing.JTextField pPort;
   private javax.swing.JButton setupNow;

@@ -33,7 +33,7 @@ public class RunSetup {
   private static boolean runningUpdate = false;
   private static boolean isUpdateSetup = false;
   public static String timestampBuilt;
-  private static final String tsb = "##--##Sa  2 Nov 2013 19:14:35 CET##--##";
+  private static final String tsb = "##--##So  3 Nov 2013 13:10:06 CET##--##";
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
@@ -49,6 +49,7 @@ public class RunSetup {
   private static String downloadScript = "sikuli-script-" + version + ".jar";
   private static String downloadJava = "sikuli-java-" + version + ".jar";
   private static String downloadTess = "sikuli-tessdata-" + version + ".jar";
+  private static String downloadRServer = "sikulix-remoteserver-" + version + ".jar";
   private static String localJava = "sikuli-java.jar";
   private static String localScript = "sikuli-script.jar";
   private static String localIDE = "sikuli-ide.jar";
@@ -59,10 +60,11 @@ public class RunSetup {
   private static String localSetup = "sikuli-setup-" + majorversion + ".jar";
   private static String localUpdate = "sikuli-update";
   private static String localTess = "sikuli-tessdata.jar";
+  private static String localRServer = "sikulix-remoteserver.jar";
   private static String localLogfile;
   private static SetUpSelect winSU;
   private static JFrame winSetup;
-  private static boolean getIDE, getScript, getJava, getTess;
+  private static boolean getIDE, getScript, getJava, getTess, getRServer;
   private static String localJar;
   private static boolean test = false;
   private static boolean isUpdate = false;
@@ -448,7 +450,7 @@ public class RunSetup {
       winCP.add(winSU, BorderLayout.CENTER);
       winSetup.pack();
       winSetup.setLocationRelativeTo(null);
-      winSetup.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      winSetup.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
       winSetup.setVisible(true);
 
       //setup version basic
@@ -569,7 +571,11 @@ public class RunSetup {
       if (winSU.option6.isSelected()) {
         forAllSystems = true;
       }
-      if ((getTess || forAllSystems) && !(getIDE || getScript || getJava)) {
+      if (winSU.option7.isSelected()) {
+        getRServer = true;
+      }
+
+      if (((getTess || forAllSystems) && !(getIDE || getScript || getJava))) {
         popError("You only selected Option 5 or 6 !\n"
                 + "This is currently not supported.\n"
                 + "Please start allover again with valid options.\n");
@@ -582,26 +588,30 @@ public class RunSetup {
       if (Settings.proxy != null) {
         msg += "... using proxy: " + Settings.proxy + "\n";
       }
-      if (new File(workDir, downloadIDE).exists()) {
+      if (new File(workDir, localIDE).exists()) {
         getIDE = true;
         msg += "Pack 1: " + localIDE + "\n";
       }
-      if (new File(workDir, downloadScript).exists()) {
+      if (new File(workDir, localScript).exists()) {
         getScript = true;
         msg += "Pack 2: " + localScript + "\n";
       }
-      if (new File(workDir, downloadJava).exists()) {
+      if (new File(workDir, localJava).exists()) {
         getJava = true;
         msg += "Pack 3: " + localJava + "\n";
       }
-      if (new File(workDir, downloadTess).exists()) {
+      if (new File(workDir, localRServer).exists()) {
+        getRServer = true;
+        msg += localRServer + "\n";
+      }
+      if (new File(workDir, localTess).exists()) {
         getTess = true;
         msg += "\n... with Tesseract OCR support\n\n";
       }
     }
 
     if (!isUpdateSetup) {
-      if (getIDE || getScript || getJava) {
+      if (getIDE || getScript || getJava || getRServer) {
         if (!proxyMsg.isEmpty()) {
           msg += proxyMsg + "\n";
         }
@@ -617,17 +627,23 @@ public class RunSetup {
         if (getJava) {
           msg += "\n--- Package 3 ---\n" + downloadJava;
         }
-        if (getTess) {
-          msg += "\n--- Additions ---\n" + downloadTess;
+        if (getTess || getRServer) {
+          msg += "\n--- Additions ---";
+          if (getTess) {
+            msg += "\n" + downloadTess;
+          }
+          if (getRServer) {
+            msg += "\n" + downloadRServer;
+          }
         }
       }
     }
 
-    if (getIDE || getScript || getJava) {
+    if (getIDE || getScript || getJava || getRServer) {
       msg += "\n\nOnly click NO, if you want to terminate setup now!\n"
               + "Click YES even if you want to use local copies in Downloads!";
       if (!popAsk(msg)) {
-        System.exit(1);
+        System.exit(0);
       }
     } else {
       popError("Nothing selected! Sikuli not useable!\nYou might try again ;-)");
@@ -677,6 +693,13 @@ public class RunSetup {
       }
       downloadOK &= dlOK;
     }
+    if (getRServer) {
+      targetJar = new File(workDir, localRServer).getAbsolutePath();
+      if (!test) {
+        downloadOK = download(downloadBaseDir, workDir, downloadRServer, targetJar);
+      }
+      downloadOK &= dlOK;
+    }
     log1(lvl, "Download ended");
     if (!test && !downloadOK) {
       popError("Some of the downloads did not complete successfully.\n"
@@ -693,6 +716,11 @@ public class RunSetup {
     //<editor-fold defaultstate="collapsed" desc="option setup: add native stuff">
     if (test && !popAsk("add native stuff --- proceed?")) {
       System.exit(1);
+    }
+    
+    if (!getIDE && !getScript && !getJava) {
+      log1(lvl, "Nothing else to do");
+      System.exit(0);
     }
 
     boolean success = true;
@@ -933,7 +961,7 @@ public class RunSetup {
     return false;
   }
 
-  private static void restore() {
+  protected static void restore() {
     log1(lvl, "restoring from backup");
     String backup = new File(workDir, "Backup").getAbsolutePath();
     if (new File(backup, localIDE).exists()) {
@@ -988,6 +1016,12 @@ public class RunSetup {
         if (entry.getName().startsWith("runSetup")) {
           return false;
         } else if (entry.getName().equals(localSetup)) {
+          return false;
+        } else if (isUpdate && entry.getName().equals(localIDE)) {
+          return false;
+        } else if (isUpdate && entry.getName().equals(localScript)) {
+          return false;
+        } else if (isUpdate && entry.getName().equals(localJava)) {
           return false;
         } else if (workDir.equals(entry.getAbsolutePath())) {
           return false;
