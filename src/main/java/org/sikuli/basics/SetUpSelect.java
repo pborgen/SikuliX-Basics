@@ -84,21 +84,21 @@ public class SetUpSelect extends javax.swing.JPanel {
 
     option1.setText("1 - Pack1: I want to use all options: Sikuli IDE, running scripts from commandline (and optionally Java developement)");
 
-    option4.setText("4 - Pack3: I only want to develop in Java or Jython using NetBeans, Eclipse or other IDE's (I do not need Pack1 nor Pack2)");
+    option4.setText("4 - Pack3: I ONLY want to develop in Java or Jython using NetBeans, Eclipse or other IDE's (I do not need Pack1 nor Pack2)");
     option4.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option4ActionPerformed(evt);
       }
     });
 
-    option3.setText("3 - Pack3: Additionally I want to develop and run scripts in Jython language using Eclipse or any other IDE or other methods");
+    option3.setText("3 - Pack3: Additionally I want to use Eclipse or other IDEs to develop and run scripts in Jython language");
     option3.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option3ActionPerformed(evt);
       }
     });
 
-    option2.setText("2 - Pack2: I want to run Sikuli scripts from command line (usage as Pack 1, but I do not need the Sikuli IDE)");
+    option2.setText("2 - Pack2: I want to run Sikuli scripts from command line (same usage as Pack 1, but I do not need the Sikuli IDE)");
     option2.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         option2ActionPerformed(evt);
@@ -204,7 +204,7 @@ public class SetUpSelect extends javax.swing.JPanel {
             .add(ask2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
           .add(layout.createSequentialGroup()
             .add(option3)
-            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 19, Short.MAX_VALUE)
+            .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .add(ask3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 40, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
           .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator6)
           .add(layout.createSequentialGroup()
@@ -257,7 +257,7 @@ public class SetUpSelect extends javax.swing.JPanel {
                 .add(jLabel8)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(pPort, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 69, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-            .add(0, 0, Short.MAX_VALUE)))
+            .add(0, 9, Short.MAX_VALUE)))
         .addContainerGap())
       .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
         .add(layout.createSequentialGroup()
