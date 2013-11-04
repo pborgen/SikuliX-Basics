@@ -11,6 +11,7 @@ import __main__
 import types
 import sys
 import os
+import inspect
 
 Debug.log(3, "Jython: sikuli: Sikuli: constants")
 import org.sikuli.script.FindFailed as FindFailed
@@ -205,7 +206,45 @@ def selectRegion(msg=None):
         return Region(r)
     else:
         return None
+      
+##
+# set the default screen to given or primary screen
+#
+# TODO where else to remember an opened remote screen?
+remoteScreen = None
 
+def use(scr = None, remote = False):
+  if remote:
+    theGlobals = inspect.currentframe().f_back.f_back.f_globals
+  else:
+    theGlobals = inspect.currentframe().f_back.f_globals
+  global remoteScreen
+  if remoteScreen:
+    remoteScreen.close()
+    remoteScreen = None
+  if not scr:
+    SCREEN = Screen()
+  else:
+    SCREEN = scr    
+  Debug.log(3, "Jython: called from %s: use " + SCREEN.toStringShort(), theGlobals['__name__'])
+  globals()['SIKULISAVED'] = _exposeAllMethods(SCREEN, globals().get('SIKULISAVED'), theGlobals, None)
+  theGlobals['SCREEN'] = SCREEN
+  if remote:
+    remoteScreen = SCREEN
+  return SCREEN
+
+##
+# set the default screen to given or primary screen
+#
+
+def useRemote(adr, port = 0):
+  global remoteScreen
+  import org.sikuli.script.ScreenRemote as SR
+  SCREEN = SR(adr, str(port))
+  if SCREEN.isValid():
+    return use(SCREEN, True)
+  else:
+    return None
 
 ##
 # Switches the frontmost application to the given application.
@@ -245,6 +284,10 @@ def popup(msg, title="Sikuli"):
     SikuliScript.popup(msg, title)
 
 def exit(code=0):
+    global remoteScreen
+    if remoteScreen:
+      remoteScreen.close()
+      remoteScreen = None
     SikuliX.cleanUp(code)
     sys.exit(code)
 
@@ -286,19 +329,39 @@ def distanceComparator(x, y=None):
         return DistanceComparator(x).compare # x is Region or Location
     return DistanceComparator(x, y).compare # x/y as coordinates
 
+def _exposeAllMethods(anyObject, saved, theGlobals, exclude_list):
+    if not exclude_list:
+        exclude_list = [ 'class', 'classDictInit', 'clone', 'equals', 'finalize',
+                    'getClass', 'hashCode', 'notify', 'notifyAll',
+                    'toGlobalCoord', 'toString', 'getLocationFromPSRML', 'getRegionFromPSRM',
+                   'capture', 'selectRegion', 'create', 'observeInBackground', 'waitAll',
+                    'updateSelf', 'findNow', 'findAllNow', 'getEventManager',
+                    'lastMatch', 'lastMatches', 'lastScreenImage', 'lastScreenImageFile']
+    Debug.log(3, "Sikuli: _exposeAllMethods: %s called from: %s", anyObject, theGlobals['__name__'])
+    tosave = []
+    if not saved:
+      saved = []
+    for name in dir(anyObject):
+        if name in exclude_list: continue
+        try:
+            if not inspect.ismethod(getattr(anyObject,name)): continue
+        except:
+            continue
+        if name[0] != '_' and name[:7] != 'super__':
+            try:
+              saved.remove(name)
+            except:
+              pass
+            tosave.append(name)
+            #print "added:", name
+            theGlobals[name] = eval("anyObject."+name)
+            if name == 'checkWith': Debug.log(3, "%s %s", name, str(dict[name])[1:])
+    for name in saved:
+        if name in theGlobals:
+          #print "removed:", name      
+          theGlobals.pop(name)
+    return tosave
 
-############### SECRET FUNCTIONS ################
+############### set SCREEN as primary screen at startup ################
+#use(Screen(1))
 
-def initSikuli(scr = None):
-    dict = globals()
-    dict['METHODCATALOG'] = sys.modules[__name__].__dict__
-    if scr == None:
-        Debug.log(3, "Jython: init SCREEN as ()")
-        dict['SCREEN'] = Screen()
-    else:
-        Debug.log(3, "Jython: init SCREEN as", scr)
-        dict['SCREEN'] = Screen(scr) 
-    dict['SCREEN']._exposeAllMethods(__name__)
-
-
-initSikuli()

@@ -2,13 +2,13 @@
 # Released under the MIT License.
 # modified RaiMan 2013
 
-import inspect
 import types
 import sys
 
 from org.sikuli.script import Screen as JScreen
 from org.sikuli.basics import Debug
 from Region import *
+import Sikuli
 
 class Screen(Region):
     def __init__(self, id=None):
@@ -79,25 +79,6 @@ class Screen(Region):
             return scr.capture(args[0], args[1], args[2], args[3]).getFile()
         else:
             return None
-
-    def _exposeAllMethods(self, mod):
-        exclude_list = [ 'class', 'classDictInit', 'clone', 'equals', 'finalize',
-                        'getClass', 'hashCode', 'notify', 'notifyAll',
-                        'toGlobalCoord', 'toString', 'getLocationFromPSRML', 'getRegionFromPSRM',
-                       'capture', 'selectRegion', 'create', 'observeInBackground', 'waitAll',
-                        'updateSelf', 'findNow', 'findAllNow', 'getEventManager',
-                        'lastMatch', 'lastMatches', 'lastScreenImage', 'lastScreenImageFile']
-        dict = sys.modules[mod].__dict__
-        for name in dir(self):
-            # Debug.log(3, "Screen: _exposeAllMethods: " + name)
-            if name in exclude_list: continue
-            try:
-                if not inspect.ismethod(getattr(self,name)): continue
-            except:
-                continue
-            if name[0] != '_' and name[:7] != 'super__':
-                dict[name] = eval("self."+name)
-                if name == 'checkWith': Debug.log(3, "%s %s", name, str(dict[name])[1:])
 
     def toString(self):
         return self.getScreen().toString()
