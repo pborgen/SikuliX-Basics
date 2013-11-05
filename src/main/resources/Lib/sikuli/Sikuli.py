@@ -226,7 +226,7 @@ def use(scr = None, remote = False):
     SCREEN = Screen()
   else:
     SCREEN = scr    
-  Debug.log(3, "Jython: called from %s: use " + SCREEN.toStringShort(), theGlobals['__name__'])
+  Debug.log(3, "Jython: requested to use as default region: " + SCREEN.toStringShort())
   globals()['SIKULISAVED'] = _exposeAllMethods(SCREEN, globals().get('SIKULISAVED'), theGlobals, None)
   theGlobals['SCREEN'] = SCREEN
   if remote:
@@ -337,7 +337,7 @@ def _exposeAllMethods(anyObject, saved, theGlobals, exclude_list):
                    'capture', 'selectRegion', 'create', 'observeInBackground', 'waitAll',
                     'updateSelf', 'findNow', 'findAllNow', 'getEventManager',
                     'lastMatch', 'lastMatches', 'lastScreenImage', 'lastScreenImageFile']
-    Debug.log(3, "Sikuli: _exposeAllMethods: %s called from: %s", anyObject, theGlobals['__name__'])
+    #Debug.log(3, "Sikuli: _exposeAllMethods: %s called from: %s", anyObject, theGlobals['__name__'])
     tosave = []
     if not saved:
       saved = []
