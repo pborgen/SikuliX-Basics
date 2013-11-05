@@ -210,7 +210,8 @@ public class SikuliX {
     Iterator<IScriptRunner> scriptRunnerIterator = loader.iterator();
     while (scriptRunnerIterator.hasNext()) {
       IScriptRunner currentRunner = scriptRunnerIterator.next();
-      if ((name != null && currentRunner.getName().toLowerCase().equals(name.toLowerCase())) || (ending != null && currentRunner.hasFileEnding(ending) != null)) {
+      if ((name != null && currentRunner.getName().toLowerCase().equals(name.toLowerCase())) || 
+              (ending != null && currentRunner.hasFileEnding(ending) != null)) {
         runner = currentRunner;
         runner.init(args);
         break;
