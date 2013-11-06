@@ -33,7 +33,7 @@ public class RunSetup {
   private static boolean runningUpdate = false;
   private static boolean isUpdateSetup = false;
   public static String timestampBuilt;
-  private static final String tsb = "##--##So  3 Nov 2013 13:10:06 CET##--##";
+  private static final String tsb = "##--##Mi  6 Nov 2013 10:00:45 CET##--##";
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
@@ -78,6 +78,7 @@ public class RunSetup {
   private static String msg;
   private static boolean forAllSystems = false;
   private static long start;
+  private static boolean runningSetup = false;
 
   static {
     timestampBuilt = tsb.substring(6, tsb.length() - 6);
@@ -150,6 +151,11 @@ public class RunSetup {
 
     if (args.length > 0 && "test".equals(args[0])) {
       test = true;
+      options.remove(0);
+    }
+
+    if (args.length > 0 && "runningSetup".equals(args[0])) {
+      runningSetup = true;
       options.remove(0);
     }
 
@@ -277,6 +283,7 @@ public class RunSetup {
     } else {
       log1(lvl, "... starting with no args given");
     }
+    log1(lvl, "user home: %s", uhome);
 
     File localJarSetup = new File(workDir, localSetup);
     File localJarIDE = new File(workDir, localIDE);
@@ -370,12 +377,14 @@ public class RunSetup {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="dispatching external setup run">
-    if (!isUpdateSetup) {
+    if (!isUpdateSetup && !runningSetup) {
       String[] cmd = null;
       File fCmd = null;
-      String updateSetup = "";
+      String runSetupOption = "";
       if (isRunningUpdate()) {
-        updateSetup = "updateSetup";
+        runSetupOption = "updateSetup";
+      } else if (runningSetup) {
+        runSetupOption = "runningSetup";
       }
       if (Settings.isWindows()) {
         log1(lvl, "Extracting runSetup.cmd");
@@ -385,7 +394,7 @@ public class RunSetup {
         }
         loader.export("Commands/windows#runSetup.cmd", workDir);
         fCmd = new File(workDir, "runSetup.cmd");
-        cmd = new String[]{"cmd", "/C", "start", "cmd", "/K", fCmd.getAbsolutePath(), updateSetup};
+        cmd = new String[]{"cmd", "/C", "start", "cmd", "/K", fCmd.getAbsolutePath(), runSetupOption};
       } else if (runningUpdate) {
         log1(lvl, "Extracting runSetup");
         fCmd = new File(workDir, "runSetup");
@@ -393,9 +402,9 @@ public class RunSetup {
                 + (Settings.isMac() ? "mac#runSetup" : "linux#runSetup"), workDir);
         loader.doSomethingSpecial("runcmd", new String[]{"chmod", "ugo+x", fCmd.getAbsolutePath()});
         if (Settings.isMac()) {
-          cmd = new String[]{"/bin/sh", fCmd.getAbsolutePath(), updateSetup};
+          cmd = new String[]{"/bin/sh", fCmd.getAbsolutePath(), runSetupOption};
         } else {
-          cmd = new String[]{"/bin/bash", fCmd.getAbsolutePath(), updateSetup};
+          cmd = new String[]{"/bin/bash", fCmd.getAbsolutePath(), runSetupOption};
         }
       }
       if ((Settings.isWindows() || runningUpdate) && (fCmd == null || !fCmd.exists())) {
@@ -432,15 +441,13 @@ public class RunSetup {
           System.exit(0);
         }
       }
-      //</editor-fold>s
-
-      log1(lvl, "user home: %s", uhome);
-
-      popInfo("Please read carefully before proceeding!!");
     }
+    //</editor-fold>
+    
     //<editor-fold defaultstate="collapsed" desc="option setup preps display options">
     String proxyMsg = "";
     if (!isUpdateSetup) {
+      popInfo("Please read carefully before proceeding!!");
       winSetup = new JFrame("SikuliX-Setup");
       Border rpb = new LineBorder(Color.YELLOW, 8);
       winSetup.getRootPane().setBorder(rpb);
