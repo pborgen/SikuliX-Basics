@@ -151,7 +151,7 @@ public class SikuliX {
   
   public static void callImagePathSetBundlePath(String path) {
     try {
-      ScriptCl = Class.forName("ImagePath");
+      ScriptCl = Class.forName("org.sikuli.script.ImagePath");
       setBundlePath = ScriptCl.getMethod("setBundlePath", new Class[]{String.class});
       setBundlePath.invoke(ScriptCl, new Object[]{path});
     } catch (Exception ex) {
