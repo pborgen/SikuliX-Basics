@@ -383,7 +383,7 @@ public class RunSetup {
       String runSetupOption = "";
       if (isRunningUpdate()) {
         runSetupOption = "updateSetup";
-      } else if (runningSetup) {
+      } else if (!runningSetup) {
         runSetupOption = "runningSetup";
       }
       if (Settings.isWindows()) {
