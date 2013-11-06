@@ -1163,6 +1163,22 @@ public class RunSetup {
         m += "\n- use the jars from a stick or similar mobile medium";
         m += "\n- deploying Sikuli apps to be used all over the place";
         break;
+      case (7):
+        om = "To try out the experimental remote feature";
+//              -------------------------------------------------------------
+        m += "\nYou might start the downloaded jar on any system, that is reachable "
+                + "\nby other systems in your network via TCP/IP (hostname or IP-address)."
+                + "\nusing: java -jar sikulix-remoteserver.jar"
+                + "\n\nThe server is started and listens on a port (default 50000) for incoming requests"
+                + "\nto use the mouse or keyboard or send back a screenshot."
+                + "\nOn the client side a Sikuli script has to initiate a remote screen with the "
+                + "\nrespective IP-address and port of a running server and on connection success"
+                + "\nthe remote system can be used like a local screen/mouse/keyboard."
+                + "\n\nCurrently all basic operations like find, click, type ... are supported,"
+                + "\nbut be aware, that the search ops are done on the local system based on "
+                + "\nscreenshots sent back from the remote system on request."
+                + "\n\nMore information: https://github.com/RaiMan/SikuliX-Remote";
+        break;
     }
     if (option == 4 || option == 5) {
       option = option == 4 ? 5 : 4;
