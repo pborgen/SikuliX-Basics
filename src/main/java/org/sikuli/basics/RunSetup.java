@@ -523,6 +523,7 @@ public class RunSetup {
     }
 
     File fPrefs = new File(workDir, "SikuliPrefs.txt");
+    fPrefs.deleteOnExit();
     prefs.exportPrefs(fPrefs.getAbsolutePath());
     try {
       BufferedReader pInp = new BufferedReader(new FileReader(fPrefs));
@@ -572,8 +573,15 @@ public class RunSetup {
         getScript = false;
         getJava = true;
       }
-      if (winSU.option5.isSelected() && !Settings.isLinux()) {
-        getTess = true;
+      if (winSU.option5.isSelected()) {
+        if (Settings.isLinux()) {
+          popInfo("You selected option 5 (Tesseract support)\n"
+                  + "On Linux this does not make sense, since it\n"
+                  + "is your responsibility to setup Tesseract on your own.\n"
+                  + "This option will be ignored.");
+        } else {
+          getTess = true;
+        }
       }
       if (winSU.option6.isSelected()) {
         forAllSystems = true;
@@ -614,6 +622,12 @@ public class RunSetup {
       if (new File(workDir, localTess).exists()) {
         getTess = true;
         msg += "\n... with Tesseract OCR support\n\n";
+      }
+      if (popAsk("It cannot be detected, wether your current jars\n"
+              + "have been setup for all systems (option 6).\n"
+              + "Click YES if you want this option now\n"
+              + "Click NO to run normal setup for current system")) {
+        forAllSystems = true;
       }
     }
 
@@ -721,6 +735,7 @@ public class RunSetup {
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="option setup: add native stuff">
+    restore(); //to get back the stuff that was not changed
     if (test && !popAsk("add native stuff --- proceed?")) {
       System.exit(1);
     }
@@ -971,17 +986,25 @@ public class RunSetup {
   protected static void restore() {
     log1(lvl, "restoring from backup");
     String backup = new File(workDir, "Backup").getAbsolutePath();
-    if (new File(backup, localIDE).exists()) {
+    if (new File(backup, localIDE).exists() && !new File(workDir, localIDE).exists()) {
       log1(lvl, "restoring " + localIDE);
       new File(backup, localIDE).renameTo(new File(workDir, localIDE));
     }
-    if (new File(backup, localScript).exists()) {
+    if (new File(backup, localScript).exists() && !new File(workDir, localScript).exists()) {
       log1(lvl, "restoring " + localScript);
       new File(backup, localScript).renameTo(new File(workDir, localScript));
     }
-    if (new File(backup, localJava).exists()) {
+    if (new File(backup, localJava).exists() && !new File(workDir, localJava).exists()) {
       log1(lvl, "restoring " + localJava);
       new File(backup, localJava).renameTo(new File(workDir, localJava));
+    }
+    if (new File(backup, localTess).exists() && !new File(workDir, localTess).exists()) {
+      log1(lvl, "restoring " + localTess);
+      new File(backup, localTess).renameTo(new File(workDir, localTess));
+    }
+    if (new File(backup, localRServer).exists() && !new File(workDir, localRServer).exists()) {
+      log1(lvl, "restoring " + localRServer);
+      new File(backup, localRServer).renameTo(new File(workDir, localRServer));
     }
   }
 
@@ -1020,7 +1043,7 @@ public class RunSetup {
     FileManager.deleteFileOrFolder(workDir, new FileManager.fileFilter() {
       @Override
       public boolean accept(File entry) {
-        if (entry.getName().startsWith("runSetup")) {
+        if (entry.getName().startsWith("run")) {
           return false;
         } else if (entry.getName().equals(localSetup)) {
           return false;
@@ -1029,6 +1052,10 @@ public class RunSetup {
         } else if (isUpdate && entry.getName().equals(localScript)) {
           return false;
         } else if (isUpdate && entry.getName().equals(localJava)) {
+          return false;
+        } else if (isUpdate && entry.getName().equals(localTess)) {
+          return false;
+        } else if (isUpdate && entry.getName().equals(localRServer)) {
           return false;
         } else if (workDir.equals(entry.getAbsolutePath())) {
           return false;
