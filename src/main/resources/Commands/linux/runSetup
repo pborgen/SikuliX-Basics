@@ -5,5 +5,5 @@
 
 shome=`dirname $0`
 
-java -jar "$shome/sikuli-setup-1.1.jar"
+java -jar "$shome/sikuli-setup-1.1.jar" $*
 
