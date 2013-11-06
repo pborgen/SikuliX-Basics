@@ -672,8 +672,12 @@ public class FileManager {
         // check for script.xxx inside folder
         File[] content = scriptName.listFiles(new FileFilterScript(script + "."));
         if (content == null || content.length == 0) {
-          log0(-1, "Script folder %s does not contain a script file named %s.xxx", scriptName, script);
-          SikuliX.terminate(0);
+          log0(-1, "Script %s \n has no script file %s.xxx", scriptName, script);
+          if (args == null) {
+            return null;
+          } else {
+            SikuliX.terminate(0);
+          }
         }
 //TODO should be possible,to have more than one script type in one .sikuli
         String[] supported = new String[] {"py"};
