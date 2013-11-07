@@ -731,15 +731,21 @@ public class ResourceLoader implements IResourceLoader {
         mappedlib = mappedlib.replace(".jnilib", ".dylib");
       }
     }
-    File lib = new File(libPath, mappedlib);
-    if (!lib.exists()) {
-      log(-1, "Fatal Error 109: not found: " + lib.getAbsolutePath());
-      RunSetup.popError("Problem with SikuliX libs folder - see error log");
-      SikuliX.terminate(109);
+    String lib = new File(libPath, mappedlib).getAbsolutePath();
+    if (! new File(lib).exists()) {
+      if (!Settings.isLinux()) {
+        log(-1, "Fatal Error 109: not found: " + lib);
+        RunSetup.popError("Problem with SikuliX libs folder - see error log");
+        SikuliX.terminate(109);
+      } else {
+        lib = mappedlib; 
+        log(lvl, "Linux: %s not bundled - trying to load from system paths", lib);
+      }
+    } else {
+      log(lvl, "Found: " + libname + " at " + lib);
     }
-    log(lvl, "Found: " + libname);
     try {
-      System.load(lib.getAbsolutePath());
+      System.load(lib);
     } catch (Error e) {
       log(-1, "Fatal Error 110: loading: " + mappedlib);
       log(-1, "Since native library was found, it might be a problem with needed dependent libraries\n%s",
