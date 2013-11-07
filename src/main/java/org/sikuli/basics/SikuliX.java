@@ -4,7 +4,6 @@
  *
  * RaiMan 2013
  */
-
 package org.sikuli.basics;
 
 import java.io.File;
@@ -44,7 +43,6 @@ public class SikuliX {
             me + ": " + message, args);
   }
   //</editor-fold>
-
   private static IScriptRunner runner;
   private static final String ScriptSikuliXCL = "org.sikuli.script.SikuliX";
   private static final String ScriptKeyCL = "org.sikuli.script.Key";
@@ -54,7 +52,7 @@ public class SikuliX {
   private static boolean runningFromJar;
   private static String jarPath;
   private static String jarParentPath;
-  
+
   static {
     CodeSource codeSrc = SikuliX.class.getProtectionDomain().getCodeSource();
     if (codeSrc != null && codeSrc.getLocation() != null) {
@@ -68,11 +66,11 @@ public class SikuliX {
       }
     }
   }
-  
+
   public static boolean isRunningFromJar() {
     return runningFromJar;
   }
-  
+
   public static String getJarPath() {
     return jarPath;
   }
@@ -84,11 +82,10 @@ public class SikuliX {
   public static void setRunningSetup(boolean _runningSetup) {
     runningSetup = _runningSetup;
   }
-
   private static JFrame splash = null;
   private static long start = 0;
- 
-  public static void displaySplash(String [] args) {
+
+  public static void displaySplash(String[] args) {
     if (args == null) {
       if (splash != null) {
         splash.dispose();
@@ -99,18 +96,19 @@ public class SikuliX {
       }
       return;
     }
-    if (args[0].contains("-testsetup") || args[0].startsWith("-i")) {
+    if (args[0].contains("-testSetup") || args[0].startsWith("-i")) {
       start = (new Date()).getTime();
-      String[] splashArgs = new String[ ] { 
-        "splash", "#", "#" + Settings.SikuliVersionScript, "", "#", "#... starting - please wait ..." };
+      String[] splashArgs = new String[]{
+        "splash", "#", "#" + Settings.SikuliVersionScript, "", "#", "#... starting - please wait ..."};
       for (String e : args) {
         splashArgs[3] += e + " ";
       }
       splashArgs[3] = splashArgs[3].trim();
+      splash = new MultiFrame(splashArgs);
     }
   }
-  
-  public static void displaySplashFirstTime(String [] args) {
+
+  public static void displaySplashFirstTime(String[] args) {
     if (args == null) {
       if (splash != null) {
         splash.dispose();
@@ -118,15 +116,15 @@ public class SikuliX {
       if (start > 0) {
         Debug.log(3, "Sikuli-IDE environment setup: " + ((new Date()).getTime() - start));
         start = 0;
-     }
+      }
       return;
     }
     start = (new Date()).getTime();
-    String[] splashArgs = new String[] { 
-      "splash", "#", "#" + Settings.SikuliVersionIDE, "", "#", "#... setting up environement - please wait ..." };
+    String[] splashArgs = new String[]{
+      "splash", "#", "#" + Settings.SikuliVersionIDE, "", "#", "#... setting up environement - please wait ..."};
     splash = new MultiFrame(splashArgs);
   }
-  
+
   private static void callScriptEndMethod(String m, int n) {
     try {
       ScriptCl = Class.forName(ScriptSikuliXCL);
@@ -148,7 +146,7 @@ public class SikuliX {
       return null;
     }
   }
-  
+
   public static void callImagePathSetBundlePath(String path) {
     try {
       ScriptCl = Class.forName("org.sikuli.script.ImagePath");
@@ -159,11 +157,12 @@ public class SikuliX {
       System.exit(999);
     }
   }
-  
+
   public static void pause(int time) {
     try {
-      Thread.sleep(time*1000);
-    } catch (InterruptedException ex) {    }
+      Thread.sleep(time * 1000);
+    } catch (InterruptedException ex) {
+    }
   }
 
   public static void endNormal(int n) {
@@ -185,8 +184,8 @@ public class SikuliX {
             + "If you do not have any idea about the error cause or solution, run again\n"
             + "with a Debug level of 3. You might paste the output to the Q&A board.", n);
     if (runningSetup) {
-      RunSetup.popError("Something serious happened! Sikuli not useable!\n" +
-              "Check the error log at " + Debug.logfile);
+      RunSetup.popError("Something serious happened! Sikuli not useable!\n"
+              + "Check the error log at " + Debug.logfile);
       System.exit(0);
     }
     cleanUp(0);
@@ -210,8 +209,8 @@ public class SikuliX {
     Iterator<IScriptRunner> scriptRunnerIterator = loader.iterator();
     while (scriptRunnerIterator.hasNext()) {
       IScriptRunner currentRunner = scriptRunnerIterator.next();
-      if ((name != null && currentRunner.getName().toLowerCase().equals(name.toLowerCase())) || 
-              (ending != null && currentRunner.hasFileEnding(ending) != null)) {
+      if ((name != null && currentRunner.getName().toLowerCase().equals(name.toLowerCase()))
+              || (ending != null && currentRunner.hasFileEnding(ending) != null)) {
         runner = currentRunner;
         runner.init(args);
         break;
@@ -270,13 +269,13 @@ public class SikuliX {
     }
     return true;
   }
-  
+
   public static String[] collectOptions(String type, String[] args) {
     List<String> resArgs = new ArrayList<String>();
     if (args != null) {
       resArgs.addAll(Arrays.asList(args));
-    } 
-    
+    }
+
     String msg = "-----------------------   You might set some options    -----------------------";
     msg += "\n\n";
     msg += "-r name       ---   Run script name: foo[.sikuli] or foo.skl (no IDE window)";
@@ -301,13 +300,13 @@ public class SikuliX {
     msg += "-------------------------------------------------------------------------";
     msg += "\n";
     msg += "                    Just click OK to start IDE with no options - defaults will be used";
-    
-    String ret = JOptionPane.showInputDialog(null, msg, "SikuliX: collect runtime options", 
-                    JOptionPane.QUESTION_MESSAGE);
-    
+
+    String ret = JOptionPane.showInputDialog(null, msg, "SikuliX: collect runtime options",
+            JOptionPane.QUESTION_MESSAGE);
+
     if (ret == null) {
       return null;
-    }    
+    }
     log0(0, "[" + ret + "]");
     if (!ret.isEmpty()) {
       System.setProperty("sikuli.SIKULI_COMMAND", ret);
@@ -326,11 +325,11 @@ public class SikuliX {
     }
     return ret;
   }
-  
+
   public static boolean exportPrefs(String path) {
     return true;
   }
-  
+
   public static boolean importPrefs(String path) {
     return true;
   }

@@ -51,7 +51,7 @@ public class SikuliScript {
 
     SikuliX.displaySplash(args);
 
-    if (args != null && args.length > 1 && args[0] == "-testSetup") {
+    if (args != null && args.length > 1 && args[0].startsWith("-testSetup")) {
       runner = SikuliX.getScriptRunner(args[1], null, args);
       if (runner == null) {
         args[0] = null;
