@@ -36,13 +36,17 @@ public class RunSetup {
   private static String logfile;
   private static String version = Settings.getVersionShort();
   private static String betaVersion;
-  private static String downloadBaseDirBase = "http://dl.dropboxusercontent.com/u/42895525/SikuliX-";
-  private static String downloadBaseDir = downloadBaseDirBase + version + "/";
-  private static String downloadIDE = "sikuli-ide-" + version + ".jar";
-  private static String downloadMacApp = "sikuli-macapp-" + version + ".jar";
-  private static String downloadScript = "sikuli-script-" + version + ".jar";
-  private static String downloadJava = "sikuli-java-" + version + ".jar";
-  private static String downloadTess = "sikuli-tessdata-" + version + ".jar";
+
+//  private static String downloadBaseDirBase = "http://dl.dropboxusercontent.com/u/42895525/SikuliX-";
+//  private static String downloadBaseDir = downloadBaseDirBase + version + "/";
+  private static String downloadBaseDirBase = "https://launchpad.net/raiman/sikulix2013+/1.0.1/+download";
+  private static String downloadBaseDir = downloadBaseDirBase + "/";
+
+  private static String downloadIDE = version + "-1.jar";
+  private static String downloadMacApp = version + "-9.jar";
+  private static String downloadScript = version + "-2.jar";
+  private static String downloadJava = version + "-3.jar";
+  private static String downloadTess = version + "-5.jar";
   private static String downloadUpdate;
   private static String localJava = "sikuli-java.jar";
   private static String localScript = "sikuli-script.jar";
@@ -527,19 +531,19 @@ public class RunSetup {
       msg = "The following file(s) will be downloaded to\n"
               + workDir + "\n";
       if (getIDE) {
-        msg += "\n--- Package 1 ---\n" + downloadIDE;
+        msg += "\n--- Package 1 ---\n" + "sikuli-ide.jar";
         if (Settings.isMac()) {
-          msg += "\n" + downloadMacApp;
+          msg += "\n" + "Sikuli-IDE.app";
         }
       }
       if (getScript) {
-        msg += "\n--- Package 2 ---\n" + downloadScript;
+        msg += "\n--- Package 2 ---\n" + "sikuli-script.jar";
       }
       if (getJava) {
-        msg += "\n--- Package 3 ---\n" + downloadJava;
+        msg += "\n--- Package 3 ---\n" + "sikuli-java.jar";
       }
       if (getTess) {
-        msg += "\n--- Additions ---\n" + downloadTess;
+        msg += "\n--- Additions ---\n" + "Tesseract/tessdata";
       }
       msg += "\n\nOnly click NO, if you want to terminate setup now!\n" +
              "Click YES even if you want to use local copies in Downloads!";
