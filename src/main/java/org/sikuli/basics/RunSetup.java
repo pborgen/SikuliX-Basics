@@ -43,10 +43,15 @@ public class RunSetup {
   private static String downloadBaseDir = downloadBaseDirBase + "/";
 
   private static String downloadIDE = version + "-1.jar";
+  private static String downloadIDE1 = "sikuli-ide-" + version + ".jar";
   private static String downloadMacApp = version + "-9.jar";
+  private static String downloadMacApp1 = "sikuli-macapp-" + version + ".jar";
   private static String downloadScript = version + "-2.jar";
+  private static String downloadScript1 = "sikuli-script-" + version + ".jar";
   private static String downloadJava = version + "-3.jar";
+  private static String downloadJava1 = "sikuli-java-" + version + ".jar";
   private static String downloadTess = version + "-5.jar";
+  private static String downloadTess1 = "sikuli-tessdata-" + version + ".jar";
   private static String downloadUpdate;
   private static String localJava = "sikuli-java.jar";
   private static String localScript = "sikuli-script.jar";
@@ -379,7 +384,7 @@ public class RunSetup {
               downloadUpdate = "sikuli-update-" + au.getVersionNumber() + ".jar";
               FileManager.deleteFileOrFolder(localJarUpdate.getAbsolutePath());
               if (!download(downloadBaseDirBase + au.getVersionNumber() + "/", workDir, 
-                      downloadUpdate, localJarUpdate.getAbsolutePath())) {
+                      downloadUpdate, localJarUpdate.getAbsolutePath(), downloadUpdate)) {
                 terminate("Could not download setup-update.jar for version " + au.getVersionNumber());
               }
             }
@@ -531,19 +536,19 @@ public class RunSetup {
       msg = "The following file(s) will be downloaded to\n"
               + workDir + "\n";
       if (getIDE) {
-        msg += "\n--- Package 1 ---\n" + "sikuli-ide.jar";
+        msg += "\n--- Package 1 ---\n" + downloadIDE1;
         if (Settings.isMac()) {
-          msg += "\n" + "Sikuli-IDE.app";
+          msg += "\n" + downloadMacApp1;
         }
       }
       if (getScript) {
-        msg += "\n--- Package 2 ---\n" + "sikuli-script.jar";
+        msg += "\n--- Package 2 ---\n" + downloadScript1;
       }
       if (getJava) {
-        msg += "\n--- Package 3 ---\n" + "sikuli-java.jar";
+        msg += "\n--- Package 3 ---\n" + downloadJava1;
       }
       if (getTess) {
-        msg += "\n--- Additions ---\n" + "Tesseract/tessdata";
+        msg += "\n--- Additions ---\n" + downloadTess1;
       }
       msg += "\n\nOnly click NO, if you want to terminate setup now!\n" +
              "Click YES even if you want to use local copies in Downloads!";
@@ -563,7 +568,7 @@ public class RunSetup {
             FileManager.deleteFileOrFolder(new File(workDir, localIDE + ".backup").getAbsolutePath());
             localJarIDE.renameTo(new File(workDir, localIDE + ".backup"));
           }        
-          dlOK = download(downloadBaseDir, workDir, downloadIDE, localJar);
+          dlOK = download(downloadBaseDir, workDir, downloadIDE, localJar, downloadIDE1);
         }
         downloadOK &= dlOK;
         if (Settings.isMac()) {
@@ -573,7 +578,7 @@ public class RunSetup {
               FileManager.deleteFileOrFolder(new File(workDir, localMacApp + ".backup").getAbsolutePath());
               localJarApp.renameTo(new File(workDir, localMacApp + ".backup"));
             }        
-            dlOK = download(downloadBaseDir, workDir, downloadMacApp, targetJar);
+            dlOK = download(downloadBaseDir, workDir, downloadMacApp, targetJar, downloadMacApp1);
           }
           if (dlOK) {
             FileManager.deleteFileOrFolder((new File(workDir, folderMacApp)).getAbsolutePath());
@@ -588,7 +593,7 @@ public class RunSetup {
             FileManager.deleteFileOrFolder(new File(workDir, localScript + ".backup").getAbsolutePath());
             localJarScript.renameTo(new File(workDir, localScript + ".backup"));
           }        
-          downloadOK = download(downloadBaseDir, workDir, downloadScript, localJar);
+          downloadOK = download(downloadBaseDir, workDir, downloadScript, localJar, downloadScript1);
         }
         downloadOK &= dlOK;
       }
@@ -599,7 +604,7 @@ public class RunSetup {
             FileManager.deleteFileOrFolder(new File(workDir, localJava + ".backup").getAbsolutePath());
             localJarJava.renameTo(new File(workDir, localJava + ".backup"));
           }        
-          downloadOK = download(downloadBaseDir, workDir, downloadJava, targetJar);
+          downloadOK = download(downloadBaseDir, workDir, downloadJava, targetJar, downloadJava1);
         }
         downloadOK &= dlOK;
       }
@@ -610,7 +615,7 @@ public class RunSetup {
             FileManager.deleteFileOrFolder(new File(workDir, localTess + ".backup").getAbsolutePath());
             localJarTess.renameTo(new File(workDir, localTess + ".backup"));
           }        
-          downloadOK = download(downloadBaseDir, workDir, downloadTess, targetJar);
+          downloadOK = download(downloadBaseDir, workDir, downloadTess, targetJar, downloadTess1);
         }
         downloadOK &= dlOK;
       }
@@ -1013,9 +1018,8 @@ public class RunSetup {
     return msg;
   }
 
-  private static boolean download(String sDir, String tDir, String item, String jar) {
-    boolean deleteDownloads = false;
-    File downloaded = new File(workDir, "Downloads/" + item);
+  private static boolean download(String sDir, String tDir, String item, String jar, String item1) {
+    File downloaded = new File(workDir, "Downloads/" + item1);
     if (downloaded.exists()) {
       if (popAsk("You already have this in your Setup/Downloads folder:\n"
                  + downloaded.getAbsolutePath()
@@ -1028,10 +1032,8 @@ public class RunSetup {
           terminate("Unable to copy from local Downloads: " + 
                     downloaded.getAbsolutePath() + "\n" + ex.getMessage());
         }
-        log(lvl, "Copied form local Download: " + item);
+        log(lvl, "Copied from local Download: " + item);
         return true;
-      } else {
-        deleteDownloads = true;
       }
     }
     JFrame progress = new MultiFrame("download");
@@ -1044,9 +1046,6 @@ public class RunSetup {
     if (!(new File(tDir, item)).renameTo(new File(jar))) {
       log1(-1, "rename to %s did not work", jar);
       return false;
-    }
-    if (deleteDownloads) {
-      FileManager.deleteFileOrFolder(new File(workDir, "Downloads").getAbsolutePath());
     }
     return true;
   }
