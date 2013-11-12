@@ -1019,10 +1019,11 @@ public class RunSetup {
   }
 
   private static boolean download(String sDir, String tDir, String item, String jar, String item1) {
-    File downloaded = new File(workDir, "Downloads/" + item1);
+    File downloaded = new File(workDir, "Downloads/" + item);
     if (downloaded.exists()) {
       if (popAsk("You already have this in your Setup/Downloads folder:\n"
-                 + downloaded.getAbsolutePath()
+                 + downloaded.getAbsolutePath() +"\n"
+                 + "( for setting up: " + item1 + " )\n"
                  + "\nClick YES, if you want to use this for setup processing\n\n"
                  + "... or click NO, to download a fresh copy\n"
                  + "(folder Download will be deleted on success in this case)")) {
