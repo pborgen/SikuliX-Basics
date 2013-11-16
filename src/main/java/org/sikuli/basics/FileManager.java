@@ -39,6 +39,7 @@ import java.util.ServiceLoader;
 import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import org.sikuli.natives.RunNatives;
@@ -839,6 +840,71 @@ public class FileManager {
       return InetAddress.getByName(arg);
     } catch (UnknownHostException ex) {
       return null;
+    }
+  }
+
+  public static String saveImage(BufferedImage img, String filename, String bundlePath) {
+    final int MAX_ALT_NUM = 3;
+    String fullpath = bundlePath;
+    File path = new File(fullpath);
+    if (!path.exists()) {
+      path.mkdir();
+    }
+    if (!filename.endsWith(".png")) {
+      filename += ".png";
+    }
+    File f = new File(path, filename);
+    int count = 0;
+    String msg = f.getName() + " exists - using ";
+    while (count < MAX_ALT_NUM) {
+      if (f.exists()) {
+        f = new File(path, FileManager.getAltFilename(f.getName()));
+      } else {
+        if (count > 0) {
+          Debug.log(msg + f.getName() + " (Utils.saveImage)");
+        }
+        break;
+      }
+      count++;
+    }
+    if (count >= MAX_ALT_NUM) {
+      f = new File(path, Settings.getTimestamp() + ".png");
+      Debug.log(msg + f.getName() + " (Utils.saveImage)");
+    }
+    fullpath = f.getAbsolutePath();
+    fullpath = fullpath.replaceAll("\\\\", "/");
+    try {
+      ImageIO.write(img, "png", new File(fullpath));
+    } catch (IOException e) {
+      Debug.error("Util.saveImage: Problem trying to save image file: %s\n%s", fullpath, e.getMessage());
+      return null;
+    }
+    return fullpath;
+  }
+
+  //TODO consolidate with FileManager and Settings
+  public static void zip(String path, String outZip) throws IOException, FileNotFoundException {
+    ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(outZip));
+    zipDir(path, zos);
+    zos.close();
+  }
+
+  private static void zipDir(String dir, ZipOutputStream zos) throws IOException {
+    File zipDir = new File(dir);
+    String[] dirList = zipDir.list();
+    byte[] readBuffer = new byte[1024];
+    int bytesIn;
+    for (int i = 0; i < dirList.length; i++) {
+      File f = new File(zipDir, dirList[i]);
+      if (f.isFile()) {
+        FileInputStream fis = new FileInputStream(f);
+        ZipEntry anEntry = new ZipEntry(f.getName());
+        zos.putNextEntry(anEntry);
+        while ((bytesIn = fis.read(readBuffer)) != -1) {
+          zos.write(readBuffer, 0, bytesIn);
+        }
+        fis.close();
+      }
     }
   }
 
