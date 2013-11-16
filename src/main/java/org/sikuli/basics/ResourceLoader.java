@@ -252,6 +252,10 @@ public class ResourceLoader implements IResourceLoader {
             }
             log(lvl, "Exists libs folder at location of jar? %s: %s", libPath == null ? "NO" : "YES", jarParentPath);
             libsDir = checkLibsDir(libPath);
+            if (libsDir == null && System.getProperty("sikuli.DoNotExport") != null) {
+              log(-1, "No valid libs folder with option sikuli.DoNotExport");
+              System.exit(1);
+            }
           } else {
             log(lvl, "not running from jar: " + jarParentPath);
           }
@@ -322,8 +326,8 @@ public class ResourceLoader implements IResourceLoader {
     //<editor-fold defaultstate="collapsed" desc="libs dir finally invalid">
     if (libPath == null) {
       log(-1, "No valid libs path available until now!");
-      if (libPath == null && jarParentPath != null && jarPath.endsWith(".jar") &&
-              // hack to avoid libs dir in Maven local repo
+      if (libPath == null && jarParentPath != null && jarPath.endsWith(".jar")
+              && // hack to avoid libs dir in Maven local repo
               !jarPath.contains("SikuliX-Natives")) {
         log(-2, "Please wait! Trying to extract libs to jar parent folder: " + jarParentPath);
         File jarPathLibs = extractLibs((new File(jarParentPath)).getAbsolutePath(), libSource);
@@ -349,22 +353,22 @@ public class ResourceLoader implements IResourceLoader {
         SikuliX.terminate(103);
       }
     }
-    
+
     if (Settings.isLinux()) {
       File libsLinux = new File(libsDir.getParent(), "libsLinux/libVisionProxy.so");
       if (libsLinux.exists()) {
         log(lvl, "Trying to use provided library at: " + libsLinux.getAbsolutePath());
         try {
-          FileManager.xcopy(libsLinux.getAbsolutePath(), 
+          FileManager.xcopy(libsLinux.getAbsolutePath(),
                   new File(libPath, "libVisionProxy.so").getAbsolutePath(), null);
         } catch (IOException ex) {
           log(-1, "... did not work: " + ex.getMessage());
           RunSetup.popError("Provided libVisionProxy not useable - see error log");
-          SikuliX.terminate(0);        
+          SikuliX.terminate(0);
         }
       }
     }
-    
+
     //convenience: jawt.dll in libsdir avoids need for java/bin in system path
     if (Settings.isWindows()) {
       String lib = "jawt.dll";
@@ -372,9 +376,9 @@ public class ResourceLoader implements IResourceLoader {
         extractResource(javahome + "bin/" + lib, new File(libPath, lib), false);
       } catch (IOException ex) {
         log(-1, "Fatal error 107: problem copying " + lib + "\n" + ex.getMessage());
-        RunSetup.popError("Trying to add jawt.dll from Java at\n" +
-                javahome + " to SikuliX libs folder ..." +
-                "... but did not work - see error log");
+        RunSetup.popError("Trying to add jawt.dll from Java at\n"
+                + javahome + " to SikuliX libs folder ..."
+                + "... but did not work - see error log");
         SikuliX.terminate(107);
       }
     }
@@ -382,7 +386,7 @@ public class ResourceLoader implements IResourceLoader {
     if (itIsJython) {
       export("Lib/sikuli", libsDir.getParent());
     }
-    
+
     if (Settings.OcrDataPath == null) {
       if (Settings.isWindows() || Settings.isMac()) {
         Settings.OcrDataPath = libPath;
@@ -390,7 +394,7 @@ public class ResourceLoader implements IResourceLoader {
         Settings.OcrDataPath = "/usr/local/share";
       }
       log(lvl, "If OCR/Text activated: Using as OCR directory (tessdata): " + Settings.OcrDataPath);
-      if (! new File(Settings.OcrDataPath, "tessdata").exists()) {
+      if (!new File(Settings.OcrDataPath, "tessdata").exists()) {
         log(lvl, "Trying to extract tessdata folder since it does not exist yet.");
         export("META-INF/libs#tessdata", libPath);
       }
@@ -419,8 +423,8 @@ public class ResourceLoader implements IResourceLoader {
           log(-2, "Please wait! Trying to add it to user's path");
           if (runcmd(cmdRegCheck).startsWith(error)) {
             log(-1, "Fatal Error 104: Not possible to access registry!");
-            RunSetup.popError("Trying to add SikuliX libs to user path\n" + 
-                    "But registry not accessible - see error log");
+            RunSetup.popError("Trying to add SikuliX libs to user path\n"
+                    + "But registry not accessible - see error log");
             SikuliX.terminate(104);
           }
           String[] val = regMap.get("EnvPath");
@@ -452,8 +456,8 @@ public class ResourceLoader implements IResourceLoader {
           }
           if (step == 0) {
             log(-1, "Fatal Error 105: Not possible to get user's PATH from registry");
-            RunSetup.popError("Trying to add SikuliX libs to user path\n" + 
-                    "But registry not accessible - see error log");
+            RunSetup.popError("Trying to add SikuliX libs to user path\n"
+                    + "But registry not accessible - see error log");
             SikuliX.terminate(105);
           } else {
             if (!envPath.isEmpty()) {
@@ -461,24 +465,24 @@ public class ResourceLoader implements IResourceLoader {
               log(lvl, "current:(%s %s): %s", val[0], val[1], envPath);
               if (envPath.toUpperCase().contains(path.toUpperCase())) {
                 log(-1, "Logout and Login again! (Since libs folder is in user's path, but not activated)");
-                RunSetup.popInfo("Please Logout and Login again!\n\n" +
-                        "SikuliX libs path: " + path + "\n" +
-                        "is in System Path environment settings, \n" +
-                        "but not seen in current runtime environment.\n" +
-                        "Logout/Login should fix this problem.");
+                RunSetup.popInfo("Please Logout and Login again!\n\n"
+                        + "SikuliX libs path: " + path + "\n"
+                        + "is in System Path environment settings, \n"
+                        + "but not seen in current runtime environment.\n"
+                        + "Logout/Login should fix this problem.");
                 SikuliX.terminate(0);
               }
             }
             newPath = path.trim() + (envPath.isEmpty() ? "" : ";" + envPath);
-            String finalPath = newPath.replaceAll(" ", "%20;");           
+            String finalPath = newPath.replaceAll(" ", "%20;");
             String cmdA = String.format(cmdRegAdd, val[0], val[1], val[2], finalPath);
             regResult = runcmd(cmdA);
             log(lvl, regResult);
             regResult = runcmd(cmdQ);
             log(lvl, "Changed to: " + regResult);
             if (!regResult.contains(path)) {
-              RunSetup.popError("Trying to add SikuliX libs to user path\n" + 
-                    "But registry not accessible - see error log");
+              RunSetup.popError("Trying to add SikuliX libs to user path\n"
+                      + "But registry not accessible - see error log");
               log(-1, "Fatal error 106: libs folder could not be added to PATH - giving up!");
               SikuliX.terminate(106);
             }
@@ -486,31 +490,35 @@ public class ResourceLoader implements IResourceLoader {
           log(-1, "Successfully added the libs folder to users PATH!\n" + ""
                   + "RESTART all processes/IDE's using Sikuli for new PATH to be used!/n"
                   + "For usages from command line logout/login might be necessary!");
-          RunSetup.popInfo("Please Logout and Login again!\n\n" +
-                  "SikuliX libs path: " + path + "\n" +
-                  "was added to user path. \n" +
-                  "Logout/Login should activate this setting.");
+          RunSetup.popInfo("Please Logout and Login again!\n\n"
+                  + "SikuliX libs path: " + path + "\n"
+                  + "was added to user path. \n"
+                  + "Logout/Login should activate this setting.");
           SikuliX.terminate(0);
         }
       }
-      File checkFile = (new File(FileManager.slashify(path, true) + checkFileName));
-      if (checkFile.exists()) {
-        if ((new File(jarPath)).lastModified() > checkFile.lastModified()) {
-          log(-1, "libs folder outdated!");
-        } else {
-          loadLib(checkLib);
-          log(lvl, "Using libs at: " + path);
-          dir = new File(path);
-        }
+      if (System.getProperty("sikuli.DoNotExport") != null) {
+        dir = new File(path);
       } else {
-        if (Settings.isWindows()) {
-          // might be wrong arch
-          if ((new File(FileManager.slashify(path, true) + checkFileNameW32)).exists()
-                  || (new File(FileManager.slashify(path, true) + checkFileNameW64)).exists()) {
-            log(-1, "libs dir contains wrong arch for " + osarch);
+        File checkFile = (new File(FileManager.slashify(path, true) + checkFileName));
+        if (checkFile.exists()) {
+          if ((new File(jarPath)).lastModified() > checkFile.lastModified()) {
+            log(-1, "libs folder outdated!");
+          } else {
+            loadLib(checkLib);
+            log(lvl, "Using libs at: " + path);
+            dir = new File(path);
           }
         } else {
-          log(-1, "Not a valid libs dir for SikuliX (" + osarch + "): " + path);
+          if (Settings.isWindows()) {
+            // might be wrong arch
+            if ((new File(FileManager.slashify(path, true) + checkFileNameW32)).exists()
+                    || (new File(FileManager.slashify(path, true) + checkFileNameW64)).exists()) {
+              log(-1, "libs dir contains wrong arch for " + osarch);
+            }
+          } else {
+            log(-1, "Not a valid libs dir for SikuliX (" + osarch + "): " + path);
+          }
         }
       }
     }
@@ -732,13 +740,13 @@ public class ResourceLoader implements IResourceLoader {
       }
     }
     String lib = new File(libPath, mappedlib).getAbsolutePath();
-    if (! new File(lib).exists()) {
+    if (!new File(lib).exists()) {
       if (!Settings.isLinux()) {
         log(-1, "Fatal Error 109: not found: " + lib);
         RunSetup.popError("Problem with SikuliX libs folder - see error log");
         SikuliX.terminate(109);
       } else {
-        lib = mappedlib; 
+        lib = mappedlib;
         log(lvl, "Linux: %s not bundled - trying to load from system paths", lib);
       }
     } else {

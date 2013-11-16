@@ -33,7 +33,7 @@ public class RunSetup {
   private static boolean runningUpdate = false;
   private static boolean isUpdateSetup = false;
   public static String timestampBuilt;
-  private static final String tsb = "##--##Mi  6 Nov 2013 18:27:23 CET##--##";
+  private static final String tsb = "##--##Sa 16 Nov 2013 14:17:08 CET##--##";
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
