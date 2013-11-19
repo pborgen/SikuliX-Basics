@@ -135,11 +135,47 @@ public class ResourceLoader implements IResourceLoader {
     //Debug.log(lvl, "%s: %s: init", me, loaderName);
   }
 
+  private static String isFatJar() {
+    boolean extractingFromJar = false;
+    String jarPath = null;
+    URL jarURL = null;
+    CodeSource codeSrc = RunNatives.class.getProtectionDomain().getCodeSource();
+    if (codeSrc != null && codeSrc.getLocation() != null) {
+      jarURL = codeSrc.getLocation();
+      jarPath = jarURL.getPath();
+      if (jarPath.endsWith(".jar")) {
+        extractingFromJar = true;
+      }
+    }
+    if (extractingFromJar) {
+      try {
+        ZipInputStream zip = new ZipInputStream(jarURL.openStream());
+        ZipEntry ze;
+        while ((ze = zip.getNextEntry()) != null) {
+          String entryName = ze.getName();
+          if (entryName.startsWith(Settings.libSourcebase)) {
+            return null;
+          }
+        }
+      } catch (IOException e) {
+        return jarPath;
+      }
+    } else {
+      return null;
+    }
+    return jarPath;
+  }
+
   /**
    * {@inheritDoc}
    */
   @Override
   public void check(String what) {
+    if (System.getProperty("sikuli.DoNotExport") == null && null != isFatJar()) {
+      RunSetup.popError("Terminating: The jar in use was not built with setup!\n" + jarPath);
+      System.exit(1);
+    }
+
     mem = "check";
     if (!what.equals(Settings.SIKULI_LIB)) {
       log(-1, "Currently only Sikuli libs supported!");
@@ -301,15 +337,15 @@ public class ResourceLoader implements IResourceLoader {
       log(-2, "Please wait! Trying to extract libs to: " + libPath);
       if (!FileManager.deleteFileOrFolder(libPath,
               new FileManager.fileFilter() {
-        @Override
-        public boolean accept(File entry) {
-          if (entry.getPath().contains("tessdata")
+                @Override
+                public boolean accept(File entry) {
+                  if (entry.getPath().contains("tessdata")
                   || entry.getPath().contains("Lib")) {
-            return false;
-          }
-          return true;
-        }
-      })) {
+                    return false;
+                  }
+                  return true;
+                }
+              })) {
         log(-1, "Fatal Error 102: not possible to empty libs dir");
         RunSetup.popError("Problem with SikuliX libs folder - see error log");
         SikuliX.terminate(102);
@@ -326,15 +362,19 @@ public class ResourceLoader implements IResourceLoader {
     //<editor-fold defaultstate="collapsed" desc="libs dir finally invalid">
     if (libPath == null) {
       log(-1, "No valid libs path available until now!");
-      if (libPath == null && jarParentPath != null && jarPath.endsWith(".jar")
-              && // hack to avoid libs dir in Maven local repo
-              !jarPath.contains("SikuliX-Natives")) {
-        log(-2, "Please wait! Trying to extract libs to jar parent folder: " + jarParentPath);
-        File jarPathLibs = extractLibs((new File(jarParentPath)).getAbsolutePath(), libSource);
-        if (jarPathLibs == null) {
-          log(-1, "not possible!");
+      if (libPath == null && jarParentPath != null) {
+        if (jarPath.endsWith(".jar")
+                && // hack to avoid libs dir in Maven local repo
+                !jarPath.contains("SikuliX-Natives")) {
+          log(-2, "Please wait! Trying to extract libs to jar parent folder: " + jarParentPath);
+          File jarPathLibs = extractLibs((new File(jarParentPath)).getAbsolutePath(), libSource);
+          if (jarPathLibs == null) {
+            log(-1, "not possible!");
+          } else {
+            libPath = jarPathLibs.getAbsolutePath();
+          }
         } else {
-          libPath = jarPathLibs.getAbsolutePath();
+          
         }
       }
       if (libPath == null && userSikuli != null) {
@@ -920,7 +960,8 @@ public class ResourceLoader implements IResourceLoader {
   }
 
   /**
-   * Extract files from a jar using a list of files in a file (def. filelist.txt)
+   * Extract files from a jar using a list of files in a file (def.
+   * filelist.txt)
    *
    * @param srcPath from here
    * @param localPath to there (if null, create a default in temp folder)
