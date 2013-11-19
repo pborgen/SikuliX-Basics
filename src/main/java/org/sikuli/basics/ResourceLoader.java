@@ -393,6 +393,7 @@ public class ResourceLoader implements IResourceLoader {
         SikuliX.terminate(103);
       }
     }
+    //</editor-fold>
 
     if (Settings.isLinux()) {
       File libsLinux = new File(libsDir.getParent(), "libsLinux/libVisionProxy.so");
@@ -427,7 +428,7 @@ public class ResourceLoader implements IResourceLoader {
       export("Lib/sikuli", libsDir.getParent());
     }
 
-    if (Settings.OcrDataPath == null) {
+    if (Settings.OcrDataPath == null && System.getProperty("sikuli.DoNotExport") == null) {
       if (Settings.isWindows() || Settings.isMac()) {
         Settings.OcrDataPath = libPath;
       } else {
@@ -439,7 +440,6 @@ public class ResourceLoader implements IResourceLoader {
         export("META-INF/libs#tessdata", libPath);
       }
     }
-    //</editor-fold>
   }
 
   private File checkLibsDir(String path) {
