@@ -257,7 +257,7 @@ public class ResourceLoader implements IResourceLoader {
       if (!Settings.runningSetup) {
         // check Java property sikuli.home
         if (sikhomeProp != null) {
-          libspath = (new File(FileManager.slashify(sikhomeProp, true) + "libs")).getAbsolutePath();
+          libspath = FileManager.slashify(sikhomeProp, true) + "libs";
           if ((new File(libspath)).exists()) {
             libPath = libspath;
           }
