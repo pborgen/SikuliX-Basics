@@ -311,6 +311,10 @@ public class Debug {
     }
   }
   
+  public static Debug startTimer() {
+    return startTimer("");
+  }
+  
   public static Debug startTimer(String message, Object... args) {
     Debug timer = new Debug();
     timer.startTiming(message, args);
