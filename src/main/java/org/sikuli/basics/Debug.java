@@ -265,7 +265,7 @@ public class Debug {
     }
   }
 
-  private static void log(int level, String prefix, String message, Object... args) {
+  private static synchronized void log(int level, String prefix, String message, Object... args) {
 //TODO replace the hack -99 to filter user logs
     String sout;
     String stime = "";
