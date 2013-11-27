@@ -33,7 +33,7 @@ public class RunSetup {
   private static boolean runningUpdate = false;
   private static boolean isUpdateSetup = false;
   public static String timestampBuilt;
-  private static final String tsb = "##--##Sa 16 Nov 2013 14:17:08 CET##--##";
+  private static final String tsb = "##--##Mi 27 Nov 2013 15:29:45 CET##--##";
   private static boolean runningfromJar = true;
   private static String workDir;
   private static String uhome;
@@ -41,15 +41,15 @@ public class RunSetup {
   private static String version = Settings.getVersionShort();
   private static String majorversion = Settings.getVersionShortBasic();
   private static String updateVersion;
-  private static String downloadBaseDirBase = "http://dl.dropboxusercontent.com/u/42895525/SikuliX-";
-  private static String downloadBaseDir = downloadBaseDirBase + version.substring(0, 3) + "/";
+  private static String downloadBaseDirBase = "https://launchpad.net/raiman/sikulix2013+/";
+  private static String downloadBaseDir = downloadBaseDirBase + majorversion + ".0/";
   private static String downloadSetup;
-  private static String downloadIDE = "sikuli-ide-" + version + ".jar";
-  private static String downloadMacApp = "sikuli-macapp-" + version + ".jar";
-  private static String downloadScript = "sikuli-script-" + version + ".jar";
-  private static String downloadJava = "sikuli-java-" + version + ".jar";
-  private static String downloadTess = "sikuli-tessdata-" + version + ".jar";
-  private static String downloadRServer = "sikulix-remoteserver-" + version + ".jar";
+  private static String downloadIDE = version + "-1.jar";
+  private static String downloadMacApp = version + "-9.jar";
+  private static String downloadScript = version + "-2.jar";
+  private static String downloadJava = version + "-3.jar";
+  private static String downloadTess = version + "-5.jar";
+  private static String downloadRServer = version + "-7.jar";
   private static String localJava = "sikuli-java.jar";
   private static String localScript = "sikuli-script.jar";
   private static String localIDE = "sikuli-ide.jar";
@@ -541,7 +541,7 @@ public class RunSetup {
     FileManager.deleteFileOrFolder(fPrefs.getAbsolutePath());
     //</editor-fold>
 
-    //<editor-fold defaultstate="collapsed" desc="option setup: download">    
+    //<editor-fold defaultstate="collapsed" desc="option setup: download">
     if (!isUpdateSetup) {
       if (winSU.option1.isSelected() && winSU.option2.isSelected()) {
         if (!popAsk("You either need IDE (1) --OR-- Script (2) !\n"
@@ -794,28 +794,28 @@ public class RunSetup {
       String localTestJar = null;
       if (getIDE
 
-      
+
         ) {
       localJars[0] = localIDE;
         localTestJar = (new File(workDir, localIDE)).getAbsolutePath();
       }
       if (getScript
 
-      
+
         ) {
       localJars[1] = localScript;
         localTestJar = (new File(workDir, localScript)).getAbsolutePath();
       }
       if (getJava
 
-      
+
         ) {
       localJars[2] = localJava;
       }
       splash  = showSplash("Now adding native stuff to selected jars.", "please wait - may take some seconds ...");
       for (String path : localJars
 
-      
+
         ) {
       if (path == null) {
           continue;
@@ -835,7 +835,7 @@ public class RunSetup {
         success &= (new File(workDir, localTemp)).renameTo(new File(localJar));
       }
 
-      if (Settings.isMac () 
+      if (Settings.isMac ()
         && getIDE) {
       closeSplash(splash);
         log1(lvl, "preparing Mac app as SikuliX-IDE.app");
@@ -849,7 +849,7 @@ public class RunSetup {
       closeSplash(splash);
       if (success && (getIDE || getScript
 
-      
+
         )) {
       log1(lvl, "exporting commandfiles");
         splash = showSplash("Now exporting commandfiles.", "please wait - may take some seconds ...");
@@ -890,7 +890,7 @@ public class RunSetup {
       }
       if (!success
 
-      
+
         ) {
       popError("Bad things happened trying to add native stuff to selected jars --- terminating!");
         terminate("Adding stuff to jars did not work");
@@ -899,12 +899,12 @@ public class RunSetup {
 
       //<editor-fold defaultstate="collapsed" desc="option setup: environment setup and test">
       log1(lvl,
-              
+
       "trying to set up the environment");
     splash  = showSplash("Now I will try to set up the environment!", "please wait - may take some seconds ...");
       File folderLibs = new File(workDir, "libs");
 
-      if (folderLibs.exists () 
+      if (folderLibs.exists ()
         ) {
       FileManager.deleteFileOrFolder(folderLibs.getAbsolutePath());
       }
@@ -914,14 +914,14 @@ public class RunSetup {
       loader.check (Settings.SIKULI_LIB);
 
       if (loader.doSomethingSpecial (
-               
+
         "checkLibsDir", null)) {
       closeSplash(splash);
         splash = showSplash(" ", "Environment seems to be ready!");
         closeSplash(splash);
       }
 
-      
+
         else {
       closeSplash(splash);
         popError("Something serious happened! Sikuli not useable!\n"
@@ -930,7 +930,7 @@ public class RunSetup {
       }
       if (getJava
 
-      
+
         ) {
       log1(lvl, "Trying to run functional test: JAVA-API");
         splash = showSplash("Trying to run functional test(s)", "Java-API: org.sikuli.script.SikuliX.testSetup()");
@@ -965,7 +965,7 @@ public class RunSetup {
       }
       if (getIDE || getScript
 
-      
+
         ) {
       log1(lvl, "Trying to run functional test: running Jython statements via SikuliScript");
         splash = showSplash("Trying to run functional test(s)", "running Jython statements via SikuliScript");
@@ -998,20 +998,20 @@ public class RunSetup {
       closeSplash(splash);
 
       log1(lvl,
-              
+
 
       "... SikuliX Setup seems to have ended successfully ;-)");
     //</editor-fold>
 
     System.exit (
-              
-    
+
+
     0);
   }
 
-  
 
-  
+
+
 
   public static boolean isRunningUpdate() {
     return runningUpdate;
